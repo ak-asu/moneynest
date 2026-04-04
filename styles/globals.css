@@ -14,13 +14,13 @@
     @apply rounded-3xl border border-white/20 bg-white/80 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:bg-zinc-900/80 dark:border-white/10;
   }
   .clay-card-danger {
-    @apply clay-card bg-danger-50/80 border-danger-100 dark:bg-danger-900/20;
+    @apply rounded-3xl border bg-red-50/80 border-red-100 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-white/10 dark:bg-red-900/20;
   }
   .clay-card-warning {
-    @apply clay-card bg-warning-50/80 border-warning-100 dark:bg-warning-900/20;
+    @apply rounded-3xl border bg-amber-50/80 border-amber-100 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-white/10 dark:bg-amber-900/20;
   }
   .clay-card-success {
-    @apply clay-card bg-success-50/80 border-success-100 dark:bg-success-900/20;
+    @apply rounded-3xl border bg-emerald-50/80 border-emerald-100 shadow-[0_4px_24px_rgba(0,0,0,0.08),0_1px_3px_rgba(0,0,0,0.05)] backdrop-blur-sm dark:border-white/10 dark:bg-emerald-900/20;
   }
   .clay-btn {
     @apply rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.1)] active:scale-95 transition-transform;
