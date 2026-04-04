@@ -10,14 +10,34 @@
 		"lint": "eslint --fix"
 	},
 	"dependencies": {
+		"@ai-sdk/anthropic": "^3.0.66",
+		"@elevenlabs/elevenlabs-js": "^2.41.1",
+		"@google/generative-ai": "^0.24.1",
 		"@heroui/react": "3.0.1",
 		"@heroui/styles": "3.0.1",
+		"@hookform/resolvers": "^5.2.2",
+		"@supabase/ssr": "^0.10.0",
+		"@supabase/supabase-js": "^2.101.1",
+		"ai": "^6.0.146",
 		"clsx": "2.1.1",
+		"framer-motion": "^12.38.0",
 		"intl-messageformat": "10.7.16",
+		"lucide-react": "^1.7.0",
 		"next": "15.5.9",
 		"next-themes": "0.4.6",
+		"papaparse": "^5.5.3",
+		"plaid": "^41.4.0",
 		"react": "^19.0.0",
-		"react-dom": "^19.0.0"
+		"react-dom": "^19.0.0",
+		"react-dropzone": "^15.0.0",
+		"react-hook-form": "^7.72.1",
+		"recharts": "^3.8.1",
+		"zod": "^3.25.76"
+	},
+	"pnpm": {
+		"overrides": {
+			"react-dropzone": "^15.0.0"
+		}
 	},
 	"devDependencies": {
 		"@eslint/compat": "1.2.8",
@@ -26,6 +46,7 @@
 		"@next/eslint-plugin-next": "16.2.0",
 		"@tailwindcss/postcss": "4.1.11",
 		"@types/node": "20.5.7",
+		"@types/papaparse": "^5.5.2",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
 		"@typescript-eslint/eslint-plugin": "8.34.1",
