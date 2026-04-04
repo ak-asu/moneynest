@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/database'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -16,7 +17,14 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`)
   }
 
-  await supabase.from('users').upsert(
+  const usersTable = supabase.from('users') as unknown as {
+    upsert: (
+      values: Database['public']['Tables']['users']['Insert'],
+      options: { onConflict: string }
+    ) => Promise<unknown>
+  }
+
+  await usersTable.upsert(
     { auth_id: user.id, email: user.email! },
     { onConflict: 'auth_id' }
   )

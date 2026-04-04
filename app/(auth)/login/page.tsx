@@ -18,7 +18,7 @@ export default function LoginPage() {
         <h1 className="text-4xl font-bold">Vela</h1>
         <p className="text-default-500 mt-2">Your financial guiding light</p>
       </div>
-      <Button onPress={signInWithGoogle} size="lg" color="primary">
+      <Button onPress={signInWithGoogle} size="lg" variant="primary">
         Continue with Google
       </Button>
     </div>

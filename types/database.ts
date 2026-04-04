@@ -148,19 +148,21 @@ export interface DbSuggestion {
 export interface Database {
   public: {
     Tables: {
-      users: { Row: DbUser; Insert: Omit<DbUser, 'id' | 'created_at'>; Update: Partial<DbUser>; Relationships: [] }
-      profiles: { Row: DbProfile; Insert: Omit<DbProfile, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbProfile>; Relationships: [] }
-      chat_sessions: { Row: DbChatSession; Insert: Omit<DbChatSession, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbChatSession>; Relationships: [] }
-      messages: { Row: DbMessage; Insert: Omit<DbMessage, 'id' | 'created_at'>; Update: Partial<DbMessage>; Relationships: [] }
-      saved_items: { Row: DbSavedItem; Insert: Omit<DbSavedItem, 'id' | 'created_at'>; Update: Partial<DbSavedItem>; Relationships: [] }
-      documents: { Row: DbDocument; Insert: Omit<DbDocument, 'id' | 'created_at'>; Update: Partial<DbDocument>; Relationships: [] }
-      action_plans: { Row: DbActionPlan; Insert: Omit<DbActionPlan, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbActionPlan>; Relationships: [] }
-      budget_entries: { Row: DbBudgetEntry; Insert: Omit<DbBudgetEntry, 'id' | 'created_at'>; Update: Partial<DbBudgetEntry>; Relationships: [] }
-      plaid_connections: { Row: { id: string; user_id: string; access_token: string; item_id: string; institution_name: string | null; last_synced: string | null }; Insert: any; Update: any; Relationships: [] }
-      learning_progress: { Row: DbLearningProgress; Insert: Omit<DbLearningProgress, 'id' | 'updated_at'>; Update: Partial<DbLearningProgress>; Relationships: [] }
-      suggestions: { Row: DbSuggestion; Insert: Omit<DbSuggestion, 'id' | 'created_at'>; Update: Partial<DbSuggestion>; Relationships: [] }
+      users: { Row: DbUser; Insert: Omit<DbUser, 'id' | 'created_at'>; Update: Partial<DbUser>; Relationships: never[] }
+      profiles: { Row: DbProfile; Insert: Omit<DbProfile, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbProfile>; Relationships: never[] }
+      chat_sessions: { Row: DbChatSession; Insert: Omit<DbChatSession, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbChatSession>; Relationships: never[] }
+      messages: { Row: DbMessage; Insert: Omit<DbMessage, 'id' | 'created_at'>; Update: Partial<DbMessage>; Relationships: never[] }
+      saved_items: { Row: DbSavedItem; Insert: Omit<DbSavedItem, 'id' | 'created_at'>; Update: Partial<DbSavedItem>; Relationships: never[] }
+      documents: { Row: DbDocument; Insert: Omit<DbDocument, 'id' | 'created_at'>; Update: Partial<DbDocument>; Relationships: never[] }
+      action_plans: { Row: DbActionPlan; Insert: Omit<DbActionPlan, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbActionPlan>; Relationships: never[] }
+      budget_entries: { Row: DbBudgetEntry; Insert: Omit<DbBudgetEntry, 'id' | 'created_at'>; Update: Partial<DbBudgetEntry>; Relationships: never[] }
+      plaid_connections: { Row: { id: string; user_id: string; access_token: string; item_id: string; institution_name: string | null; last_synced: string | null }; Insert: any; Update: any; Relationships: never[] }
+      learning_progress: { Row: DbLearningProgress; Insert: Omit<DbLearningProgress, 'id' | 'updated_at'>; Update: Partial<DbLearningProgress>; Relationships: never[] }
+      suggestions: { Row: DbSuggestion; Insert: Omit<DbSuggestion, 'id' | 'created_at'>; Update: Partial<DbSuggestion>; Relationships: never[] }
     }
-    Views: Record<string, { Row: Record<string, unknown>; Relationships: [] }>
-    Functions: Record<string, { Args: Record<string, unknown>; Returns: unknown }>
+    Views: {}
+    Functions: {}
+    Enums: {}
+    CompositeTypes: {}
   }
 }
