@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Button, ProgressBar } from '@heroui/react'
 import type { MiniGameProps } from '@/types/components'
+import { useSFX } from '@/components/audio/use-sfx'
 
 // Renders the appropriate game engine based on game_type
 export function MiniGame({ game_type, title, instructions, income, categories, win_condition, time_limit_seconds }: MiniGameProps) {
@@ -18,6 +19,7 @@ export function MiniGame({ game_type, title, instructions, income, categories, w
 }
 
 function AllocationPuzzle({ title, instructions, income, categories, win_condition }: Omit<MiniGameProps, 'game_type' | 'time_limit_seconds'>) {
+  const { play, SFX } = useSFX()
   const [allocations, setAllocations] = useState<Record<string, number>>(
     Object.fromEntries(categories.map(c => [c.name, c.suggested]))
   )
@@ -28,7 +30,9 @@ function AllocationPuzzle({ title, instructions, income, categories, win_conditi
 
   function check() {
     const valid = categories.every(c => allocations[c.name] >= c.min && allocations[c.name] <= c.max)
-    setWon(valid && remaining >= 0)
+    const won = valid && remaining >= 0
+    setWon(won)
+    play(won ? SFX.GAME_WIN : SFX.GAME_LOSE)
   }
 
   return (
@@ -70,6 +74,7 @@ function AllocationPuzzle({ title, instructions, income, categories, win_conditi
 }
 
 function TimePressureGame({ title, instructions, income, categories, win_condition, time_limit_seconds }: Omit<MiniGameProps, 'game_type'> & { time_limit_seconds: number }) {
+  const { play, SFX } = useSFX()
   const [timeLeft, setTimeLeft] = useState(time_limit_seconds)
   const [started, setStarted] = useState(false)
   const [allocations, setAllocations] = useState<Record<string, number>>(
@@ -90,7 +95,9 @@ function TimePressureGame({ title, instructions, income, categories, win_conditi
 
   function submit() {
     const valid = categories.every(c => allocations[c.name] >= c.min && allocations[c.name] <= c.max)
-    setResult(valid && total <= income ? 'win' : 'lose')
+    const won = valid && total <= income
+    setResult(won ? 'win' : 'lose')
+    play(won ? SFX.GAME_WIN : SFX.GAME_LOSE)
   }
 
   return (

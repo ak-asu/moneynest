@@ -1,17 +1,23 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, ProgressBar } from '@heroui/react'
 import { AlertTriangle } from 'lucide-react'
 import type { CrisisSimulatorProps } from '@/types/components'
+import { useSFX } from '@/components/audio/use-sfx'
+import { useMusic } from '@/components/audio/use-music'
 
 export function CrisisSimulator({
   scenario_label, duration_days, income_monthly, fixed_expenses, savings, decision_points
 }: CrisisSimulatorProps) {
+  useMusic('tense')
+  const { play, SFX } = useSFX()
   const [stepIndex, setStepIndex] = useState(0)
   const [day, setDay] = useState(0)
   const [balance, setBalance] = useState(savings)
   const [log, setLog] = useState<string[]>([])
   const [complete, setComplete] = useState(false)
+
+  useEffect(() => { play(SFX.CRISIS_START) }, [play, SFX.CRISIS_START])
 
   const dailyExpenses = Object.values(fixed_expenses).reduce((a, b) => a + b, 0) / 30
   const currentDecision = decision_points[stepIndex]
@@ -27,6 +33,13 @@ export function CrisisSimulator({
     } else {
       setStepIndex(nextIndex)
       setDay(decision_points[nextIndex].day)
+    }
+    if (newBalance < 0) {
+      play(SFX.CRISIS_ESCALATE)
+    } else if (nextIndex >= decision_points.length) {
+      play(newBalance >= 0 ? SFX.CRISIS_RESOLVE : SFX.CRISIS_ESCALATE)
+    } else {
+      play(SFX.CRISIS_START)
     }
   }
 

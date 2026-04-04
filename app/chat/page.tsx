@@ -4,6 +4,7 @@ import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { SessionSidebar } from '@/components/chat/session-sidebar'
 import { GenerativeMessage } from '@/components/generative/generative-message'
+import { VoiceModeButton } from '@/components/chat/voice-mode-button'
 import { Button } from '@heroui/react'
 import { Send } from 'lucide-react'
 import type { UIMessage } from 'ai'
@@ -103,7 +104,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex h-[calc(100vh)]">
       <SessionSidebar
         activeSessionId={sessionId}
         onSelectSession={selectSession}
@@ -134,6 +135,10 @@ export default function ChatPage() {
               rows={2}
               className="flex-1 clay-input resize-none rounded-xl border border-divider p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
+            <VoiceModeButton onTranscript={(text) => {
+              if (!text.trim() || isLoading) return
+              sendMessage({ text })
+            }} />
             <Button
               type="submit"
               variant="primary"
