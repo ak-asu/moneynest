@@ -1,15 +1,17 @@
 'use client'
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { SessionSidebar } from '@/components/chat/session-sidebar'
 import { GenerativeMessage } from '@/components/generative/generative-message'
+import { VoiceModeButton } from '@/components/chat/voice-mode-button'
+import { AppNav } from '@/components/app-nav'
 import { Button } from '@heroui/react'
 import { Send } from 'lucide-react'
-import type { UIMessage } from 'ai'
 
 export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionListKey, setSessionListKey] = useState(0)
   const [input, setInput] = useState('')
   const sessionIdRef = useRef<string | null>(null)
   const sessionCreatingRef = useRef(false)
@@ -28,33 +30,7 @@ export default function ChatPage() {
     [],
   )
 
-  const { messages, sendMessage, status, setMessages } = useChat({
-    transport,
-    onFinish: async ({ messages: finishedMessages }) => {
-      if (!sessionIdRef.current && !sessionCreatingRef.current) {
-        sessionCreatingRef.current = true
-        const firstUserMsg = finishedMessages.find((m: UIMessage) => m.role === 'user')
-        const firstPart = firstUserMsg?.parts?.[0]
-        const title =
-          (firstPart && 'text' in firstPart ? (firstPart as { text: string }).text.slice(0, 60) : null) ||
-          'New conversation'
-        try {
-          const res = await fetch('/api/sessions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title }),
-          })
-          if (!res.ok) throw new Error(`Session create failed: ${res.status}`)
-          const session = await res.json()
-          if (session?.id) setSessionId(session.id)
-        } catch (err) {
-          console.error('Failed to create chat session', err)
-        } finally {
-          sessionCreatingRef.current = false
-        }
-      }
-    },
-  })
+  const { messages, sendMessage, status, setMessages } = useChat({ transport })
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
@@ -62,7 +38,16 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function selectSession(id: string) {
+  // Pre-fill input from suggestion card chat_seed
+  useEffect(() => {
+    const seed = sessionStorage.getItem('vela_chat_seed')
+    if (seed) {
+      sessionStorage.removeItem('vela_chat_seed')
+      setInput(seed)
+    }
+  }, [])
+
+  const selectSession = useCallback(async (id: string) => {
     // Cancel any in-flight fetch
     selectAbortRef.current?.abort()
     selectAbortRef.current = new AbortController()
@@ -80,20 +65,63 @@ export default function ChatPage() {
       if (e instanceof Error && e.name === 'AbortError') return // cancelled — ignore
       console.error('Failed to load session messages', e)
     }
-  }
+  }, [setMessages])
 
-  function newSession() {
+  const newSession = useCallback(() => {
+    selectAbortRef.current?.abort()
     setSessionId(null)
+    sessionIdRef.current = null
     setMessages([])
-  }
+  }, [setMessages])
 
-  function handleSubmit(e?: React.FormEvent) {
+  const deleteSession = useCallback(async (id: string) => {
+    try {
+      await fetch(`/api/sessions/${id}`, { method: 'DELETE' })
+    } catch (err) {
+      console.error('Failed to delete session', err)
+    }
+    if (sessionIdRef.current === id) {
+      newSession()
+    }
+    setSessionListKey(k => k + 1) // force sidebar to refetch
+  }, [newSession])
+
+  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault()
     const text = input.trim()
     if (!text || isLoading) return
-    sendMessage({ text })
     setInput('')
-  }
+
+    // Create session eagerly before the first message so the server can persist all messages
+    if (!sessionIdRef.current && !sessionCreatingRef.current) {
+      sessionCreatingRef.current = true
+      try {
+        const res = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: text.slice(0, 60) }),
+        })
+        if (res.ok) {
+          const session = await res.json()
+          if (session?.id) {
+            sessionIdRef.current = session.id  // sync update so transport picks it up
+            setSessionId(session.id)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to create chat session', err)
+      } finally {
+        sessionCreatingRef.current = false
+      }
+    }
+
+    sendMessage({ text })
+  }, [input, isLoading, sendMessage])
+
+  const handleVoiceTranscript = useCallback((text: string) => {
+    if (!text.trim() || isLoading) return
+    sendMessage({ text })
+  }, [isLoading, sendMessage])
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -103,15 +131,18 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)]">
+    <div className="flex h-screen">
+      <AppNav />
       <SessionSidebar
         activeSessionId={sessionId}
+        refreshKey={sessionListKey}
         onSelectSession={selectSession}
         onNewSession={newSession}
+        onDeleteSession={deleteSession}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.length === 0 && (
+          {messages.length === 0 && !isLoading && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-sm">
                 <p className="text-2xl font-bold text-primary mb-2">Hi, I&apos;m Vela</p>
@@ -119,7 +150,7 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          {messages.map((m: UIMessage) => (
+          {messages.map((m) => (
             <GenerativeMessage key={m.id} message={m} sessionId={sessionId || ''} />
           ))}
           <div ref={bottomRef} />
@@ -130,18 +161,21 @@ export default function ChatPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={onKeyDown}
+              aria-label="Message to Vela"
               placeholder="Ask Vela anything..."
               rows={2}
               className="flex-1 clay-input resize-none rounded-xl border border-divider p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
+            <VoiceModeButton onTranscript={handleVoiceTranscript} />
             <Button
               type="submit"
               variant="primary"
               isDisabled={isLoading}
               isIconOnly
+              aria-label="Send message"
               className="clay-btn h-10 w-10"
             >
-              <Send size={16} />
+              <Send size={16} aria-hidden="true" />
             </Button>
           </form>
         </div>

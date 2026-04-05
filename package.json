@@ -10,8 +10,11 @@
 		"lint": "eslint --fix"
 	},
 	"dependencies": {
+		"@11labs/react": "^0.2.0",
 		"@ai-sdk/anthropic": "^3.0.66",
 		"@ai-sdk/react": "^3.0.148",
+		"@anthropic-ai/sdk": "^0.82.0",
+		"@elevenlabs/client": "^1.1.1",
 		"@elevenlabs/elevenlabs-js": "^2.41.1",
 		"@google/generative-ai": "^0.24.1",
 		"@heroui/react": "3.0.1",
@@ -32,7 +35,9 @@
 		"react-dom": "^19.0.0",
 		"react-dropzone": "^15.0.0",
 		"react-hook-form": "^7.72.1",
+		"react-markdown": "^10.1.0",
 		"recharts": "^3.8.1",
+		"remark-gfm": "^4.0.1",
 		"zod": "^3.25.76"
 	},
 	"pnpm": {

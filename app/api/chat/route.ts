@@ -1,7 +1,14 @@
 // app/api/chat/route.ts
-import { streamText, stepCountIs, type ModelMessage } from 'ai'
-import { anthropic } from '@ai-sdk/anthropic'
+import {
+  convertToModelMessages,
+  streamText,
+  stepCountIs,
+  validateUIMessages,
+  type ModelMessage,
+  type UIMessage,
+} from 'ai'
 import { createClient } from '@/lib/supabase/server'
+import { anthropicProvider } from '@/lib/ai/anthropic'
 import { buildSystemPrompt } from '@/lib/ai/context'
 import { agentTools } from '@/lib/ai/tools'
 import type { AgentContext } from '@/lib/ai/context'
@@ -19,15 +26,24 @@ import type {
 export const maxDuration = 60
 
 export async function POST(request: Request) {
-  let messages: ModelMessage[], sessionId: string | null | undefined
+  let messages: ModelMessage[], uiMessages: UIMessage[], sessionId: string | null | undefined
   try {
     const body = await request.json()
-    messages = body.messages
+    if (!Array.isArray(body.messages)) {
+      return new Response('messages must be an array', { status: 400 })
+    }
+    uiMessages = await validateUIMessages({ messages: body.messages })
+    messages = await convertToModelMessages(
+      uiMessages.map(({ id, ...message }) => {
+        void id
+        return message
+      }),
+      { tools: agentTools, ignoreIncompleteToolCalls: true },
+    )
     sessionId = body.sessionId
   } catch {
     return new Response('Invalid request body', { status: 400 })
   }
-  if (!Array.isArray(messages)) return new Response('messages must be an array', { status: 400 })
 
   const supabase = await createClient()
   const {
@@ -87,15 +103,17 @@ export async function POST(request: Request) {
 
   // Persist user message before streaming
   if (sessionId) {
-    const lastUserMsg = messages[messages.length - 1]
+    const lastUserMsg = uiMessages[uiMessages.length - 1]
     if (lastUserMsg?.role === 'user') {
+      const userText = lastUserMsg.parts
+        .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
+        .map(part => part.text)
+        .join('\n')
+
       const msgRow: Omit<DbMessage, 'id' | 'created_at'> = {
         session_id: sessionId,
         role: 'user',
-        text:
-          typeof lastUserMsg.content === 'string'
-            ? lastUserMsg.content
-            : null,
+        text: userText || null,
         components: [],
       }
       // @ts-expect-error supabase-js@2 resolves Insert type as `never` for this table
@@ -104,9 +122,10 @@ export async function POST(request: Request) {
   }
 
   const result = streamText({
-    model: anthropic('claude-sonnet-4-6'),
+    model: anthropicProvider('claude-sonnet-4-6'),
     system: systemPrompt,
-    messages,
+    messages: messages.slice(-10),
+    maxTokens: 4096,
     tools: agentTools,
     stopWhen: stepCountIs(5),
     onFinish: async (event: OnFinishEvent<AgentTools>) => {

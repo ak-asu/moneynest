@@ -1,0 +1,1 @@
+ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS savings_balance numeric NOT NULL DEFAULT 0;

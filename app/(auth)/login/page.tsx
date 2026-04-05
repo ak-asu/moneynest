@@ -1,7 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { FormEvent, useMemo, useState } from 'react'
+import { Suspense, FormEvent, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 type AuthMode = 'sign-in' | 'sign-up'
@@ -19,6 +19,16 @@ function normalizeAuthMessage(message: string) {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={<main className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-50" />}
+    >
+      <LoginPageContent />
+    </Suspense>
+  )
+}
+
+function LoginPageContent() {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const searchParams = useSearchParams()

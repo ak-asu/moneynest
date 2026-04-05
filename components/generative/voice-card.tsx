@@ -1,19 +1,19 @@
 'use client'
-import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { Volume2 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import type { VoiceCardProps } from '@/types/components'
+import { useTTS } from '@/components/audio/use-tts'
 
-export function VoiceCard({ script, emotion, show_transcript }: VoiceCardProps) {
-  const [playing, setPlaying] = useState(false)
+export function VoiceCard({ script, voice_id, language, emotion, show_transcript }: VoiceCardProps) {
+  const { speak, stop, isPlaying } = useTTS()
 
-  async function handlePlay() {
-    setPlaying(true)
-    // Wired in Plan 3 — ElevenLabs TTS
-    const utterance = new SpeechSynthesisUtterance(script)
-    utterance.onend = () => setPlaying(false)
-    window.speechSynthesis.speak(utterance)
+  function handlePlay() {
+    if (isPlaying) {
+      stop()
+      return
+    }
+    speak(script, { language, persona: undefined, voiceId: voice_id })
   }
 
   const emotionColors: Record<string, string> = {
@@ -30,11 +30,11 @@ export function VoiceCard({ script, emotion, show_transcript }: VoiceCardProps) 
         <Button
           size="sm"
           variant="secondary"
-          isDisabled={playing}
+          isDisabled={isPlaying}
           onPress={handlePlay}
           className="clay-btn"
         >
-          {playing ? 'Speaking...' : <><Volume2 size={14} className="inline mr-1" />Listen</>}
+          {isPlaying ? 'Speaking...' : <><Volume2 size={14} className="inline mr-1" />Listen</>}
         </Button>
       </div>
       {show_transcript && (
