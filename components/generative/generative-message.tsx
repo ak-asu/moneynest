@@ -16,6 +16,7 @@ import { isToolUIPart, getToolName } from 'ai'
 import { Gamepad2, Maximize2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { AiLoadingIndicator } from '@/components/chat/ai-loading-indicator'
 import { COMPONENT_REGISTRY } from './component-registry'
 import { ReplayProvider } from './replay-context'
 import type { UIMessage } from 'ai'
@@ -163,10 +164,10 @@ export function GenerativeMessage({
             // Not yet complete — show skeleton
             if (part.state !== 'output-available') {
               return (
-                <div key={part.toolCallId} className="clay-card p-4 animate-pulse">
-                  <div className="h-4 bg-default-200 rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-default-200 rounded w-1/2" />
-                </div>
+                <AiLoadingIndicator
+                  key={part.toolCallId}
+                  label="Preparing interactive component..."
+                />
               )
             }
 
@@ -183,6 +184,14 @@ export function GenerativeMessage({
               'learning_card',
               'action_plan',
               'document_explainer',
+            ].includes(toolName)
+            const expandable = ![
+              'voice_card',
+              'profile_snapshot',
+              'action_plan',
+              'crisis_simulator',
+              'budget_snapshot',
+              'insight_card',
             ].includes(toolName)
 
             if (toolName === 'mini_game') {
@@ -206,33 +215,37 @@ export function GenerativeMessage({
                 <ReplayProvider isReplay={isReplay}>
                   <Component {...(output as Record<string, unknown>)} />
                 </ReplayProvider>
-                <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    isIconOnly
-                    aria-label="Expand"
-                    onPress={() =>
-                      setExpanded({ name: toolName, output: output as Record<string, unknown> })
-                    }
-                    className="clay-btn h-7 w-7"
-                  >
-                    <Maximize2 size={13} aria-hidden="true" />
-                  </Button>
-                  {saveable && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onPress={() =>
-                        !alreadySaved && saveComponent(part.toolCallId, toolName, part.output)
-                      }
-                      className="clay-btn"
-                      isDisabled={alreadySaved}
-                    >
-                      {alreadySaved ? 'Saved' : 'Save'}
-                    </Button>
-                  )}
-                </div>
+                {expandable || saveable ? (
+                  <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {expandable ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        isIconOnly
+                        aria-label="Expand"
+                        onPress={() =>
+                          setExpanded({ name: toolName, output: output as Record<string, unknown> })
+                        }
+                        className="clay-btn h-7 w-7"
+                      >
+                        <Maximize2 size={13} aria-hidden="true" />
+                      </Button>
+                    ) : null}
+                    {saveable ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onPress={() =>
+                          !alreadySaved && saveComponent(part.toolCallId, toolName, part.output)
+                        }
+                        className="clay-btn"
+                        isDisabled={alreadySaved}
+                      >
+                        {alreadySaved ? 'Saved' : 'Save'}
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             )
           }

@@ -53,10 +53,7 @@ const TYPE_CHIP_COLOR: Record<
 }
 
 const GAME_TYPE_LABEL_KEYS: Record<string, string> = {
-  allocation_puzzle: 'library.gameType.allocation_puzzle',
-  time_pressure: 'library.gameType.time_pressure',
   tradeoff_slider: 'library.gameType.tradeoff_slider',
-  drag_drop: 'library.gameType.drag_drop',
   insurance_card_game: 'library.gameType.insurance_card_game',
   credit_quest_game: 'library.gameType.credit_quest_game',
   term_match: 'library.gameType.term_match',
