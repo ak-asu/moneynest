@@ -27,7 +27,7 @@ export function InsightCard({ title, body, severity, actions }: InsightCardProps
       {actions.length > 0 && (
         <div className="flex flex-col gap-2 pt-1">
           {actions.map((action, i) => (
-            <div key={i} className="bg-white/60 rounded-xl p-3">
+            <div key={i} className="clay-card rounded-xl p-3">
               <p className="text-sm font-semibold">{action.label}</p>
               <p className="text-xs text-default-500 mt-0.5">{action.detail}</p>
             </div>

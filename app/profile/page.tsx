@@ -228,9 +228,9 @@ export default function ProfilePage() {
   return (
     <div className="flex h-screen overflow-hidden">
       <AppNav />
-      <main className="flex-1 overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(37,99,235,0.08),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.07),transparent_24%)]">
+      <main className="flex-1 overflow-y-auto bg-clay-bg">
         <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-7xl p-6 space-y-8">
-          <section className="clay-card overflow-hidden border border-white/10 bg-gradient-to-br from-default-100 to-default-50">
+          <section className="clay-card overflow-hidden">
             <div className="grid gap-6 p-6 xl:grid-cols-[1.35fr_340px] xl:items-center">
               <div className="space-y-5">
                 <div className="space-y-2">
@@ -245,7 +245,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-2xl border border-white/10 bg-default-50/80 p-4">
+                  <div className="clay-card rounded-2xl p-4">
                     <div className="mb-2 flex items-center gap-2 text-default-500">
                       <UserRound size={16} />
                       <span className="text-xs font-semibold uppercase tracking-[0.18em]">
@@ -257,8 +257,8 @@ export default function ProfilePage() {
                       {language === 'en' ? 'English' : 'Español'}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/5 p-4">
-                    <div className="mb-2 flex items-center gap-2 text-emerald-300">
+                  <div className="clay-card rounded-2xl border-emerald-200 bg-emerald-50/65 p-4">
+                    <div className="mb-2 flex items-center gap-2 text-emerald-700">
                       <BadgeDollarSign size={16} />
                       <span className="text-xs font-semibold uppercase tracking-[0.18em]">
                         Income
@@ -271,8 +271,8 @@ export default function ProfilePage() {
                       {incomeType === 'steady' ? 'Same every month' : 'Income varies'}
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4">
-                    <div className="mb-2 flex items-center gap-2 text-amber-300">
+                  <div className="clay-card rounded-2xl border-amber-200 bg-amber-50/65 p-4">
+                    <div className="mb-2 flex items-center gap-2 text-amber-700">
                       <Wallet size={16} />
                       <span className="text-xs font-semibold uppercase tracking-[0.18em]">
                         Monthly Left
@@ -283,8 +283,8 @@ export default function ProfilePage() {
                       {formatMoney(totalExpenses)} in expenses
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-sky-500/15 bg-sky-500/5 p-4">
-                    <div className="mb-2 flex items-center gap-2 text-sky-300">
+                  <div className="clay-card rounded-2xl border-sky-200 bg-sky-50/65 p-4">
+                    <div className="mb-2 flex items-center gap-2 text-sky-700">
                       <Target size={16} />
                       <span className="text-xs font-semibold uppercase tracking-[0.18em]">
                         Savings
@@ -299,7 +299,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex justify-center xl:justify-end">
-                <div className="rounded-[28px] border border-white/10 bg-default-100/80 p-6 shadow-2xl shadow-black/10">
+                <div className="clay-card rounded-[28px] p-6">
                   <HealthScoreRing score={savedScore} />
                 </div>
               </div>
@@ -327,7 +327,7 @@ export default function ProfilePage() {
                       className={cn(
                         'rounded-2xl border px-4 py-2.5 text-sm font-medium transition-colors',
                         persona === o.value
-                          ? 'bg-primary text-white border-primary'
+                          ? 'clay-btn border-primary/35 bg-primary/15 text-primary-800'
                           : 'border-default-200 bg-default-50/80 text-default-600 hover:border-primary-300'
                       )}
                     >
@@ -339,16 +339,19 @@ export default function ProfilePage() {
               <Field label="Preferred language">
                 <div className="flex gap-2">
                   {(['en', 'es'] as const).map((lang) => (
-                    <Button
+                    <button
                       key={lang}
                       type="button"
-                      variant={language === lang ? 'primary' : 'outline'}
-                      size="sm"
-                      onPress={() => setValue('language', lang)}
-                      className="clay-btn"
+                      onClick={() => setValue('language', lang)}
+                      className={cn(
+                        'clay-btn rounded-2xl px-5 py-2 text-sm font-semibold',
+                        language === lang
+                          ? 'border-primary/35 bg-primary/15 text-primary-800'
+                          : 'text-default-700'
+                      )}
                     >
                       {lang === 'en' ? 'English' : 'Español'}
-                    </Button>
+                    </button>
                   ))}
                 </div>
               </Field>
@@ -356,7 +359,7 @@ export default function ProfilePage() {
 
             <section className="clay-card p-6 space-y-5 xl:col-span-7">
               <div className="space-y-1">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-400">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                   Cash Flow
                 </div>
                 <h2 className="text-2xl font-bold">Income</h2>
@@ -413,7 +416,7 @@ export default function ProfilePage() {
                   <div className="text-xs font-semibold uppercase tracking-[0.18em] text-default-500">
                     Left This Month
                   </div>
-                  <div className="mt-2 text-xl font-bold text-emerald-400">
+                  <div className="mt-2 text-xl font-bold text-emerald-700">
                     {formatMoney(monthlyLeft)}
                   </div>
                 </div>
@@ -423,7 +426,7 @@ export default function ProfilePage() {
             <section className="clay-card p-6 space-y-5 xl:col-span-7">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-400">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
                     Spending
                   </div>
                   <h2 className="text-2xl font-bold">Monthly Expenses</h2>
@@ -490,7 +493,7 @@ export default function ProfilePage() {
             <section className="clay-card p-6 space-y-5 xl:col-span-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-400">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">
                     Obligations
                   </div>
                   <h2 className="text-2xl font-bold">Debts</h2>
@@ -556,7 +559,7 @@ export default function ProfilePage() {
                 </div>
               ))}
               {debtFields.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-emerald-500/20 bg-emerald-500/5 p-6 text-sm text-default-300">
+                <div className="rounded-2xl border border-dashed border-emerald-300/50 bg-emerald-50/70 p-6 text-sm text-default-500">
                   No debts recorded. That gives you more room to build savings and hit your goals
                   faster.
                 </div>
@@ -566,7 +569,7 @@ export default function ProfilePage() {
             <section className="clay-card p-6 space-y-5 xl:col-span-12">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-400">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
                     Future Plans
                   </div>
                   <h2 className="text-2xl font-bold">Goals</h2>
@@ -630,7 +633,7 @@ export default function ProfilePage() {
                     </div>
                   ))}
                   {goalFields.length === 0 && (
-                    <div className="rounded-2xl border border-dashed border-sky-500/20 bg-sky-500/5 p-6 text-sm text-default-300">
+                    <div className="rounded-2xl border border-dashed border-sky-300/50 bg-sky-50/70 p-6 text-sm text-default-500">
                       No goals yet. Add something concrete like an emergency fund, tuition payment,
                       or travel target.
                     </div>

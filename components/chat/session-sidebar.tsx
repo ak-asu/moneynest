@@ -52,7 +52,7 @@ export function SessionSidebar({
   return (
     <aside
       className={cn(
-        'border-l border-divider flex flex-col h-full shrink-0 transition-[width] duration-200 ease-out overflow-hidden',
+        'clay-rail-right border-l border-divider flex flex-col h-full shrink-0 transition-[width] duration-200 ease-out overflow-hidden',
         collapsed ? 'w-14' : 'w-56'
       )}
     >
@@ -72,7 +72,7 @@ export function SessionSidebar({
           type="button"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           onClick={() => setCollapsed((prev) => !prev)}
-          className="h-8 w-8 shrink-0 rounded-lg border border-divider text-default-600 hover:bg-default-100 transition-colors grid place-items-center"
+          className="clay-btn h-8 w-8 shrink-0 text-default-700 transition-colors grid place-items-center"
         >
           {collapsed ? <PanelRightOpen size={14} /> : <PanelRightClose size={14} />}
         </button>
@@ -83,7 +83,7 @@ export function SessionSidebar({
             type="button"
             title="New chat"
             onClick={onNewSession}
-            className="w-full h-8 rounded-lg border border-divider text-default-600 hover:bg-primary-100 hover:text-primary transition-colors grid place-items-center"
+            className="clay-btn w-full h-8 text-default-700 hover:bg-primary/10 hover:text-primary-700 transition-colors grid place-items-center"
           >
             <Plus size={14} />
           </button>
@@ -96,8 +96,8 @@ export function SessionSidebar({
             className={cn(
               'group w-full flex items-center gap-1 rounded-xl transition-colors',
               activeSessionId === s.id
-                ? 'bg-primary-100 text-primary'
-                : 'text-default-600 hover:bg-default-100'
+                ? 'clay-btn bg-primary/10 text-primary-700 border border-primary/20'
+                : 'text-default-600 hover:bg-default-100/80'
             )}
           >
             <button
@@ -119,7 +119,7 @@ export function SessionSidebar({
                   onDeleteSession(s.id)
                 }}
                 aria-label={`Delete "${s.title}"`}
-                className="shrink-0 opacity-0 group-hover:opacity-100 p-1.5 mr-1 rounded-lg hover:bg-danger-100 hover:text-danger transition-all"
+                className="shrink-0 opacity-0 group-hover:opacity-100 p-1.5 mr-1 rounded-lg hover:bg-danger-50/80 hover:text-danger-600 transition-all"
               >
                 <Trash2 size={13} />
               </button>

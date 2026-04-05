@@ -73,10 +73,10 @@ function PayslipChart({ income_monthly }: { income_monthly: number }) {
   const net = income_monthly - tax - fica
 
   const data = [
-    { name: 'Gross', value: income_monthly, fill: '#6c5ce7' },
-    { name: 'Tax', value: tax, fill: '#fd79a8' },
-    { name: 'FICA', value: fica, fill: '#e17055' },
-    { name: 'Net', value: net, fill: '#00b894' },
+    { name: 'Gross', value: income_monthly, fill: '#4b7bec' },
+    { name: 'Tax', value: tax, fill: '#eb5f6a' },
+    { name: 'FICA', value: fica, fill: '#f4a340' },
+    { name: 'Net', value: net, fill: '#1fa77a' },
   ]
 
   return (
@@ -227,9 +227,9 @@ function ProfileCorrelation({ doc, profile }: { doc: DbDocument; profile: DbProf
   if (callouts.length === 0) return null
 
   const styles: Record<Callout['variant'], string> = {
-    ok: 'bg-success-50 dark:bg-success-900/20 border-success-100 dark:border-success-800/30 text-success-700 dark:text-success-400',
-    warn: 'bg-warning-50 dark:bg-warning-900/20 border-warning-100 dark:border-warning-800/30 text-warning-700 dark:text-warning-400',
-    info: 'bg-primary-50 dark:bg-primary-900/20 border-primary-100 dark:border-primary-800/30 text-primary-700 dark:text-primary-400',
+    ok: 'bg-success-50 border-success-200 text-success-700',
+    warn: 'bg-warning-50 border-warning-200 text-warning-700',
+    info: 'bg-primary-50 border-primary-200 text-primary-700',
   }
 
   return (
@@ -276,14 +276,14 @@ export function DocumentVisual({ doc, profile }: DocumentVisualProps) {
   }, [doc.id])
 
   return (
-    <div className="flex flex-col gap-4 pt-3 border-t border-default-200 dark:border-white/10">
+    <div className="flex flex-col gap-4 pt-3 border-t border-default-200">
       {/* Gemini Illustration */}
       <div>
         <p className="text-xs font-semibold text-default-500 uppercase tracking-wide mb-2">
           Visual Overview
         </p>
         <div
-          className="relative w-full rounded-2xl overflow-hidden bg-default-100 dark:bg-white/5 flex items-center justify-center"
+          className="relative w-full rounded-2xl overflow-hidden bg-default-100 flex items-center justify-center"
           style={{ aspectRatio: '16/9' }}
         >
           {imgLoading && <Loader2 size={20} className="text-default-300 animate-spin" />}

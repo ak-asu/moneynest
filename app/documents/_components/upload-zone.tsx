@@ -32,7 +32,7 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
           ? 'border-primary bg-primary/5 scale-[1.01]'
           : uploading
             ? 'border-default-200 opacity-70 pointer-events-none'
-            : 'border-default-200 hover:border-primary/40 hover:bg-white/5 dark:hover:bg-white/[0.02]'
+            : 'border-default-200 hover:border-primary/40 hover:bg-default-50/70'
       }`}
     >
       <input {...getInputProps()} />
@@ -41,8 +41,8 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
           isDragActive
             ? 'bg-primary/15 text-primary'
             : uploading
-              ? 'bg-default-100 dark:bg-white/5 text-primary'
-              : 'bg-default-100 dark:bg-white/5 text-default-400'
+              ? 'bg-default-100 text-primary'
+              : 'bg-default-100 text-default-500'
         }`}
       >
         {uploading ? (
@@ -54,7 +54,7 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
         )}
       </div>
       <div className="text-center">
-        <p className="text-sm font-medium text-default-600 dark:text-default-300">
+        <p className="text-sm font-medium text-default-700">
           {uploading
             ? 'Analyzing document...'
             : isDragActive

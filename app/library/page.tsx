@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
+import Image from 'next/image'
 import { AppNav } from '@/components/app-nav'
 import {
   Button,
@@ -72,6 +73,8 @@ const FILTER_OPTIONS: Array<{ value: SavedItemType | 'all'; label: string }> = [
   { value: 'audio', label: 'Audio' },
 ]
 
+const MINI_GAME_PREVIEW_PLACEHOLDER = '/assets/mini-game-placeholder.svg'
+
 function catalogToDialogItem(game: CatalogGame): DialogItem {
   return {
     id: game.id,
@@ -109,8 +112,17 @@ function CatalogGameCard({
   onOpen: (item: DialogItem) => void
 }) {
   return (
-    <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 rounded-3xl bg-default-50 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(59,130,246,0.28)]">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full skew-x-[-18deg] opacity-0 transition-all duration-700 group-hover:translate-x-[220%] group-hover:opacity-100" />
+    <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 p-5 transition-all duration-300 hover:-translate-y-1">
+      <div className="relative overflow-hidden rounded-2xl border border-default-200 bg-default-100/60">
+        <Image
+          src={MINI_GAME_PREVIEW_PLACEHOLDER}
+          alt={`${game.title} preview`}
+          width={960}
+          height={540}
+          className="aspect-video w-full object-cover"
+          unoptimized
+        />
+      </div>
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-sm leading-snug flex-1 min-w-0 truncate">{game.title}</h3>
         <Chip size="sm" color="default" variant="soft" className="shrink-0 text-xs">
@@ -122,7 +134,7 @@ function CatalogGameCard({
         size="sm"
         variant="primary"
         onPress={() => onOpen(catalogToDialogItem(game))}
-        className="clay-btn group/play mt-auto w-full gap-2 overflow-hidden border border-blue-200/60 bg-gradient-to-r from-blue-500 via-blue-600 to-sky-500 text-white shadow-[0_10px_24px_rgba(59,130,246,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_14px_30px_rgba(59,130,246,0.42)] active:scale-[0.98]"
+        className="clay-btn group/play mt-auto w-full gap-2 border border-primary/25 bg-primary/10 text-primary-700 transition-all duration-300 hover:-translate-y-0.5"
       >
         <Gamepad2
           size={13}
@@ -137,8 +149,7 @@ function CatalogGameCard({
 
 function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: DialogItem) => void }) {
   return (
-    <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 rounded-3xl bg-default-50 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(59,130,246,0.28)]">
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full skew-x-[-18deg] opacity-0 transition-all duration-700 group-hover:translate-x-[220%] group-hover:opacity-100" />
+    <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 p-5 transition-all duration-300 hover:-translate-y-1">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-sm leading-snug flex-1 min-w-0 truncate">{item.title}</h3>
         <Chip
@@ -155,7 +166,7 @@ function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: Dialo
         size="sm"
         variant="ghost"
         onPress={() => onOpen(item as unknown as DialogItem)}
-        className="clay-btn group/play mt-auto w-full gap-2 overflow-hidden border border-blue-200/60 bg-gradient-to-r from-blue-500 via-blue-600 to-sky-500 text-white shadow-[0_10px_24px_rgba(59,130,246,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_14px_30px_rgba(59,130,246,0.42)] active:scale-[0.98]"
+        className="clay-btn group/play mt-auto w-full gap-2 border border-primary/25 bg-primary/10 text-primary-700 transition-all duration-300 hover:-translate-y-0.5"
       >
         Open
         <ExternalLink size={13} aria-hidden="true" />
@@ -249,7 +260,7 @@ export default function LibraryPage() {
                 placeholder="Search…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="clay-input w-full rounded-xl border border-default-200 bg-default-50 pl-9 pr-3 py-2 text-sm outline-none focus:border-primary-400"
+                className="clay-input w-full pl-9 pr-3 py-2 text-sm outline-none"
               />
             </div>
           </div>
@@ -262,7 +273,7 @@ export default function LibraryPage() {
                 size="sm"
                 variant={activeFilter === opt.value ? 'primary' : 'ghost'}
                 onPress={() => setActiveFilter(opt.value)}
-                className="rounded-full clay-btn"
+                className="clay-btn rounded-full"
               >
                 {opt.label}
               </Button>

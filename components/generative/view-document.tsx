@@ -34,9 +34,9 @@ const TYPE_CONFIG = {
   },
   other: {
     icon: FileText,
-    color: 'text-slate-400',
-    bg: 'bg-slate-500/10',
-    border: 'border-slate-500/20',
+    color: 'text-default-600',
+    bg: 'bg-default-100',
+    border: 'border-default-200',
     label: 'Document',
   },
   general: {
@@ -71,7 +71,7 @@ export function ViewDocument({ filename, document_type = 'general', message }: V
 
       <button
         onClick={() => router.push('/documents')}
-        className="flex items-center justify-between w-full rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 px-4 py-2.5 transition-colors group"
+        className="clay-btn flex items-center justify-between w-full rounded-2xl border border-primary/20 bg-primary/10 hover:bg-primary/15 px-4 py-2.5 transition-colors group"
       >
         <span className="text-sm font-medium text-primary">
           {filename ? `View "${filename}"` : 'Open Document Vault'}

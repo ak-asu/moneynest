@@ -1,0 +1,33 @@
+<svg width="960" height="540" viewBox="0 0 960 540" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="960" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EAF1FF"/>
+      <stop offset="1" stop-color="#D6E2FB"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="720" y2="360" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F7FAFF"/>
+      <stop offset="1" stop-color="#E6EEFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" rx="40" fill="url(#bg)"/>
+  <g opacity="0.9">
+    <rect x="66" y="64" width="540" height="300" rx="28" fill="url(#card)" stroke="#BCD0F3" stroke-width="3"/>
+    <rect x="98" y="114" width="250" height="20" rx="10" fill="#B8C9EB"/>
+    <rect x="98" y="148" width="410" height="16" rx="8" fill="#C9D8F4"/>
+    <rect x="98" y="176" width="380" height="16" rx="8" fill="#C9D8F4"/>
+    <rect x="98" y="228" width="178" height="92" rx="18" fill="#EAF1FF" stroke="#BCD0F3" stroke-width="3" stroke-dasharray="10 8"/>
+    <rect x="302" y="228" width="178" height="92" rx="18" fill="#EAF1FF" stroke="#BCD0F3" stroke-width="3" stroke-dasharray="10 8"/>
+  </g>
+  <g>
+    <rect x="642" y="88" width="252" height="364" rx="30" fill="#F4F8FF" stroke="#BCD0F3" stroke-width="3"/>
+    <rect x="686" y="132" width="164" height="164" rx="82" fill="#EAF1FF" stroke="#AFC5EE" stroke-width="3"/>
+    <path d="M746 214h44" stroke="#355287" stroke-width="12" stroke-linecap="round"/>
+    <path d="M768 192v44" stroke="#355287" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="726" cy="190" r="10" fill="#5A79B5"/>
+    <circle cx="810" cy="190" r="10" fill="#5A79B5"/>
+    <circle cx="810" cy="236" r="10" fill="#5A79B5"/>
+    <circle cx="726" cy="236" r="10" fill="#5A79B5"/>
+    <rect x="686" y="334" width="164" height="66" rx="22" fill="#E7EEFF" stroke="#BCD0F3" stroke-width="3"/>
+  </g>
+  <text x="480" y="492" text-anchor="middle" font-family="Nunito, Segoe UI, sans-serif" font-size="34" font-weight="800" fill="#2C436D">Game Preview Placeholder</text>
+</svg>

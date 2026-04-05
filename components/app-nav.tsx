@@ -66,7 +66,7 @@ export function AppNav() {
   return (
     <aside
       className={cn(
-        'border-r border-divider flex flex-col h-full bg-background/80 backdrop-blur-sm shrink-0 transition-[width] duration-200 ease-out',
+        'clay-rail-left border-r border-divider flex flex-col h-full shrink-0 transition-[width] duration-200 ease-out',
         collapsed ? 'w-16' : 'w-56'
       )}
     >
@@ -80,16 +80,16 @@ export function AppNav() {
           )}
         >
           <div className={cn('min-w-0', collapsed && 'w-full text-center')}>
-            <p className="font-extrabold text-lg tracking-tight text-primary">
+            <p className="font-extrabold text-lg tracking-tight text-primary-600">
               {collapsed ? 'V' : 'Vela'}
             </p>
-            {!collapsed && <p className="text-xs text-default-400">Financial Companion</p>}
+            {!collapsed && <p className="text-xs text-default-500">Financial Companion</p>}
           </div>
           <button
             type="button"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             onClick={() => setCollapsed((prev) => !prev)}
-            className="h-8 w-8 rounded-lg border border-divider text-default-600 hover:bg-default-100 transition-colors grid place-items-center"
+            className="clay-btn h-8 w-8 text-default-700 transition-colors grid place-items-center"
           >
             {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
           </button>
@@ -106,8 +106,8 @@ export function AppNav() {
               'flex items-center rounded-xl text-sm transition-colors',
               collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
               pathname === href
-                ? 'bg-primary-100 text-primary font-medium'
-                : 'text-default-600 hover:bg-default-100'
+                ? 'clay-btn bg-primary/10 text-primary-700 font-semibold border-primary/25'
+                : 'text-default-600 hover:bg-default-100/80'
             )}
           >
             <Icon size={16} className="shrink-0" />
@@ -121,7 +121,7 @@ export function AppNav() {
           onClick={handleLogout}
           title={collapsed ? 'Sign out' : undefined}
           className={cn(
-            'w-full flex items-center rounded-xl text-sm transition-colors text-default-500 hover:bg-danger-50 hover:text-danger',
+            'w-full flex items-center rounded-xl text-sm transition-colors text-default-500 hover:bg-danger-50/80 hover:text-danger-600',
             collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2'
           )}
         >

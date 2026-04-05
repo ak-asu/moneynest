@@ -120,7 +120,7 @@ export default function DocumentsPage() {
                   placeholder="Search by filename or content..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full clay-input pl-9 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 transition-all dark:text-white placeholder:text-default-400"
+                  className="w-full clay-input pl-9 pr-4 py-2.5 text-sm outline-none transition-all placeholder:text-default-400"
                 />
               </div>
 
@@ -135,8 +135,8 @@ export default function DocumentsPage() {
                         onClick={() => setFilter(t)}
                         className={`text-xs px-3 py-1.5 rounded-full border transition-all font-medium ${
                           active
-                            ? 'bg-primary text-white border-primary shadow-sm'
-                            : 'bg-default-100/50 dark:bg-white/5 text-default-500 border-default-200 dark:border-white/10 hover:border-primary/40 hover:text-default-800 dark:hover:text-white'
+                            ? 'clay-btn bg-primary/10 text-primary-700 border-primary/25'
+                            : 'clay-btn text-default-600 border-default-200 hover:border-primary/40 hover:text-default-800'
                         }`}
                       >
                         {DOC_TYPE_LABELS[t]}

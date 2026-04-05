@@ -58,7 +58,7 @@ const TYPE_CONFIG: Record<DocumentKind, TypeConfig> = {
   other: {
     icon: FileText,
     accentClass: 'border-l-slate-500/60',
-    badgeClass: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+    badgeClass: 'bg-default-100 text-default-600 border-default-200',
     label: 'Document',
   },
 }
@@ -185,19 +185,19 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
         {explanation && (highRiskCount > 0 || medRiskCount > 0 || allLow) && (
           <div className="flex flex-wrap gap-2">
             {highRiskCount > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-danger-500 bg-danger-50 dark:bg-danger-900/20 px-2.5 py-1 rounded-full border border-danger-100 dark:border-danger-800/30">
+              <div className="flex items-center gap-1.5 text-xs text-danger-700 bg-danger-50 px-2.5 py-1 rounded-full border border-danger-200">
                 <AlertTriangle size={11} />
                 {highRiskCount} high risk
               </div>
             )}
             {medRiskCount > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-warning-600 bg-warning-50 dark:bg-warning-900/20 px-2.5 py-1 rounded-full border border-warning-100 dark:border-warning-800/30">
+              <div className="flex items-center gap-1.5 text-xs text-warning-700 bg-warning-50 px-2.5 py-1 rounded-full border border-warning-200">
                 <Info size={11} />
                 {medRiskCount} medium risk
               </div>
             )}
             {allLow && (
-              <div className="flex items-center gap-1.5 text-xs text-success-600 bg-success-50 dark:bg-success-900/20 px-2.5 py-1 rounded-full border border-success-100 dark:border-success-800/30">
+              <div className="flex items-center gap-1.5 text-xs text-success-700 bg-success-50 px-2.5 py-1 rounded-full border border-success-200">
                 <CheckCircle size={11} />
                 All clear
               </div>
@@ -210,12 +210,9 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
 
         {/* Expanded clause details */}
         {expanded && explanation && (
-          <div className="flex flex-col gap-2 pt-2 border-t border-default-200 dark:border-white/10">
+          <div className="flex flex-col gap-2 pt-2 border-t border-default-200">
             {explanation.clauses.map((clause, i) => (
-              <div
-                key={i}
-                className="bg-default-50 dark:bg-white/5 rounded-2xl p-3 flex flex-col gap-1"
-              >
+              <div key={i} className="clay-card rounded-2xl p-3 flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="text-sm font-semibold">{clause.label}</span>
                   <Chip size="sm" color={RISK_COLOR[clause.risk]} variant="soft">
@@ -230,8 +227,8 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
             ))}
 
             {explanation.risk_flags.length > 0 && (
-              <div className="rounded-2xl p-3 bg-danger-50 dark:bg-danger-900/20 border border-danger-100 dark:border-danger-800/30">
-                <p className="text-xs font-semibold text-danger-700 dark:text-danger-400 mb-1.5 flex items-center gap-1.5">
+              <div className="rounded-2xl p-3 bg-danger-50 border border-danger-200">
+                <p className="text-xs font-semibold text-danger-700 mb-1.5 flex items-center gap-1.5">
                   <AlertTriangle size={11} />
                   Watch out for
                 </p>
@@ -246,15 +243,13 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
             )}
 
             {explanation.what_ifs.length > 0 && (
-              <div className="rounded-2xl p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30">
-                <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 mb-2">
-                  What-if scenarios
-                </p>
+              <div className="rounded-2xl p-3 bg-primary-50 border border-primary-200">
+                <p className="text-xs font-semibold text-primary-700 mb-2">What-if scenarios</p>
                 <div className="flex flex-wrap gap-2">
                   {explanation.what_ifs.map((w, i) => (
                     <span
                       key={i}
-                      className="text-xs bg-white dark:bg-white/10 border border-primary-100 dark:border-primary-800/30 text-primary-600 dark:text-primary-300 rounded-xl px-2.5 py-1"
+                      className="text-xs bg-white border border-primary-200 text-primary-700 rounded-xl px-2.5 py-1"
                     >
                       {w.label}
                     </span>

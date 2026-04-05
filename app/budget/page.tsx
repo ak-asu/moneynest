@@ -159,6 +159,21 @@ export default function BudgetPage() {
     load()
   }, [load])
 
+  useEffect(() => {
+    const html = document.documentElement
+    const body = document.body
+    const prevHtmlOverflowY = html.style.overflowY
+    const prevBodyOverflowY = body.style.overflowY
+
+    html.style.overflowY = 'hidden'
+    body.style.overflowY = 'hidden'
+
+    return () => {
+      html.style.overflowY = prevHtmlOverflowY
+      body.style.overflowY = prevBodyOverflowY
+    }
+  }, [])
+
   const totalIncome = entries
     .filter((e) => e.entry_type === 'income')
     .reduce((s, e) => s + e.amount, 0)
@@ -251,10 +266,10 @@ export default function BudgetPage() {
   }, [entries, router])
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-[100dvh] min-h-0 overflow-hidden">
       <AppNav />
-      <main aria-label="Budget and tracking" className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6 max-w-5xl">
+      <main aria-label="Budget and tracking" className="flex-1 min-h-0 min-w-0 overflow-y-auto">
+        <div className="mx-auto w-full max-w-5xl p-6 space-y-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h1 className="text-2xl font-bold">Budget & Tracking</h1>

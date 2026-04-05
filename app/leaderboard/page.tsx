@@ -28,10 +28,10 @@ export default function LeaderboardPage() {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-[100dvh] min-h-0 overflow-hidden">
       <AppNav />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6 max-w-2xl">
+      <main className="flex-1 min-h-0 min-w-0 overflow-y-auto">
+        <div className="mx-auto w-full max-w-5xl p-6 space-y-6">
           <div className="flex items-center gap-3">
             <Trophy size={22} className="text-warning-500" />
             <div>

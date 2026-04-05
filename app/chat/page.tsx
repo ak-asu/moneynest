@@ -166,10 +166,10 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-[100dvh] min-h-0 overflow-hidden">
       <AppNav />
       <InteractionEventProvider onEvent={handleInteractionEvent}>
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
             {messages.length === 0 && !isLoading && (
               <div className="flex items-center justify-center h-full">

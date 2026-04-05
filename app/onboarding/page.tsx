@@ -40,7 +40,7 @@ export default function OnboardingPage() {
 
         {/* Tab bar */}
         <div className="px-8 pb-2">
-          <div className="grid grid-cols-4 gap-1 rounded-2xl bg-default-100/60 p-1 border border-white/10">
+          <div className="grid grid-cols-4 gap-1 rounded-2xl bg-default-100/60 p-1 border border-default-200">
             {TABS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
@@ -49,8 +49,8 @@ export default function OnboardingPage() {
                 className={cn(
                   'flex flex-col items-center gap-1 rounded-xl py-2.5 px-1 text-xs font-medium transition-all',
                   activeTab === id
-                    ? 'bg-white dark:bg-zinc-800 text-accent shadow-sm border border-white/20'
-                    : 'text-muted hover:text-default-foreground'
+                    ? 'clay-btn border-primary/25 bg-primary/10 text-primary-700'
+                    : 'text-default-500 hover:text-default-700'
                 )}
               >
                 <Icon size={15} />
