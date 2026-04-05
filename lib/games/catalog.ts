@@ -79,4 +79,15 @@ export const GAME_CATALOG: CatalogGame[] = [
     categories: [],
     win_condition: 'Congratulations! Your wealth farm is thriving.',
   },
+  {
+    id: 'catalog-risk-raid',
+    game_type: 'risk_raid',
+    title: 'RiskRaid',
+    cover_image: '/GameCover/risk_raid.png',
+    instructions:
+      'Defend your financial future against waves of real-life risk zombies. Place financial defenders, learn how compound interest and cascading risks work, and discover your personal risk grade.',
+    income: 0,
+    categories: [],
+    win_condition: 'You defended your financial house! Check your personalized insights below.',
+  },
 ]

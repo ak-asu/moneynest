@@ -22,6 +22,7 @@ export type MiniGameType =
   | 'fin_word'
   | 'wealth_farm'
   | 'credit_quest_game'
+  | 'risk_raid'
 
 export interface DbUser {
   id: string

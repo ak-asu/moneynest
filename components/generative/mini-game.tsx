@@ -8,6 +8,7 @@ import { useInteractionEvent } from '@/lib/ai/interaction-events'
 import { TermMatch } from '@/components/games/TermMatch'
 import { FinWord } from '@/components/games/FinWord'
 import { WealthFarm } from '@/components/games/WealthFarm'
+import { RiskRaid } from '@/components/games/RiskRaid'
 import InsuranceCardGame from './insurance-card-game'
 import { CreditQuestGame } from './credit-quest-game'
 
@@ -40,6 +41,7 @@ export function MiniGame({
     })
   }
 
+  if (game_type === 'risk_raid') return <RiskRaid onComplete={handleSubGameComplete} />
   if (game_type === 'term_match') return <TermMatch onComplete={handleSubGameComplete} />
   if (game_type === 'fin_word') return <FinWord onComplete={handleSubGameComplete} />
   if (game_type === 'wealth_farm') return <WealthFarm onComplete={handleSubGameComplete} />
