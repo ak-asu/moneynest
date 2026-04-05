@@ -11,12 +11,14 @@ import { createClient } from '@/lib/supabase/server'
 import { anthropicProvider } from '@/lib/ai/anthropic'
 import { buildSystemPrompt } from '@/lib/ai/context'
 import { agentTools } from '@/lib/ai/tools'
+import { searchDocumentMemories } from '@/lib/supermemory/client'
 import type { AgentContext } from '@/lib/ai/context'
 import type { OnFinishEvent } from 'ai'
 import type { AgentTools } from '@/lib/ai/tools'
 import type {
   DbActionPlan,
   DbBudgetEntry,
+  DbDocument,
   DbLearningProgress,
   DbMessage,
   DbProfile,
@@ -59,8 +61,6 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
-  // Get user internal id — cast needed: supabase-js@2 inference resolves some
-  // table Row types as `never` when using select('id'); see known TS issue.
   const { data: dbUser } = await supabase
     .from('users')
     .select('id')
@@ -68,8 +68,15 @@ export async function POST(request: Request) {
     .single() as { data: Pick<DbUser, 'id'> | null }
   if (!dbUser) return new Response('User not found', { status: 404 })
 
-  // Build agent context
-  const [profileRes, learningRes, budgetRes, plansRes] = await Promise.all([
+  // Extract the latest user message text for memory search
+  const lastUserMessage = [...uiMessages].reverse().find(m => m.role === 'user')
+  const lastUserText = lastUserMessage?.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+    .map(p => p.text)
+    .join(' ') ?? ''
+
+  // Build agent context — fetch all data in parallel
+  const [profileRes, learningRes, budgetRes, plansRes, docsRes, memories] = await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', dbUser.id).single(),
     supabase
       .from('learning_progress')
@@ -91,11 +98,21 @@ export async function POST(request: Request) {
       .select('*')
       .eq('user_id', dbUser.id)
       .eq('completed_steps', 0),
+    (supabase.from('documents') as any)
+      .select('*')
+      .eq('user_id', dbUser.id)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    lastUserText
+      ? searchDocumentMemories(user.id, lastUserText, 4)
+      : Promise.resolve([]),
   ]) as [
     { data: DbProfile | null },
     { data: DbLearningProgress[] | null },
     { data: DbBudgetEntry[] | null },
     { data: DbActionPlan[] | null },
+    { data: DbDocument[] | null },
+    string[],
   ]
 
   if (!profileRes.data) return new Response('Profile not found', { status: 404 })
@@ -105,6 +122,8 @@ export async function POST(request: Request) {
     learning: learningRes.data || [],
     recentBudget: budgetRes.data || [],
     activePlans: plansRes.data || [],
+    documents: docsRes.data || [],
+    relevantMemories: memories,
   }
 
   const systemPrompt = buildSystemPrompt(context)
@@ -133,14 +152,13 @@ export async function POST(request: Request) {
     model: anthropicProvider('claude-sonnet-4-6'),
     system: systemPrompt,
     messages: messages.slice(-10),
-    maxTokens: 4096,
+    maxOutputTokens: 4096,
     tools: agentTools,
     stopWhen: stepCountIs(5),
     onFinish: async (event: OnFinishEvent<AgentTools>) => {
       try {
         if (!sessionId) return
 
-        // Aggregate tool results across all steps (supports maxSteps > 1)
         const allToolResults = event.steps.flatMap(step => step.toolResults)
 
         const components = allToolResults.map(tr => ({
@@ -148,7 +166,6 @@ export async function POST(request: Request) {
           props: tr.output as Record<string, unknown>,
         }))
 
-        // Aggregate text across all steps
         const textContent = event.steps
           .map(step => step.text)
           .filter(Boolean)

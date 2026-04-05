@@ -21,7 +21,7 @@ export const agentTools = {
 
   document_explainer: tool({
     description:
-      'Render an interactive explanation of a financial document with clauses, risk flags, and what-if buttons.',
+      'Render an interactive explanation of a financial document with clauses, risk flags, and what-if buttons. When the user has uploaded documents, populate this from the exact data in their document list.',
     inputSchema: z.object({
       document_id: z.string(),
       document_type: z.enum(['insurance', 'lease', 'bill', 'payslip', 'other']),
@@ -43,6 +43,18 @@ export const agentTools = {
       ),
       voice_enabled: z.boolean().default(true),
       language: z.string().default('en'),
+    }),
+    execute: async (params) => params,
+  }),
+
+  view_document: tool({
+    description:
+      'Direct the user to view a specific document (or their Document Vault in general) when referencing an uploaded document is more useful than re-explaining it inline. Use when you want to say "go check your [document type] in the vault".',
+    inputSchema: z.object({
+      document_id: z.string().optional().describe('ID of the specific document, if known'),
+      filename: z.string().optional().describe('Filename of the document for display'),
+      document_type: z.enum(['insurance', 'lease', 'bill', 'payslip', 'other', 'general']).default('general'),
+      message: z.string().describe('Brief message explaining why to view this document and what to look for'),
     }),
     execute: async (params) => params,
   }),
