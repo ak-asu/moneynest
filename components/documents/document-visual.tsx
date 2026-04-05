@@ -90,7 +90,7 @@ function PayslipChart({ income_monthly }: { income_monthly: number }) {
             dataKey="value"
             radius={4}
             barSize={18}
-            label={{ position: 'right', fontSize: 11, fill: 'currentColor', formatter: (v: number) => `$${v.toLocaleString()}` }}
+            label={{ position: 'right', fontSize: 11, fill: 'currentColor', formatter: (v: any) => typeof v === 'number' ? `$${v.toLocaleString()}` : '' }}
           >
             {data.map((d, i) => <Cell key={i} fill={d.fill} />)}
           </Bar>
