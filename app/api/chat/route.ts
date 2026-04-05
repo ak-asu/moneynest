@@ -124,7 +124,8 @@ export async function POST(request: Request) {
   const result = streamText({
     model: anthropicProvider('claude-sonnet-4-6'),
     system: systemPrompt,
-    messages,
+    messages: messages.slice(-10),
+    maxTokens: 4096,
     tools: agentTools,
     stopWhen: stepCountIs(5),
     onFinish: async (event: OnFinishEvent<AgentTools>) => {

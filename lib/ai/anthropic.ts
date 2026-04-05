@@ -15,7 +15,6 @@ function maskApiKey(apiKey: string): string {
 function getAnthropicApiKey(): string {
   const canonicalKey = process.env.ANTHROPIC_API_KEY
   const typoKey = process.env.ANTHOPIC_API_KEY
-  console.log(canonicalKey, typoKey)
 
   if (canonicalKey && typoKey) {
     const normalizedCanonical = normalizeApiKey(canonicalKey)

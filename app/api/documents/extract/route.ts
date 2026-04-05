@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { anthropicSdk } from '@/lib/ai/anthropic'
 import type { DocumentKind, DocumentExplanation } from '@/types/database'
 
+export const maxDuration = 120
+
 export async function POST(req: Request) {
   let formData: FormData
   try {
@@ -49,7 +51,7 @@ Keep plain language simple. Return only valid JSON.`
 
   const response = await anthropicSdk.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2000,
+    max_tokens: 8192,
     messages: [{
       role: 'user',
       content: [
@@ -66,7 +68,9 @@ Keep plain language simple. Return only valid JSON.`
   let extractedNumbers: { income?: number; expenses?: Record<string, number> } = {}
   try {
     const text = (response.content[0] as { type: string; text: string }).text
-    const parsed = JSON.parse(text.replace(/```json\n?/g, '').replace(/```\n?/g, ''))
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) throw new Error('No JSON found')
+    const parsed = JSON.parse(jsonMatch[0])
     explanation = {
       document_type: parsed.document_type as DocumentKind,
       clauses: parsed.clauses || [],

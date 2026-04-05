@@ -1,9 +1,9 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
 import { AppNav } from '@/components/app-nav'
-import { Button, Chip } from '@heroui/react'
-import { ArrowRight } from 'lucide-react'
+import { Button, Chip, Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeader, ModalHeading, ModalBody, ModalCloseTrigger } from '@heroui/react'
+import { ExternalLink } from 'lucide-react'
+import { COMPONENT_REGISTRY } from '@/components/generative/component-registry'
 import type { DbSavedItem, SavedItemType } from '@/types/database'
 
 const TYPE_LABELS: Record<SavedItemType, string> = {
@@ -30,14 +30,7 @@ function formatDate(iso: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d)
 }
 
-function LibraryCard({ item }: { item: DbSavedItem }) {
-  const router = useRouter()
-
-  function handleReopen() {
-    sessionStorage.setItem('vela_chat_seed', `Show me the ${item.title} again`)
-    router.push('/chat')
-  }
-
+function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: DbSavedItem) => void }) {
   return (
     <div className="clay-card p-5 flex flex-col gap-3 rounded-2xl bg-default-50">
       <div className="flex items-start justify-between gap-2">
@@ -57,11 +50,11 @@ function LibraryCard({ item }: { item: DbSavedItem }) {
       <Button
         size="sm"
         variant="ghost"
-        onPress={handleReopen}
+        onPress={() => onOpen(item)}
         className="clay-btn w-full gap-1"
       >
-        Re-open in chat
-        <ArrowRight size={13} aria-hidden="true" />
+        Open
+        <ExternalLink size={13} aria-hidden="true" />
       </Button>
     </div>
   )
@@ -71,6 +64,7 @@ export default function LibraryPage() {
   const [items, setItems] = useState<DbSavedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [dialogItem, setDialogItem] = useState<DbSavedItem | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -91,6 +85,8 @@ export default function LibraryPage() {
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  const DialogComponent = dialogItem ? COMPONENT_REGISTRY[dialogItem.component_name] : null
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -114,12 +110,39 @@ export default function LibraryPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map(item => (
-                <LibraryCard key={item.id} item={item} />
+                <LibraryCard key={item.id} item={item} onOpen={setDialogItem} />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      <Modal
+        isOpen={dialogItem !== null}
+        onOpenChange={(open: boolean) => { if (!open) setDialogItem(null) }}
+      >
+        <ModalBackdrop />
+        <ModalContainer size="cover" scroll="inside">
+          <ModalDialog>
+            <ModalHeader>
+              <ModalHeading>{dialogItem?.title ?? ''}</ModalHeading>
+              {dialogItem && (
+                <p className="text-xs text-default-400 mt-0.5">
+                  {TYPE_LABELS[dialogItem.type]} · Saved {formatDate(dialogItem.created_at)}
+                </p>
+              )}
+              <ModalCloseTrigger />
+            </ModalHeader>
+            <ModalBody>
+              {DialogComponent && dialogItem ? (
+                <DialogComponent {...(dialogItem.component_props as Record<string, unknown>)} />
+              ) : (
+                <p className="text-sm text-default-400">This component cannot be previewed.</p>
+              )}
+            </ModalBody>
+          </ModalDialog>
+        </ModalContainer>
+      </Modal>
     </div>
   )
 }

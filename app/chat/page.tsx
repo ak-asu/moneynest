@@ -8,10 +8,10 @@ import { VoiceModeButton } from '@/components/chat/voice-mode-button'
 import { AppNav } from '@/components/app-nav'
 import { Button } from '@heroui/react'
 import { Send } from 'lucide-react'
-import type { UIMessage } from 'ai'
 
 export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionListKey, setSessionListKey] = useState(0)
   const [input, setInput] = useState('')
   const sessionIdRef = useRef<string | null>(null)
   const sessionCreatingRef = useRef(false)
@@ -30,33 +30,7 @@ export default function ChatPage() {
     [],
   )
 
-  const { messages, sendMessage, status, setMessages } = useChat({
-    transport,
-    onFinish: async ({ messages: finishedMessages }) => {
-      if (!sessionIdRef.current && !sessionCreatingRef.current) {
-        sessionCreatingRef.current = true
-        const firstUserMsg = finishedMessages.find((m: UIMessage) => m.role === 'user')
-        const firstPart = firstUserMsg?.parts?.[0]
-        const title =
-          (firstPart && 'text' in firstPart ? (firstPart as { text: string }).text.slice(0, 60) : null) ||
-          'New conversation'
-        try {
-          const res = await fetch('/api/sessions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title }),
-          })
-          if (!res.ok) throw new Error(`Session create failed: ${res.status}`)
-          const session = await res.json()
-          if (session?.id) setSessionId(session.id)
-        } catch (err) {
-          console.error('Failed to create chat session', err)
-        } finally {
-          sessionCreatingRef.current = false
-        }
-      }
-    },
-  })
+  const { messages, sendMessage, status, setMessages } = useChat({ transport })
 
   const isLoading = status === 'submitted' || status === 'streaming'
 
@@ -94,16 +68,54 @@ export default function ChatPage() {
   }, [setMessages])
 
   const newSession = useCallback(() => {
+    selectAbortRef.current?.abort()
     setSessionId(null)
+    sessionIdRef.current = null
     setMessages([])
   }, [setMessages])
 
-  const handleSubmit = useCallback((e?: React.FormEvent) => {
+  const deleteSession = useCallback(async (id: string) => {
+    try {
+      await fetch(`/api/sessions/${id}`, { method: 'DELETE' })
+    } catch (err) {
+      console.error('Failed to delete session', err)
+    }
+    if (sessionIdRef.current === id) {
+      newSession()
+    }
+    setSessionListKey(k => k + 1) // force sidebar to refetch
+  }, [newSession])
+
+  const handleSubmit = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault()
     const text = input.trim()
     if (!text || isLoading) return
-    sendMessage({ text })
     setInput('')
+
+    // Create session eagerly before the first message so the server can persist all messages
+    if (!sessionIdRef.current && !sessionCreatingRef.current) {
+      sessionCreatingRef.current = true
+      try {
+        const res = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: text.slice(0, 60) }),
+        })
+        if (res.ok) {
+          const session = await res.json()
+          if (session?.id) {
+            sessionIdRef.current = session.id  // sync update so transport picks it up
+            setSessionId(session.id)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to create chat session', err)
+      } finally {
+        sessionCreatingRef.current = false
+      }
+    }
+
+    sendMessage({ text })
   }, [input, isLoading, sendMessage])
 
   const handleVoiceTranscript = useCallback((text: string) => {
@@ -123,8 +135,10 @@ export default function ChatPage() {
       <AppNav />
       <SessionSidebar
         activeSessionId={sessionId}
+        refreshKey={sessionListKey}
         onSelectSession={selectSession}
         onNewSession={newSession}
+        onDeleteSession={deleteSession}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
