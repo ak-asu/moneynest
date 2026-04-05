@@ -1,7 +1,8 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
-import { Button, ProgressBar } from '@heroui/react'
+import { useState } from 'react'
+import { Button } from '@heroui/react'
 import type { MiniGameProps } from '@/types/components'
+import type { DbProfile } from '@/types/database'
 import { useSFX } from '@/components/audio/use-sfx'
 import { useInteractionEvent } from '@/lib/ai/interaction-events'
 import { TermMatch } from '@/components/games/TermMatch'
@@ -18,7 +19,6 @@ export function MiniGame({
   income,
   categories,
   win_condition,
-  time_limit_seconds,
 }: MiniGameProps) {
   const dispatchEvent = useInteractionEvent()
 
@@ -46,9 +46,9 @@ export function MiniGame({
   if (game_type === 'insurance_card_game')
     return <InsuranceCardGame onComplete={handleSubGameComplete} />
   if (game_type === 'credit_quest_game') return <CreditQuestGame />
-  if (game_type === 'allocation_puzzle')
+  if (game_type === 'tradeoff_slider')
     return (
-      <AllocationPuzzle
+      <TradeoffSlider
         title={title}
         instructions={instructions!}
         income={income!}
@@ -57,29 +57,7 @@ export function MiniGame({
         onResult={handleResult}
       />
     )
-  if (game_type === 'time_pressure')
-    return (
-      <TimePressureGame
-        title={title}
-        instructions={instructions!}
-        income={income!}
-        categories={categories!}
-        win_condition={win_condition!}
-        time_limit_seconds={time_limit_seconds || 60}
-        onResult={handleResult}
-      />
-    )
-  // Default: drag_drop / tradeoff_slider fallback to allocation_puzzle layout
-  return (
-    <AllocationPuzzle
-      title={title}
-      instructions={instructions!}
-      income={income!}
-      categories={categories!}
-      win_condition={win_condition!}
-      onResult={handleResult}
-    />
-  )
+  return null
 }
 
 type BudgetGameProps = {
@@ -91,31 +69,102 @@ type BudgetGameProps = {
   onResult?: (won: boolean) => void
 }
 
-function AllocationPuzzle({
+type AnalysisState = 'idle' | 'loading' | 'done' | 'error'
+
+function buildPrompt(
+  profile: DbProfile | null,
+  allocations: Record<string, number>,
+  income: number
+): string {
+  const allocationLines = Object.entries(allocations)
+    .map(([k, v]) => `- ${k}: $${v}`)
+    .join('\n')
+
+  if (!profile) {
+    return `You are a financial wellness advisor. Analyze this budget allocation against common best-practice ratios (e.g. 50/30/20).
+
+GAME ALLOCATION (monthly, out of $${income}):
+${allocationLines}
+
+Provide a concise analysis (3–5 sentences). Comment on the balance between needs, wants, savings, and debt payoff. Suggest one concrete adjustment if something looks off. Be warm and non-judgmental.`
+  }
+
+  const debtSummary =
+    profile.debts.length > 0
+      ? profile.debts.map((d) => `${d.type} $${d.amount} at ${d.rate}%`).join(', ')
+      : 'none'
+  const goalSummary =
+    profile.goals.length > 0
+      ? profile.goals.map((g) => `${g.label} ($${g.target_amount} by ${g.target_date})`).join(', ')
+      : 'none stated'
+  const language = profile.language === 'es' ? 'Spanish' : 'English'
+
+  return `You are a financial wellness advisor. Analyze whether this budget allocation is optimal for this specific user.
+
+USER PROFILE:
+- Persona: ${profile.persona.replace(/_/g, ' ')}
+- Income type: ${profile.income_type}
+- Monthly income: $${profile.income_monthly}
+- Savings balance: $${profile.savings_balance}
+- Debts: ${debtSummary}
+- Financial goals: ${goalSummary}
+- Financial health score: ${profile.financial_health_score}/100
+
+GAME ALLOCATION (monthly, out of $${income}):
+${allocationLines}
+
+Provide a concise, personalized analysis (3–5 sentences). Do NOT just say whether categories crossed a threshold. Instead:
+- Comment on whether the savings rate fits their life stage and goals
+- Note if the debt payoff rate is appropriate given their actual debt load
+- Highlight any imbalance specific to their persona (e.g., a gig worker needs a larger emergency fund than a salaried employee)
+- Suggest one concrete adjustment if something looks off
+- Be warm and non-judgmental. Respond in ${language}.`
+}
+
+function TradeoffSlider({
   title,
   instructions,
   income,
   categories,
-  win_condition,
+  win_condition: _win_condition,
   onResult,
 }: BudgetGameProps) {
   const { play, SFX } = useSFX()
   const [allocations, setAllocations] = useState<Record<string, number>>(
     Object.fromEntries(categories.map((c) => [c.name, c.suggested]))
   )
-  const [won, setWon] = useState<boolean | null>(null)
+  const [analysisState, setAnalysisState] = useState<AnalysisState>('idle')
+  const [analysisText, setAnalysisText] = useState('')
 
   const total = Object.values(allocations).reduce((a, b) => a + b, 0)
   const remaining = income - total
 
-  function check() {
+  async function check() {
     const valid = categories.every(
       (c) => allocations[c.name] >= c.min && allocations[c.name] <= c.max
     )
     const won = valid && remaining >= 0
-    setWon(won)
     play(won ? SFX.GAME_WIN : SFX.GAME_LOSE)
     onResult?.(won)
+
+    setAnalysisState('loading')
+    try {
+      const profileRes = await fetch('/api/profile')
+      const profile: DbProfile | null = profileRes.ok ? await profileRes.json() : null
+
+      const prompt = buildPrompt(profile, allocations, income)
+      const insightRes = await fetch('/api/ai-insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+      })
+      if (!insightRes.ok) throw new Error('insight failed')
+      const { text } = await insightRes.json()
+      setAnalysisText(text)
+      setAnalysisState('done')
+    } catch {
+      setAnalysisState('error')
+    }
   }
 
   return (
@@ -154,111 +203,24 @@ function AllocationPuzzle({
           </div>
         ))}
       </div>
-      <Button onPress={check} variant="primary" className="clay-btn">
-        Check my budget
+      <Button
+        onPress={check}
+        isDisabled={analysisState === 'loading'}
+        variant="primary"
+        className="clay-btn"
+      >
+        {analysisState === 'loading' ? 'Analyzing…' : 'Check my budget'}
       </Button>
-      {won === true && <p className="text-success font-semibold text-sm">✅ {win_condition}</p>}
-      {won === false && (
-        <p className="text-danger font-semibold text-sm">
-          ⚠️ Some categories are out of range or you've overspent.
-        </p>
+      {analysisState === 'loading' && (
+        <p className="text-sm text-default-500 animate-pulse">Analyzing your allocation…</p>
       )}
-    </div>
-  )
-}
-
-function TimePressureGame({
-  title,
-  instructions,
-  income,
-  categories,
-  win_condition,
-  time_limit_seconds,
-  onResult,
-}: BudgetGameProps & { time_limit_seconds: number }) {
-  const { play, SFX } = useSFX()
-  const [timeLeft, setTimeLeft] = useState(time_limit_seconds)
-  const [started, setStarted] = useState(false)
-  const [allocations, setAllocations] = useState<Record<string, number>>(
-    Object.fromEntries(categories.map((c) => [c.name, c.suggested]))
-  )
-  const [result, setResult] = useState<'win' | 'lose' | null>(null)
-  const onResultRef = useRef(onResult)
-  useEffect(() => {
-    onResultRef.current = onResult
-  })
-
-  useEffect(() => {
-    if (!started || timeLeft <= 0 || result) return
-    const t = setTimeout(() => {
-      if (timeLeft === 1) {
-        setResult('lose')
-        onResultRef.current?.(false)
-      }
-      setTimeLeft((t) => t - 1)
-    }, 1000)
-    return () => clearTimeout(t)
-  }, [started, timeLeft, result])
-
-  const total = Object.values(allocations).reduce((a, b) => a + b, 0)
-
-  function submit() {
-    const valid = categories.every(
-      (c) => allocations[c.name] >= c.min && allocations[c.name] <= c.max
-    )
-    const won = valid && total <= income
-    setResult(won ? 'win' : 'lose')
-    play(won ? SFX.GAME_WIN : SFX.GAME_LOSE)
-    onResult?.(won)
-  }
-
-  return (
-    <div className="clay-card p-5 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-bold text-base">{title}</h3>
-        {started && (
-          <span className={`font-bold text-lg ${timeLeft < 10 ? 'text-danger' : 'text-primary'}`}>
-            {timeLeft}s
-          </span>
-        )}
-      </div>
-      {!started && (
-        <Button onPress={() => setStarted(true)} variant="primary" className="clay-btn">
-          Start Challenge
-        </Button>
+      {analysisState === 'done' && (
+        <div className="rounded-2xl bg-primary/5 border border-primary/20 p-4 text-sm text-default-700 leading-relaxed whitespace-pre-line">
+          {analysisText}
+        </div>
       )}
-      {started && !result && (
-        <>
-          <p className="text-sm text-default-600">{instructions}</p>
-          <ProgressBar
-            value={(timeLeft / time_limit_seconds) * 100}
-            color={timeLeft < 10 ? 'danger' : 'accent'}
-            size="sm"
-          />
-          {categories.map((cat) => (
-            <div key={cat.name} className="flex items-center gap-3">
-              <span className="text-sm w-24 shrink-0">{cat.name}</span>
-              <input
-                type="range"
-                min={cat.min}
-                max={cat.max}
-                value={allocations[cat.name]}
-                onChange={(e) =>
-                  setAllocations((prev) => ({ ...prev, [cat.name]: Number(e.target.value) }))
-                }
-                className="flex-1 accent-primary"
-              />
-              <span className="text-sm w-12 text-right">${allocations[cat.name]}</span>
-            </div>
-          ))}
-          <Button onPress={submit} variant="secondary" className="clay-btn">
-            Submit
-          </Button>
-        </>
-      )}
-      {result === 'win' && <p className="text-success font-bold">✅ {win_condition}</p>}
-      {result === 'lose' && (
-        <p className="text-danger font-bold">⏱️ Time's up or budget overrun. Try again!</p>
+      {analysisState === 'error' && (
+        <p className="text-sm text-danger">Could not load analysis. Please try again.</p>
       )}
     </div>
   )

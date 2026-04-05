@@ -160,7 +160,7 @@ const PERSONAS: Persona[] = [
     id: 'first-car',
     emoji: '🚗',
     name: 'First Car Teen',
-    desc: 'Just got your license and your first used car.',
+    desc: 'Just got your documents & license and your first used car.',
     budget: 120,
     savings: 700,
     riskBoost: ['auto'],
@@ -1947,7 +1947,7 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
                 </div>
               ) : null}
               {state.mythSelection !== 'pending' ? (
-                <div className="sn-result-actions">
+                <div className="sn-result-actions sn-myth-next-actions">
                   <button className="sn-secondary" onClick={() => setModal('guide')}>
                     Open Coverage Guide
                   </button>
@@ -2899,15 +2899,27 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
         .sn-flip-card,
         .sn-guide-flip {
           perspective: 1200px;
+        }
+        .sn-flip-card {
+          height: 420px;
+          min-height: 420px;
+        }
+        .sn-guide-flip {
           min-height: 500px;
         }
         .sn-flip-inner,
         .sn-guide-inner {
           position: relative;
           height: 100%;
-          min-height: 500px;
           transform-style: preserve-3d;
           transition: transform 0.5s ease;
+        }
+        .sn-flip-inner {
+          height: 420px;
+          min-height: 420px;
+        }
+        .sn-guide-inner {
+          min-height: 500px;
         }
         .sn-flip-card.flipped .sn-flip-inner,
         .sn-guide-flip.flipped .sn-guide-inner {
@@ -2918,6 +2930,7 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
           position: absolute;
           inset: 0;
           backface-visibility: hidden;
+          overflow: hidden;
           border-radius: 30px;
           padding: 22px;
           background: var(--card);
@@ -2930,6 +2943,14 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
         .sn-card-back,
         .sn-guide-back {
           transform: rotateY(180deg);
+        }
+        .sn-card-front {
+          padding: 16px;
+          display: grid;
+          grid-template-rows: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 0.95fr) minmax(0, 0.9fr);
+          gap: 10px;
+          align-content: stretch;
+          height: 100%;
         }
         .sn-card-top {
           display: flex;
@@ -2946,11 +2967,57 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
         .sn-card-copy {
           margin: 0;
         }
+        .sn-card-front .sn-card-top > div {
+          display: grid;
+          gap: 8px;
+          align-content: start;
+        }
+        .sn-card-front .sn-card-title {
+          font-size: 20px;
+          margin-bottom: 2px;
+        }
+        .sn-card-front .sn-card-copy {
+          font-size: 13px;
+          line-height: 1.35;
+          display: -webkit-box;
+          -webkit-line-clamp: 4;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
         .sn-current-tier,
         .sn-current-copy,
         .sn-current-tip,
         .sn-front-footer {
           margin-top: 16px;
+        }
+        .sn-card-front .sn-current-tier,
+        .sn-card-front .sn-current-copy,
+        .sn-card-front .sn-current-tip {
+          margin-top: 0;
+          min-height: 0;
+        }
+        .sn-card-front .sn-current-tier,
+        .sn-card-front .sn-current-copy,
+        .sn-card-front .sn-current-tip {
+          padding: 13px;
+          display: grid;
+          align-content: start;
+        }
+        .sn-card-front .sn-current-tier strong {
+          font-size: 17px;
+          line-height: 1.2;
+        }
+        .sn-card-front .sn-current-copy,
+        .sn-card-front .sn-current-tip {
+          font-size: 13px;
+          line-height: 1.35;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        .sn-card-front .sn-current-tip {
+          -webkit-line-clamp: 2;
         }
         .sn-current-tier,
         .sn-guide-highlight {
@@ -3128,6 +3195,9 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
           margin-top: 12px;
           font-weight: 800;
           color: #6a5a48;
+        }
+        .sn-myth-next-actions {
+          margin-top: 18px;
         }
         .sn-event-emoji,
         .sn-result-icon {
@@ -3501,6 +3571,11 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
           .sn-plan-chart {
             grid-template-columns: repeat(2, minmax(0, 1fr));
           }
+          .sn-flip-card,
+          .sn-flip-inner {
+            height: 405px;
+            min-height: 405px;
+          }
         }
         @media (max-width: 920px) {
           .sn-screen {
@@ -3532,6 +3607,18 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
           .sn-plan-chart,
           .sn-guide-grid {
             grid-template-columns: 1fr;
+          }
+          .sn-flip-card,
+          .sn-flip-inner {
+            height: 375px;
+            min-height: 375px;
+          }
+          .sn-card-front {
+            padding: 14px;
+            gap: 8px;
+          }
+          .sn-card-front .sn-card-title {
+            font-size: 19px;
           }
           .sn-chart-head,
           .sn-protection-toolbar,

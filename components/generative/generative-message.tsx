@@ -184,6 +184,7 @@ export function GenerativeMessage({
               'action_plan',
               'document_explainer',
             ].includes(toolName)
+            const expandable = !['voice_card', 'profile_snapshot', 'action_plan'].includes(toolName)
 
             if (toolName === 'mini_game') {
               return (
@@ -206,33 +207,37 @@ export function GenerativeMessage({
                 <ReplayProvider isReplay={isReplay}>
                   <Component {...(output as Record<string, unknown>)} />
                 </ReplayProvider>
-                <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    isIconOnly
-                    aria-label="Expand"
-                    onPress={() =>
-                      setExpanded({ name: toolName, output: output as Record<string, unknown> })
-                    }
-                    className="clay-btn h-7 w-7"
-                  >
-                    <Maximize2 size={13} aria-hidden="true" />
-                  </Button>
-                  {saveable && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onPress={() =>
-                        !alreadySaved && saveComponent(part.toolCallId, toolName, part.output)
-                      }
-                      className="clay-btn"
-                      isDisabled={alreadySaved}
-                    >
-                      {alreadySaved ? 'Saved' : 'Save'}
-                    </Button>
-                  )}
-                </div>
+                {expandable || saveable ? (
+                  <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {expandable ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        isIconOnly
+                        aria-label="Expand"
+                        onPress={() =>
+                          setExpanded({ name: toolName, output: output as Record<string, unknown> })
+                        }
+                        className="clay-btn h-7 w-7"
+                      >
+                        <Maximize2 size={13} aria-hidden="true" />
+                      </Button>
+                    ) : null}
+                    {saveable ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onPress={() =>
+                          !alreadySaved && saveComponent(part.toolCallId, toolName, part.output)
+                        }
+                        className="clay-btn"
+                        isDisabled={alreadySaved}
+                      >
+                        {alreadySaved ? 'Saved' : 'Save'}
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             )
           }
