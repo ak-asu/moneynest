@@ -1,9 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { LayoutDashboard, MessageCircle, BarChart2, User, FileText, CheckSquare, BookOpen, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { LayoutDashboard, MessageCircle, BarChart2, User, FileText, CheckSquare, BookOpen, PanelLeftClose, PanelLeftOpen, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { createClient } from '@/lib/supabase/client'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -19,7 +20,14 @@ const NAV_COLLAPSED_KEY = 'vela_app_nav_collapsed'
 
 export function AppNav() {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
   useEffect(() => {
     try {
@@ -81,6 +89,20 @@ export function AppNav() {
           </Link>
         ))}
       </nav>
+      <div className="p-2 border-t border-divider">
+        <button
+          type="button"
+          onClick={handleLogout}
+          title={collapsed ? 'Sign out' : undefined}
+          className={cn(
+            'w-full flex items-center rounded-xl text-sm transition-colors text-default-500 hover:bg-danger-50 hover:text-danger',
+            collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
+          )}
+        >
+          <LogOut size={16} className="shrink-0" />
+          {!collapsed && 'Sign out'}
+        </button>
+      </div>
     </aside>
   )
 }

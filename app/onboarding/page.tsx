@@ -1,56 +1,89 @@
 'use client'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Tabs, TabList, Tab, TabPanel } from '@heroui/react'
-import { Mic, ClipboardList, FileUp, Building2 } from 'lucide-react'
+import { Button } from '@heroui/react'
+import { Mic, ClipboardList, FileUp, Building2, LogOut } from 'lucide-react'
 import { FormPath } from './_components/form-path'
 import { VoicePath } from './_components/voice-path'
 import { DocPath } from './_components/doc-path'
 import { PlaidPath } from './_components/plaid-path'
+import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils/cn'
+
+const TABS = [
+  { id: 'voice', label: 'Talk to me', icon: Mic },
+  { id: 'form', label: 'Fill it in', icon: ClipboardList },
+  { id: 'doc', label: 'Upload docs', icon: FileUp },
+  { id: 'plaid', label: 'Connect bank', icon: Building2 },
+] as const
+
+type TabId = (typeof TABS)[number]['id']
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const [activeTab, setActiveTab] = useState<TabId>('voice')
 
   function handleComplete() {
     router.push('/dashboard')
   }
 
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-clay-bg">
-      <div className="clay-card p-8 w-full max-w-lg flex flex-col gap-6">
-        <div className="text-center">
-          <h1 className="text-3xl font-extrabold text-primary">Welcome to Vela 🕯️</h1>
-          <p className="text-default-500 text-sm mt-2">Let&apos;s set up your financial profile. Choose how you&apos;d like to start.</p>
+      <div className="clay-card w-full max-w-xl">
+        {/* Header */}
+        <div className="flex items-start justify-between px-8 pt-8 pb-6">
+          <div>
+            <h1 className="text-2xl font-extrabold text-foreground">Welcome to Vela 🕯️</h1>
+            <p className="text-default-500 text-sm mt-1">
+              Set up your financial profile to get started.
+            </p>
+          </div>
+          <Button
+            variant="danger"
+            size="sm"
+            className="flex items-center gap-1.5 text-xs shrink-0 mt-1"
+            onPress={handleLogout}
+          >
+            <LogOut size={13} />
+            Sign out
+          </Button>
         </div>
 
-        <Tabs>
-          <TabList className="clay-card p-1 flex gap-1">
-            <Tab id="voice" className="clay-btn">
-              <span className="flex items-center gap-1.5"><Mic size={14} />Talk to me</span>
-            </Tab>
-            <Tab id="form" className="clay-btn">
-              <span className="flex items-center gap-1.5"><ClipboardList size={14} />Fill it in</span>
-            </Tab>
-            <Tab id="doc" className="clay-btn">
-              <span className="flex items-center gap-1.5"><FileUp size={14} />Upload docs</span>
-            </Tab>
-            <Tab id="plaid" className="clay-btn">
-              <span className="flex items-center gap-1.5"><Building2 size={14} />Connect bank</span>
-            </Tab>
-          </TabList>
+        {/* Tab bar */}
+        <div className="px-8 pb-2">
+          <div className="grid grid-cols-4 gap-1 rounded-2xl bg-default-100/60 p-1 border border-white/10">
+            {TABS.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                className={cn(
+                  'flex flex-col items-center gap-1 rounded-xl py-2.5 px-1 text-xs font-medium transition-all',
+                  activeTab === id
+                    ? 'bg-white dark:bg-zinc-800 text-accent shadow-sm border border-white/20'
+                    : 'text-muted hover:text-default-foreground'
+                )}
+              >
+                <Icon size={15} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-          <TabPanel id="voice">
-            <VoicePath onComplete={handleComplete} />
-          </TabPanel>
-          <TabPanel id="form">
-            <FormPath onComplete={handleComplete} />
-          </TabPanel>
-          <TabPanel id="doc">
-            <DocPath onComplete={handleComplete} />
-          </TabPanel>
-          <TabPanel id="plaid">
-            <PlaidPath onComplete={handleComplete} />
-          </TabPanel>
-        </Tabs>
+        {/* Tab content */}
+        <div className="px-8 py-6">
+          {activeTab === 'voice' && <VoicePath onComplete={handleComplete} />}
+          {activeTab === 'form' && <FormPath onComplete={handleComplete} />}
+          {activeTab === 'doc' && <DocPath onComplete={handleComplete} />}
+          {activeTab === 'plaid' && <PlaidPath onComplete={handleComplete} />}
+        </div>
       </div>
     </div>
   )
