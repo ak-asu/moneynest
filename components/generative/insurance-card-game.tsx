@@ -1673,7 +1673,7 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
         </div>
       ) : null}
       {screen === 'screen-title' ? (
-        <section className="sn-screen sn-title-screen">
+        <section className="sn-screen sn-screen-compact sn-title-screen">
           <div className="sn-title-shell">
             <div className="sn-step-pill">The Insurance Card Game</div>
             <h1 className="sn-title-logo">
@@ -1897,7 +1897,7 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
       ) : null}
 
       {screen === 'screen-myth' && state.currentMyth ? (
-        <section className="sn-screen">
+        <section className="sn-screen sn-screen-compact">
           <div className="sn-content">
             <div className="sn-myth-shell">
               <div className="sn-step-pill alt">
@@ -1964,7 +1964,7 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
       ) : null}
 
       {screen === 'screen-event' && state.currentEvent ? (
-        <section className="sn-screen">
+        <section className="sn-screen sn-screen-compact">
           <div className="sn-content">
             <div className="sn-event-shell">
               <div className="sn-step-pill danger">
@@ -2508,15 +2508,18 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
         .sn-screen {
           position: relative;
           z-index: 1;
-          min-height: 880px;
+          min-height: clamp(560px, calc(100dvh - 250px), 880px);
           padding: 96px 28px 48px;
+        }
+        .sn-screen-compact {
+          display: grid;
+          align-items: center;
         }
         .sn-content {
           max-width: 1300px;
           margin: 0 auto;
         }
         .sn-title-screen {
-          display: grid;
           place-items: center;
           background: linear-gradient(180deg, #f9f2e8 0%, #efe4d3 100%);
         }
@@ -3581,6 +3584,9 @@ function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => v
           .sn-screen {
             min-height: auto;
             padding: 88px 18px 32px;
+          }
+          .sn-screen-compact {
+            display: block;
           }
           .sn-top h2 {
             font-size: 40px;
