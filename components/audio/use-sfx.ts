@@ -10,8 +10,7 @@ export const SFX = {
   CRISIS_END: 'relieved descending tone, financial crisis resolved',
   GAME_WIN: 'bright celebratory chime, game won',
   GAME_LOSE: 'dull thud, game lost',
-  GAME_CORRECT: 'positive ding, correct choice in mini-game'
-  ,
+  GAME_CORRECT: 'positive ding, correct choice in mini-game',
 } as const
 
 export function useSFX() {
@@ -33,6 +32,8 @@ export function useSFX() {
         const blob = await res.blob()
         const url = URL.createObjectURL(blob)
         const audio = new Audio(url)
+        audio.preload = 'auto'
+        audio.load()
         audio.onended = () => URL.revokeObjectURL(url)
         return audio
       } catch {

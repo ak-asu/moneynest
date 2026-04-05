@@ -2,9 +2,16 @@
 import { useEffect, useState, useCallback } from 'react'
 import { AppNav } from '@/components/app-nav'
 import {
-  Button, Chip,
-  Modal, ModalBackdrop, ModalContainer, ModalDialog,
-  ModalHeader, ModalHeading, ModalBody, ModalCloseTrigger,
+  Button,
+  Chip,
+  Modal,
+  ModalBackdrop,
+  ModalContainer,
+  ModalDialog,
+  ModalHeader,
+  ModalHeading,
+  ModalBody,
+  ModalCloseTrigger,
 } from '@heroui/react'
 import { ExternalLink, Search, Gamepad2 } from 'lucide-react'
 import { COMPONENT_REGISTRY } from '@/components/generative/component-registry'
@@ -31,7 +38,10 @@ const TYPE_LABELS: Record<SavedItemType, string> = {
   audio: 'Audio',
 }
 
-const TYPE_CHIP_COLOR: Record<SavedItemType, 'default' | 'accent' | 'success' | 'warning' | 'danger'> = {
+const TYPE_CHIP_COLOR: Record<
+  SavedItemType,
+  'default' | 'accent' | 'success' | 'warning' | 'danger'
+> = {
   simulation: 'accent',
   game: 'default',
   learning: 'success',
@@ -46,7 +56,7 @@ const GAME_TYPE_LABELS: Record<string, string> = {
   tradeoff_slider: 'Tradeoff',
   drag_drop: 'Drag & Drop',
   insurance_card_game: 'Insurance Card',
-  credit_quest_game: 'Credit Quest',
+  credit_quest_game: 'Credit Score Sim',
   term_match: 'Term Match',
   fin_word: 'FinWord',
   wealth_farm: 'Wealth Farm',
@@ -84,26 +94,41 @@ function catalogToDialogItem(game: CatalogGame): DialogItem {
 function formatDate(iso: string) {
   const d = new Date(iso)
   if (isNaN(d.getTime())) return 'Unknown date'
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d)
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(d)
 }
 
-function CatalogGameCard({ game, onOpen }: { game: CatalogGame; onOpen: (item: DialogItem) => void }) {
+function CatalogGameCard({
+  game,
+  onOpen,
+}: {
+  game: CatalogGame
+  onOpen: (item: DialogItem) => void
+}) {
   return (
-    <div className="clay-card p-5 flex flex-col gap-3 rounded-2xl bg-default-50">
+    <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 rounded-3xl bg-default-50 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(59,130,246,0.28)]">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full skew-x-[-18deg] opacity-0 transition-all duration-700 group-hover:translate-x-[220%] group-hover:opacity-100" />
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-sm leading-snug flex-1 min-w-0 truncate">{game.title}</h3>
         <Chip size="sm" color="default" variant="soft" className="shrink-0 text-xs">
           {GAME_TYPE_LABELS[game.game_type] ?? game.game_type}
         </Chip>
       </div>
-      <p className="text-xs text-default-400 line-clamp-2">{game.instructions}</p>
+      <p className="text-xs text-default-400 line-clamp-3 flex-1">{game.instructions}</p>
       <Button
         size="sm"
         variant="primary"
         onPress={() => onOpen(catalogToDialogItem(game))}
-        className="clay-btn w-full gap-1"
+        className="clay-btn group/play mt-auto w-full gap-2 overflow-hidden border border-blue-200/60 bg-gradient-to-r from-blue-500 via-blue-600 to-sky-500 text-white shadow-[0_10px_24px_rgba(59,130,246,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_14px_30px_rgba(59,130,246,0.42)] active:scale-[0.98]"
       >
-        <Gamepad2 size={13} aria-hidden="true" />
+        <Gamepad2
+          size={13}
+          aria-hidden="true"
+          className="transition-transform duration-300 group-hover/play:[animation:controller-wiggle_300ms_ease-in-out_infinite]"
+        />
         Play
       </Button>
     </div>
@@ -112,7 +137,8 @@ function CatalogGameCard({ game, onOpen }: { game: CatalogGame; onOpen: (item: D
 
 function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: DialogItem) => void }) {
   return (
-    <div className="clay-card p-5 flex flex-col gap-3 rounded-2xl bg-default-50">
+    <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 rounded-3xl bg-default-50 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(59,130,246,0.28)]">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/35 to-transparent -translate-x-full skew-x-[-18deg] opacity-0 transition-all duration-700 group-hover:translate-x-[220%] group-hover:opacity-100" />
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-sm leading-snug flex-1 min-w-0 truncate">{item.title}</h3>
         <Chip
@@ -124,12 +150,12 @@ function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: Dialo
           {TYPE_LABELS[item.type]}
         </Chip>
       </div>
-      <p className="text-xs text-default-400">Saved {formatDate(item.created_at)}</p>
+      <p className="text-xs text-default-400 flex-1">Saved {formatDate(item.created_at)}</p>
       <Button
         size="sm"
         variant="ghost"
         onPress={() => onOpen(item as unknown as DialogItem)}
-        className="clay-btn w-full gap-1"
+        className="clay-btn group/play mt-auto w-full gap-2 overflow-hidden border border-blue-200/60 bg-gradient-to-r from-blue-500 via-blue-600 to-sky-500 text-white shadow-[0_10px_24px_rgba(59,130,246,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-[0_14px_30px_rgba(59,130,246,0.42)] active:scale-[0.98]"
       >
         Open
         <ExternalLink size={13} aria-hidden="true" />
@@ -164,16 +190,18 @@ export default function LibraryPage() {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const q = query.toLowerCase()
 
   const showCatalog = activeFilter === 'all' || activeFilter === 'game'
   const visibleCatalog = showCatalog
-    ? GAME_CATALOG.filter(g => !q || g.title.toLowerCase().includes(q))
+    ? GAME_CATALOG.filter((g) => !q || g.title.toLowerCase().includes(q))
     : []
 
-  const visibleItems = items.filter(item => {
+  const visibleItems = items.filter((item) => {
     if (activeFilter !== 'all' && item.type !== activeFilter) return false
     if (q && !item.title.toLowerCase().includes(q)) return false
     return true
@@ -185,21 +213,42 @@ export default function LibraryPage() {
     <div className="flex h-screen overflow-hidden">
       <AppNav />
       <main aria-label="Saved library" className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6 max-w-5xl">
-
+        <style jsx>{`
+          @keyframes controller-wiggle {
+            0%,
+            100% {
+              transform: rotate(0deg) scale(1);
+            }
+            25% {
+              transform: rotate(-10deg) scale(1.05);
+            }
+            50% {
+              transform: rotate(10deg) scale(1.08);
+            }
+            75% {
+              transform: rotate(-6deg) scale(1.03);
+            }
+          }
+        `}</style>
+        <div className="max-w-7xl space-y-6 p-6">
           {/* Header + search */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-1">
               <h1 className="text-2xl font-bold">Library</h1>
-              <p className="text-default-500 text-sm mt-1">Pre-built games and your saved content from Vela.</p>
+              <p className="text-default-500 text-sm mt-1">
+                Pre-built games and your saved content from Vela.
+              </p>
             </div>
             <div className="relative w-full sm:w-64">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-default-400 pointer-events-none" />
+              <Search
+                size={15}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-default-400 pointer-events-none"
+              />
               <input
                 type="search"
                 placeholder="Search…"
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={(e) => setQuery(e.target.value)}
                 className="clay-input w-full rounded-xl border border-default-200 bg-default-50 pl-9 pr-3 py-2 text-sm outline-none focus:border-primary-400"
               />
             </div>
@@ -207,7 +256,7 @@ export default function LibraryPage() {
 
           {/* Chip filters */}
           <div className="flex flex-wrap gap-2">
-            {FILTER_OPTIONS.map(opt => (
+            {FILTER_OPTIONS.map((opt) => (
               <Button
                 key={opt.value}
                 size="sm"
@@ -224,8 +273,8 @@ export default function LibraryPage() {
           {visibleCatalog.length > 0 && (
             <section aria-label="Mini-games">
               <h2 className="font-bold text-sm mb-3">Mini-Games</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {visibleCatalog.map(game => (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+                {visibleCatalog.map((game) => (
                   <CatalogGameCard key={game.id} game={game} onOpen={setDialogItem} />
                 ))}
               </div>
@@ -240,8 +289,8 @@ export default function LibraryPage() {
           ) : visibleItems.length > 0 ? (
             <section aria-label="Saved items">
               <h2 className="font-bold text-sm mb-3">Saved</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {visibleItems.map(item => (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+                {visibleItems.map((item) => (
                   <LibraryCard key={item.id} item={item} onOpen={setDialogItem} />
                 ))}
               </div>
@@ -258,13 +307,14 @@ export default function LibraryPage() {
               </p>
             </div>
           ) : null}
-
         </div>
       </main>
 
       <Modal
         isOpen={dialogItem !== null}
-        onOpenChange={(open: boolean) => { if (!open) setDialogItem(null) }}
+        onOpenChange={(open: boolean) => {
+          if (!open) setDialogItem(null)
+        }}
       >
         <ModalBackdrop>
           <ModalContainer size="cover" scroll="inside">
