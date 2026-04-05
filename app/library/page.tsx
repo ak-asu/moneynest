@@ -45,6 +45,11 @@ const GAME_TYPE_LABELS: Record<string, string> = {
   time_pressure: 'Time Challenge',
   tradeoff_slider: 'Tradeoff',
   drag_drop: 'Drag & Drop',
+  insurance_card_game: 'Insurance Card',
+  credit_quest_game: 'Credit Quest',
+  term_match: 'Term Match',
+  fin_word: 'FinWord',
+  wealth_farm: 'Wealth Farm',
 }
 
 const FILTER_OPTIONS: Array<{ value: SavedItemType | 'all'; label: string }> = [
