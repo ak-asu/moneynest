@@ -71,8 +71,6 @@ const FILTER_OPTIONS: Array<{ value: SavedItemType | 'all'; labelKey: string }> 
   { value: 'audio', labelKey: 'library.type.audio' },
 ]
 
-const MINI_GAME_PREVIEW_PLACEHOLDER = '/assets/mini-game-placeholder.svg'
-
 function catalogToDialogItem(game: CatalogGame): DialogItem {
   return {
     id: game.id,
@@ -116,7 +114,7 @@ function CatalogGameCard({
     <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 p-5 transition-all duration-300 hover:-translate-y-1">
       <div className="relative overflow-hidden rounded-2xl border border-default-200 bg-default-100/60">
         <Image
-          src={MINI_GAME_PREVIEW_PLACEHOLDER}
+          src={game.cover_image}
           alt={`${game.title} preview`}
           width={960}
           height={540}
