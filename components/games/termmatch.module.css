@@ -1,0 +1,26 @@
+/* Animations only — layout/colors handled by Tailwind + clay utilities */
+
+.matchPop { animation: matchPop 0.35s ease; }
+.wrongShake { animation: wrongShake 0.55s ease; }
+.fadeIn { animation: fadeIn 0.4s ease; }
+
+@keyframes matchPop {
+  0%   { transform: scale(0.95); }
+  50%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0) scale(1); }
+  10%      { transform: translateX(-10px) scale(0.98); }
+  25%      { transform: translateX(10px) scale(0.98); }
+  40%      { transform: translateX(-7px); }
+  55%      { transform: translateX(7px); }
+  70%      { transform: translateX(-4px); }
+  85%      { transform: translateX(4px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
