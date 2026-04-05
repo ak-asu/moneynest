@@ -19,11 +19,11 @@ export const OVERSPEND_SPEED_BOOST = 1.3
 export const MARKET_CRASH_HP_BOOST = 0.1
 
 // Zombie vs defender combat
-export const ZOMBIE_ATTACK_INTERVAL = 8  // ticks between zombie attacks on a blocking defender
+export const ZOMBIE_ATTACK_INTERVAL = 8 // ticks between zombie attacks on a blocking defender
 export const ZOMBIE_ATTACK_DAMAGE: Record<1 | 2 | 3, number> = {
-  1: 6,   // slow zombie: 6 HP per attack
-  2: 10,  // medium
-  3: 15,  // fast
+  1: 6, // slow zombie: 6 HP per attack
+  2: 10, // medium
+  3: 15, // fast
 }
 
 export const SPEED_VAL: Record<1 | 2 | 3, number> = {

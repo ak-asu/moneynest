@@ -4,13 +4,7 @@ import { Button } from '@heroui/react'
 import { useLlmConfig } from './use-llm-config'
 import { useGameEngine } from './use-game-engine'
 import { DEFENDERS, DEFENDER_ORDER, HOUSE_HP_START, COL_COUNT, LANE_COUNT } from './constants'
-import type {
-  GameConfig,
-  GameState,
-  DefenderType,
-  DefenderInstance,
-  ZombieInstance,
-} from './types'
+import type { GameConfig, GameState, DefenderType, DefenderInstance, ZombieInstance } from './types'
 import styles from './riskraid.module.css'
 
 // ─── Exported component ──────────────────────────────────────────────────────
@@ -43,14 +37,14 @@ function RiskRaidGame({
         hpLost <= 0
           ? 'A'
           : hpLost <= 20
-          ? 'A'
-          : hpLost <= 40
-          ? 'B'
-          : hpLost <= 60
-          ? 'C'
-          : hpLost <= 80
-          ? 'D'
-          : 'F'
+            ? 'A'
+            : hpLost <= 40
+              ? 'B'
+              : hpLost <= 60
+                ? 'C'
+                : hpLost <= 80
+                  ? 'D'
+                  : 'F'
       onComplete(
         `RiskRaid complete — Grade: ${grade}. ${config.risk_label} (score: ${config.risk_score}/100). Key insight: ${config.insights[0]}`
       )
@@ -74,7 +68,10 @@ function RiskRaidGame({
   }
 
   return (
-    <div className="flex flex-col gap-2 w-full select-none" style={{ fontFamily: 'var(--font-sans)' }}>
+    <div
+      className="flex flex-col gap-2 w-full select-none"
+      style={{ fontFamily: 'var(--font-sans)' }}
+    >
       <HUD
         sun={state.sun}
         houseHp={state.houseHp}
@@ -159,11 +156,7 @@ function HUD({
 }) {
   const hpPct = (houseHp / HOUSE_HP_START) * 100
   const hpColor =
-    hpPct > 60
-      ? 'var(--clay-success)'
-      : hpPct > 30
-      ? 'var(--clay-warning)'
-      : 'var(--clay-danger)'
+    hpPct > 60 ? 'var(--clay-success)' : hpPct > 30 ? 'var(--clay-warning)' : 'var(--clay-danger)'
 
   return (
     <div className="clay-card p-3 flex flex-col gap-2">
@@ -222,9 +215,9 @@ function Board({
           key={lane}
           laneIndex={lane}
           cells={state.cells[lane]}
-          zombies={state.zombies.filter(z => z.laneIndex === lane && !z.isDefeated)}
+          zombies={state.zombies.filter((z) => z.laneIndex === lane && !z.isDefeated)}
           selectedDefender={state.selectedDefender}
-          onCellClick={col => onCellClick(lane, col)}
+          onCellClick={(col) => onCellClick(lane, col)}
         />
       ))}
     </div>
@@ -305,8 +298,8 @@ function Lane({
                       defender.hp / defender.maxHp > 0.5
                         ? 'var(--clay-success)'
                         : defender.hp / defender.maxHp > 0.25
-                        ? 'var(--clay-warning)'
-                        : 'var(--clay-danger)',
+                          ? 'var(--clay-warning)'
+                          : 'var(--clay-danger)',
                   }}
                 />
               </div>
@@ -318,7 +311,7 @@ function Lane({
       ))}
 
       {/* Zombies — absolutely positioned */}
-      {zombies.map(z => (
+      {zombies.map((z) => (
         <div
           key={z.instanceId}
           className={`absolute top-0 bottom-0 flex items-center justify-center text-2xl pointer-events-none z-10 ${styles.zombieMarch}`}
@@ -398,7 +391,7 @@ function DefenderTray({
   return (
     <div className="clay-card p-2 flex flex-col gap-2">
       <div className="flex gap-2 flex-wrap justify-center">
-        {DEFENDER_ORDER.map(type => {
+        {DEFENDER_ORDER.map((type) => {
           const spec = DEFENDERS[type]
           const canAfford = sun >= spec.cost
           const isSelected = selected === type
@@ -422,7 +415,10 @@ function DefenderTray({
               }}
             >
               <span className="text-xl">{spec.emoji}</span>
-              <span className="text-xs font-bold leading-tight text-center" style={{ color: 'var(--clay-text)' }}>
+              <span
+                className="text-xs font-bold leading-tight text-center"
+                style={{ color: 'var(--clay-text)' }}
+              >
                 {spec.label}
               </span>
               <span className="text-xs" style={{ color: 'var(--clay-text-soft)' }}>
@@ -503,14 +499,14 @@ function EndScreen({
     hpLost <= 0
       ? 'A'
       : hpLost <= 20
-      ? 'A'
-      : hpLost <= 40
-      ? 'B'
-      : hpLost <= 60
-      ? 'C'
-      : hpLost <= 80
-      ? 'D'
-      : 'F'
+        ? 'A'
+        : hpLost <= 40
+          ? 'B'
+          : hpLost <= 60
+            ? 'C'
+            : hpLost <= 80
+              ? 'D'
+              : 'F'
 
   return (
     <div className="flex flex-col gap-3 w-full" style={{ fontFamily: 'var(--font-sans)' }}>

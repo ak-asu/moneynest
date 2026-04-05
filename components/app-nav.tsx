@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -83,9 +84,21 @@ export function AppNav() {
           )}
         >
           <div className={cn('min-w-0', collapsed && 'w-full text-center')}>
-            <p className="font-extrabold text-lg tracking-tight text-primary-600">
-              {collapsed ? 'V' : t('app.brand')}
-            </p>
+            <div className={cn('flex items-center', collapsed ? 'justify-center' : 'gap-2')}>
+              <Image
+                src="/logo.png"
+                alt={t('app.brand')}
+                width={26}
+                height={26}
+                className="shrink-0"
+                priority
+              />
+              {!collapsed && (
+                <p className="font-extrabold text-lg tracking-tight text-primary-600">
+                  {t('app.brand')}
+                </p>
+              )}
+            </div>
             {!collapsed && <p className="text-xs text-default-500">{t('app.tagline')}</p>}
           </div>
           <button

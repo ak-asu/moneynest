@@ -79,8 +79,8 @@ export interface ZombieInstance {
   currentHp: number
   aliveFor: number
   isDefeated: boolean
-  blockedByCol: number | null    // col index of the defender blocking this zombie
-  zombieAttackCooldown: number   // ticks until next attack on the blocking defender
+  blockedByCol: number | null // col index of the defender blocking this zombie
+  zombieAttackCooldown: number // ticks until next attack on the blocking defender
 }
 
 export interface BreakthroughEntry {

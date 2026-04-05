@@ -10,7 +10,7 @@ function buildPrompt(profile: DbProfile | null): string {
 - Income type: ${profile.income_type}
 - Monthly income: $${profile.income_monthly}
 - Savings balance: $${profile.savings_balance}
-- Debts: ${profile.debts.length > 0 ? profile.debts.map(d => `${d.type} $${d.amount} at ${d.rate}%`).join(', ') : 'none'}
+- Debts: ${profile.debts.length > 0 ? profile.debts.map((d) => `${d.type} $${d.amount} at ${d.rate}%`).join(', ') : 'none'}
 - Financial health score: ${profile.financial_health_score}/100`
     : 'USER PROFILE: Not available. Generate a moderate-risk American teen scenario with plausible, relatable data.'
 

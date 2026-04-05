@@ -40,7 +40,7 @@ function makeCells(): (DefenderInstance | null)[][] {
 }
 
 function assignLanes(zombies: ZombieSpec[]): PendingZombie[] {
-  return zombies.map(z => ({ ...z, targetLane: Math.floor(Math.random() * LANE_COUNT) }))
+  return zombies.map((z) => ({ ...z, targetLane: Math.floor(Math.random() * LANE_COUNT) }))
 }
 
 function makeInitialState(config: GameConfig): GameState {
@@ -77,7 +77,7 @@ export function tick(prev: GameState): GameState {
   let sun = prev.sun
   if (resetSunTick) {
     sun += SUN_INCREMENT
-    const hedgeCount = prev.cells.flat().filter(c => c?.type === 'investment_hedge').length
+    const hedgeCount = prev.cells.flat().filter((c) => c?.type === 'investment_hedge').length
     sun += hedgeCount * SUN_INCREMENT
   }
 
@@ -97,7 +97,7 @@ export function tick(prev: GameState): GameState {
 
     if (toSpawn.id === 'market_crash') {
       marketCrashActive = true
-      zombies = zombies.map(z => ({
+      zombies = zombies.map((z) => ({
         ...z,
         currentHp: Math.min(
           z.currentHp + Math.floor(z.spec.hp * MARKET_CRASH_HP_BOOST),
@@ -123,10 +123,10 @@ export function tick(prev: GameState): GameState {
 
   // 4. Move zombies (only those not currently blocked)
   const overspendCascadeActive = zombies.some(
-    z => !z.isDefeated && z.spec.id === 'overspend' && z.aliveFor >= OVERSPEND_CASCADE_TICKS
+    (z) => !z.isDefeated && z.spec.id === 'overspend' && z.aliveFor >= OVERSPEND_CASCADE_TICKS
   )
 
-  zombies = zombies.map(z => {
+  zombies = zombies.map((z) => {
     if (z.isDefeated) return z
     // Blocked zombies don't move — they attack their defender instead
     if (z.blockedByCol !== null) return { ...z, aliveFor: z.aliveFor + 1 }
@@ -137,10 +137,10 @@ export function tick(prev: GameState): GameState {
   })
 
   // 4a. Create mutable cell copy for this tick (used by both zombie and defender attacks)
-  const newCells = prev.cells.map(row => row.map(cell => (cell ? { ...cell } : null)))
+  const newCells = prev.cells.map((row) => row.map((cell) => (cell ? { ...cell } : null)))
 
   // 4b. Detect blocking: find the rightmost defender each zombie has reached, clamp & block
-  zombies = zombies.map(z => {
+  zombies = zombies.map((z) => {
     if (z.isDefeated) return z
 
     // Find highest col where a defender exists AND the zombie has entered its right side
@@ -148,7 +148,7 @@ export function tick(prev: GameState): GameState {
     for (let c = COL_COUNT - 1; c >= 0; c--) {
       if (newCells[z.laneIndex][c] !== null && z.x <= c + 0.5) {
         blockingCol = c
-        break  // highest col wins (first encountered from the right)
+        break // highest col wins (first encountered from the right)
       }
     }
 
@@ -160,7 +160,7 @@ export function tick(prev: GameState): GameState {
   })
 
   // 4c. Blocked zombies attack their blocking defender
-  zombies = zombies.map(z => {
+  zombies = zombies.map((z) => {
     if (z.isDefeated || z.blockedByCol === null) return z
 
     const col = z.blockedByCol
@@ -179,7 +179,7 @@ export function tick(prev: GameState): GameState {
     const dmg = ZOMBIE_ATTACK_DAMAGE[z.spec.speed]
     const newHp = defender.hp - dmg
     if (newHp <= 0) {
-      newCells[z.laneIndex][col] = null  // defender destroyed — zombie unblocked next move
+      newCells[z.laneIndex][col] = null // defender destroyed — zombie unblocked next move
       return { ...z, blockedByCol: null, zombieAttackCooldown: 0 }
     }
     newCells[z.laneIndex][col] = { ...defender, hp: newHp }
@@ -196,7 +196,7 @@ export function tick(prev: GameState): GameState {
 
       // Target: nearest non-defeated zombie in this lane at or to the right of this column
       const target = zombies
-        .filter(z => !z.isDefeated && z.laneIndex === lane && z.x >= col - 0.5)
+        .filter((z) => !z.isDefeated && z.laneIndex === lane && z.x >= col - 0.5)
         .sort((a, b) => a.x - b.x)[0]
 
       if (!target) continue
@@ -212,7 +212,7 @@ export function tick(prev: GameState): GameState {
     }
   }
 
-  zombies = zombies.map(z => {
+  zombies = zombies.map((z) => {
     const dmg = damageMap.get(z.instanceId) ?? 0
     if (dmg === 0) return z
     const newHp = z.currentHp - dmg
@@ -226,7 +226,7 @@ export function tick(prev: GameState): GameState {
   let breakthroughLog = prev.breakthroughLog
   const cascadeQueue: PendingZombie[] = []
 
-  zombies = zombies.map(z => {
+  zombies = zombies.map((z) => {
     if (z.isDefeated || z.x > 0) return z
 
     houseHp = Math.max(0, houseHp - z.spec.damage)
@@ -239,7 +239,7 @@ export function tick(prev: GameState): GameState {
 
     if (z.spec.cascades_to) {
       const allSpecs = [...prev.config.wave1.zombies, ...prev.config.wave2.zombies]
-      const cascadeSpec = allSpecs.find(s => s.id === z.spec.cascades_to)
+      const cascadeSpec = allSpecs.find((s) => s.id === z.spec.cascades_to)
       if (cascadeSpec) {
         cascadeQueue.push({
           ...cascadeSpec,
@@ -275,7 +275,7 @@ export function tick(prev: GameState): GameState {
   }
 
   // 8. Wave clear check
-  const activeZombies = zombies.filter(z => !z.isDefeated)
+  const activeZombies = zombies.filter((z) => !z.isDefeated)
   const waveClear = pendingZombies.length === 0 && activeZombies.length === 0
 
   if (waveClear) {
@@ -328,7 +328,7 @@ export function useGameEngine(config: GameConfig) {
   }, [state.phase])
 
   const advanceFromDebrief = useCallback(() => {
-    setState(prev => {
+    setState((prev) => {
       if (prev.phase !== 'wave_debrief') return prev
       const nextWave = prev.waveIndex + 1
       if (nextWave > 1) return { ...prev, phase: 'end' }
@@ -352,7 +352,7 @@ export function useGameEngine(config: GameConfig) {
   }, [state.phase, advanceFromDebrief])
 
   const selectDefender = useCallback((type: DefenderType) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       selectedDefender: prev.selectedDefender === type ? null : type,
       infoCardDefender: prev.selectedDefender === type ? null : type,
@@ -360,17 +360,17 @@ export function useGameEngine(config: GameConfig) {
   }, [])
 
   const dismissInfoCard = useCallback(() => {
-    setState(prev => ({ ...prev, infoCardDefender: null }))
+    setState((prev) => ({ ...prev, infoCardDefender: null }))
   }, [])
 
   const placeDefender = useCallback((laneIndex: number, colIndex: number) => {
-    setState(prev => {
+    setState((prev) => {
       if (!prev.selectedDefender) return prev
       if (prev.cells[laneIndex][colIndex] !== null) return prev
       const spec = DEFENDERS[prev.selectedDefender]
       if (prev.sun < spec.cost) return prev
 
-      const newCells = prev.cells.map(row => [...row])
+      const newCells = prev.cells.map((row) => [...row])
       const defender: DefenderInstance = {
         type: spec.type,
         emoji: spec.emoji,
