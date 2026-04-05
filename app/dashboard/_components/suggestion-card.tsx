@@ -5,6 +5,7 @@ import { Button } from '@heroui/react'
 import { Lightbulb, Play, BookOpen, CheckSquare, ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import type { DbSuggestion } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 const TYPE_ICON: Record<string, React.ElementType> = {
   insight: Lightbulb,
@@ -31,6 +32,7 @@ interface SuggestionCardProps {
 }
 
 export function SuggestionCard({ suggestion, onDismiss }: SuggestionCardProps) {
+  const { t } = useI18n()
   const router = useRouter()
   const Icon = TYPE_ICON[suggestion.type] ?? Lightbulb
 
@@ -66,7 +68,7 @@ export function SuggestionCard({ suggestion, onDismiss }: SuggestionCardProps) {
       )}
       <div className="flex items-center gap-2 pt-1">
         <Button size="sm" variant="primary" onPress={handleOpen} className="clay-btn flex-1 gap-1">
-          Explore in chat
+          {t('dashboard.exploreChat')}
           <ArrowRight size={13} />
         </Button>
         <Button
@@ -75,7 +77,7 @@ export function SuggestionCard({ suggestion, onDismiss }: SuggestionCardProps) {
           onPress={() => onDismiss(suggestion.id)}
           className="clay-btn"
         >
-          Dismiss
+          {t('dashboard.dismiss')}
         </Button>
       </div>
     </div>

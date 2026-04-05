@@ -3,12 +3,14 @@ import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { Mic, MicOff } from 'lucide-react'
 import { useConversation } from '@11labs/react'
+import { useI18n } from '@/components/i18n-provider'
 
 interface VoicePathProps {
   onComplete: () => void
 }
 
 export function VoicePath({ onComplete }: VoicePathProps) {
+  const { t } = useI18n()
   const [status, setStatus] = useState<'idle' | 'connecting' | 'active' | 'done'>('idle')
   const [transcript, setTranscript] = useState<string[]>([])
 
@@ -16,7 +18,7 @@ export function VoicePath({ onComplete }: VoicePathProps) {
     onMessage: (props: { message: string; source: 'user' | 'ai' }) => {
       setTranscript((prev) => [
         ...prev,
-        `${props.source === 'ai' ? 'Vela' : 'You'}: ${props.message}`,
+        `${props.source === 'ai' ? t('onboarding.voice.vela') : t('onboarding.voice.you')}: ${props.message}`,
       ])
     },
     onDisconnect: () => {
@@ -34,8 +36,7 @@ export function VoicePath({ onComplete }: VoicePathProps) {
         signedUrl,
         overrides: {
           agent: {
-            firstMessage:
-              "Hi! I'm Vela. I'm going to ask you a few quick questions to understand your financial situation. This will take about 2 minutes. What's your approximate monthly income?",
+            firstMessage: t('onboarding.voice.firstMessage'),
           },
         },
       })
@@ -53,12 +54,12 @@ export function VoicePath({ onComplete }: VoicePathProps) {
     return (
       <div className="flex flex-col items-center gap-4 py-8">
         <span className="text-5xl">✅</span>
-        <p className="font-bold text-lg">Profile set up!</p>
+        <p className="font-bold text-lg">{t('onboarding.voice.setupDoneTitle')}</p>
         <p className="text-default-500 text-sm text-center">
-          Vela has your details. Let&apos;s get started.
+          {t('onboarding.voice.setupDoneSubtitle')}
         </p>
         <Button variant="primary" className="clay-btn" onPress={onComplete}>
-          Go to Dashboard
+          {t('onboarding.voice.goDashboard')}
         </Button>
       </div>
     )
@@ -78,15 +79,16 @@ export function VoicePath({ onComplete }: VoicePathProps) {
       {status === 'idle' && (
         <>
           <p className="text-sm text-default-600 text-center max-w-xs leading-relaxed">
-            Talk to Vela for 2 minutes. She&apos;ll ask about your income, expenses, and goals — no
-            typing needed.
+            {t('onboarding.voice.prompt')}
           </p>
           <Button variant="primary" size="lg" className="clay-btn px-8 py-3" onPress={start}>
-            Start voice setup
+            {t('onboarding.voice.start')}
           </Button>
         </>
       )}
-      {status === 'connecting' && <p className="text-sm text-default-500">Connecting...</p>}
+      {status === 'connecting' && (
+        <p className="text-sm text-default-500">{t('onboarding.voice.connecting')}</p>
+      )}
       {status === 'active' && (
         <>
           <div className="w-full bg-default-50 rounded-2xl p-5 max-h-52 overflow-y-auto space-y-3">
@@ -102,7 +104,7 @@ export function VoicePath({ onComplete }: VoicePathProps) {
             onPress={stop}
           >
             <MicOff size={16} />
-            Done
+            {t('onboarding.voice.done')}
           </Button>
         </>
       )}

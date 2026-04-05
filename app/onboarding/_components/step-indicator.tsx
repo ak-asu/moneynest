@@ -1,16 +1,23 @@
 import { cn } from '@/lib/utils/cn'
+import { useI18n } from '@/components/i18n-provider'
 
-const STEPS = ['Identity', 'Income', 'Expenses'] as const
+const STEP_KEYS = [
+  'onboarding.step.identity',
+  'onboarding.step.income',
+  'onboarding.step.expenses',
+] as const
 
 interface StepIndicatorProps {
   current: number
 }
 
 export function StepIndicator({ current }: StepIndicatorProps) {
+  const { t } = useI18n()
+
   return (
     <div className="flex items-center">
-      {STEPS.map((label, i) => (
-        <div key={label} className="flex items-center flex-1">
+      {STEP_KEYS.map((labelKey, i) => (
+        <div key={labelKey} className="flex items-center flex-1">
           <div className="flex flex-col items-center gap-1.5 w-full">
             <div
               className={cn(
@@ -25,10 +32,10 @@ export function StepIndicator({ current }: StepIndicatorProps) {
             <span
               className={cn('text-xs font-medium', i === current ? 'text-accent' : 'text-muted')}
             >
-              {label}
+              {t(labelKey)}
             </span>
           </div>
-          {i < STEPS.length - 1 && (
+          {i < STEP_KEYS.length - 1 && (
             <div
               className={cn(
                 'h-px flex-1 mb-6 mx-1 transition-colors',

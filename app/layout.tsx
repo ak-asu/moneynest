@@ -4,6 +4,8 @@ import clsx from 'clsx'
 import { Providers } from './providers'
 import { siteConfig } from '@/config/site'
 import { fontSans } from '@/config/fonts'
+import { I18nProvider } from '@/components/i18n-provider'
+import { getServerI18n } from '@/lib/i18n/server'
 
 export const metadata: Metadata = {
   title: { default: siteConfig.name, template: `%s | ${siteConfig.name}` },
@@ -18,9 +20,11 @@ export const viewport: Viewport = {
   ],
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { locale } = await getServerI18n()
+
   return (
-    <html suppressHydrationWarning lang="en">
+    <html suppressHydrationWarning lang={locale}>
       <head />
       <body
         className={clsx(
@@ -28,7 +32,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           fontSans.variable
         )}
       >
-        <Providers themeProps={{ attribute: 'class', defaultTheme: 'light' }}>{children}</Providers>
+        <I18nProvider locale={locale}>
+          <Providers themeProps={{ attribute: 'class', defaultTheme: 'light' }}>
+            {children}
+          </Providers>
+        </I18nProvider>
       </body>
     </html>
   )

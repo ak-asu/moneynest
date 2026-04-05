@@ -18,6 +18,7 @@ import { AppNav } from '@/components/app-nav'
 import { HealthScoreRing } from '@/components/health-score-ring'
 import { cn } from '@/lib/utils/cn'
 import type { DbProfile, PersonaType } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 const profileSchema = z.object({
   persona: z.enum(['gig_worker', 'student', 'immigrant', 'retiree', 'single_parent', 'other']),
@@ -44,13 +45,13 @@ const profileSchema = z.object({
 
 type ProfileForm = z.infer<typeof profileSchema>
 
-const PERSONA_OPTIONS: { value: PersonaType; label: string }[] = [
-  { value: 'gig_worker', label: 'Gig Worker' },
-  { value: 'student', label: 'Student' },
-  { value: 'immigrant', label: 'Immigrant' },
-  { value: 'retiree', label: 'Retiree' },
-  { value: 'single_parent', label: 'Single Parent' },
-  { value: 'other', label: 'Other' },
+const PERSONA_OPTIONS: { value: PersonaType; labelKey: string }[] = [
+  { value: 'gig_worker', labelKey: 'persona.gig_worker' },
+  { value: 'student', labelKey: 'persona.student' },
+  { value: 'immigrant', labelKey: 'persona.immigrant' },
+  { value: 'retiree', labelKey: 'persona.retiree' },
+  { value: 'single_parent', labelKey: 'persona.single_parent' },
+  { value: 'other', labelKey: 'persona.other' },
 ]
 
 function Field({
@@ -93,8 +94,8 @@ function MoneyInput({
   )
 }
 
-function formatMoney(value: number) {
-  return new Intl.NumberFormat('en-US', {
+function formatMoney(value: number, intlLocale: string) {
+  return new Intl.NumberFormat(intlLocale, {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
@@ -102,6 +103,7 @@ function formatMoney(value: number) {
 }
 
 export default function ProfilePage() {
+  const { t, intlLocale, setLocale } = useI18n()
   const [loading, setLoading] = useState(true)
   const [savedScore, setSavedScore] = useState<number>(0)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -164,9 +166,13 @@ export default function ProfilePage() {
           goals:
             (p.goals as Array<{ label: string; target_amount: number; target_date: string }>) ?? [],
         })
+
+        if (document.documentElement.lang !== p.language) {
+          void setLocale(p.language)
+        }
       })
       .finally(() => setLoading(false))
-  }, [reset]) // reset is stable from react-hook-form; this still runs once in practice
+  }, [reset, setLocale])
 
   async function onSubmit(data: ProfileForm) {
     setSaveError(null)
@@ -190,7 +196,7 @@ export default function ProfilePage() {
       }),
     })
     if (!res.ok) {
-      setSaveError('Failed to save. Please try again.')
+      setSaveError(t('profile.saveFailed'))
       return
     }
     const updated: DbProfile = await res.json()
@@ -219,7 +225,7 @@ export default function ProfilePage() {
       <div className="flex h-screen">
         <AppNav />
         <main className="flex-1 flex items-center justify-center">
-          <p className="text-default-400">Loading profile…</p>
+          <p className="text-default-400">{t('profile.loadFailed')}</p>
         </main>
       </div>
     )
@@ -237,7 +243,7 @@ export default function ProfilePage() {
                   <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                     Financial Identity
                   </div>
-                  <h1 className="text-4xl font-black tracking-tight">My Profile</h1>
+                  <h1 className="text-4xl font-black tracking-tight">{t('profile.title')}</h1>
                   <p className="max-w-2xl text-default-500">
                     Shape your money setup in one place. Your identity, cash flow, debts, and goals
                     all feed the advice you get across Vela.
@@ -252,9 +258,11 @@ export default function ProfilePage() {
                         Persona
                       </span>
                     </div>
-                    <div className="text-lg font-bold">{selectedPersona?.label ?? 'Other'}</div>
+                    <div className="text-lg font-bold">
+                      {selectedPersona ? t(selectedPersona.labelKey) : t('persona.other')}
+                    </div>
                     <div className="text-sm text-default-500">
-                      {language === 'en' ? 'English' : 'Español'}
+                      {language === 'en' ? t('common.english') : t('common.spanish')}
                     </div>
                   </div>
                   <div className="clay-card rounded-2xl border-emerald-200 bg-emerald-50/65 p-4">
@@ -265,10 +273,12 @@ export default function ProfilePage() {
                       </span>
                     </div>
                     <div className="text-lg font-bold">
-                      {formatMoney(Number(incomeMonthly) || 0)}
+                      {formatMoney(Number(incomeMonthly) || 0, intlLocale)}
                     </div>
                     <div className="text-sm text-default-500">
-                      {incomeType === 'steady' ? 'Same every month' : 'Income varies'}
+                      {incomeType === 'steady'
+                        ? t('onboarding.income.sameMonthly')
+                        : t('onboarding.income.varies')}
                     </div>
                   </div>
                   <div className="clay-card rounded-2xl border-amber-200 bg-amber-50/65 p-4">
@@ -278,9 +288,9 @@ export default function ProfilePage() {
                         Monthly Left
                       </span>
                     </div>
-                    <div className="text-lg font-bold">{formatMoney(monthlyLeft)}</div>
+                    <div className="text-lg font-bold">{formatMoney(monthlyLeft, intlLocale)}</div>
                     <div className="text-sm text-default-500">
-                      {formatMoney(totalExpenses)} in expenses
+                      {formatMoney(totalExpenses, intlLocale)} in expenses
                     </div>
                   </div>
                   <div className="clay-card rounded-2xl border-sky-200 bg-sky-50/65 p-4">
@@ -291,7 +301,7 @@ export default function ProfilePage() {
                       </span>
                     </div>
                     <div className="text-lg font-bold">
-                      {formatMoney(Number(savingsBalance) || 0)}
+                      {formatMoney(Number(savingsBalance) || 0, intlLocale)}
                     </div>
                     <div className="text-sm text-default-500">{goals.length} active goals</div>
                   </div>
@@ -331,18 +341,21 @@ export default function ProfilePage() {
                           : 'border-default-200 bg-default-50/80 text-default-600 hover:border-primary-300'
                       )}
                     >
-                      {o.label}
+                      {t(o.labelKey)}
                     </button>
                   ))}
                 </div>
               </Field>
-              <Field label="Preferred language">
+              <Field label={t('onboarding.identity.preferredLanguage')}>
                 <div className="flex gap-2">
                   {(['en', 'es'] as const).map((lang) => (
                     <button
                       key={lang}
                       type="button"
-                      onClick={() => setValue('language', lang)}
+                      onClick={() => {
+                        setValue('language', lang, { shouldDirty: true })
+                        void setLocale(lang)
+                      }}
                       className={cn(
                         'clay-btn rounded-2xl px-5 py-2 text-sm font-semibold',
                         language === lang
@@ -350,7 +363,7 @@ export default function ProfilePage() {
                           : 'text-default-700'
                       )}
                     >
-                      {lang === 'en' ? 'English' : 'Español'}
+                      {lang === 'en' ? t('common.english') : t('common.spanish')}
                     </button>
                   ))}
                 </div>
@@ -369,30 +382,32 @@ export default function ProfilePage() {
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
                 <MoneyInput
-                  label="Monthly income (after taxes)"
+                  label={t('onboarding.income.monthly')}
                   placeholder="2200"
                   error={errors.income_monthly?.message}
                   {...register('income_monthly')}
                 />
                 <MoneyInput
-                  label="Current savings balance"
+                  label={t('onboarding.income.savingsBalance')}
                   placeholder="0"
                   error={errors.savings_balance?.message}
                   {...register('savings_balance')}
                 />
               </div>
-              <Field label="Income pattern">
+              <Field label={t('onboarding.income.type')}>
                 <div className="flex gap-2">
-                  {(['steady', 'irregular'] as const).map((t) => (
+                  {(['steady', 'irregular'] as const).map((incomeVariant) => (
                     <Button
-                      key={t}
+                      key={incomeVariant}
                       type="button"
-                      variant={incomeType === t ? 'primary' : 'outline'}
+                      variant={incomeType === incomeVariant ? 'primary' : 'outline'}
                       size="sm"
-                      onPress={() => setValue('income_type', t)}
+                      onPress={() => setValue('income_type', incomeVariant)}
                       className="clay-btn flex-1"
                     >
-                      {t === 'steady' ? 'Same every month' : 'It varies'}
+                      {incomeVariant === 'steady'
+                        ? t('onboarding.income.sameMonthly')
+                        : t('onboarding.income.varies')}
                     </Button>
                   ))}
                 </div>
@@ -403,21 +418,23 @@ export default function ProfilePage() {
                     Income
                   </div>
                   <div className="mt-2 text-xl font-bold">
-                    {formatMoney(Number(incomeMonthly) || 0)}
+                    {formatMoney(Number(incomeMonthly) || 0, intlLocale)}
                   </div>
                 </div>
                 <div className="rounded-2xl border border-default-200 bg-default-50/80 p-4">
                   <div className="text-xs font-semibold uppercase tracking-[0.18em] text-default-500">
                     Expenses
                   </div>
-                  <div className="mt-2 text-xl font-bold">{formatMoney(totalExpenses)}</div>
+                  <div className="mt-2 text-xl font-bold">
+                    {formatMoney(totalExpenses, intlLocale)}
+                  </div>
                 </div>
                 <div className="rounded-2xl border border-default-200 bg-default-50/80 p-4">
                   <div className="text-xs font-semibold uppercase tracking-[0.18em] text-default-500">
                     Left This Month
                   </div>
                   <div className="mt-2 text-xl font-bold text-emerald-700">
-                    {formatMoney(monthlyLeft)}
+                    {formatMoney(monthlyLeft, intlLocale)}
                   </div>
                 </div>
               </div>
@@ -519,7 +536,7 @@ export default function ProfilePage() {
                     Total Debt
                   </span>
                 </div>
-                <div className="text-2xl font-bold">{formatMoney(totalDebt)}</div>
+                <div className="text-2xl font-bold">{formatMoney(totalDebt, intlLocale)}</div>
               </div>
               {debtFields.map((field, i) => (
                 <div
@@ -593,7 +610,9 @@ export default function ProfilePage() {
                   <div className="text-xs font-semibold uppercase tracking-[0.18em] text-default-500">
                     Goal Target Total
                   </div>
-                  <div className="mt-2 text-3xl font-bold">{formatMoney(totalGoalTarget)}</div>
+                  <div className="mt-2 text-3xl font-bold">
+                    {formatMoney(totalGoalTarget, intlLocale)}
+                  </div>
                   <div className="mt-2 text-sm text-default-500">
                     {goals.length} goal{goals.length === 1 ? '' : 's'} tracked
                   </div>
@@ -644,7 +663,7 @@ export default function ProfilePage() {
           </div>
 
           {saveError && <p className="text-danger text-sm">{saveError}</p>}
-          {saveSuccess && <p className="text-success text-sm">Profile saved successfully.</p>}
+          {saveSuccess && <p className="text-success text-sm">{t('profile.saved')}</p>}
 
           <Button
             type="submit"
@@ -653,7 +672,7 @@ export default function ProfilePage() {
             className="clay-btn gap-2 w-full sm:w-auto"
           >
             <Save size={16} />
-            {isSubmitting ? 'Saving…' : 'Save Profile'}
+            {isSubmitting ? t('common.saving') : t('profile.saveButton')}
           </Button>
         </form>
       </main>

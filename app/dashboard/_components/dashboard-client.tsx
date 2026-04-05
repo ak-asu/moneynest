@@ -4,12 +4,14 @@ import { Button } from '@heroui/react'
 import { RefreshCw } from 'lucide-react'
 import { SuggestionCard } from './suggestion-card'
 import type { DbSuggestion } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 interface DashboardClientProps {
   initialSuggestions: DbSuggestion[]
 }
 
 export function DashboardClient({ initialSuggestions }: DashboardClientProps) {
+  const { t } = useI18n()
   const [suggestions, setSuggestions] = useState<DbSuggestion[]>(initialSuggestions)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -39,7 +41,7 @@ export function DashboardClient({ initialSuggestions }: DashboardClientProps) {
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">Vela Suggests</h2>
+        <h2 className="text-lg font-bold">{t('dashboard.suggests')}</h2>
         <Button
           size="sm"
           variant="ghost"
@@ -48,13 +50,13 @@ export function DashboardClient({ initialSuggestions }: DashboardClientProps) {
           className="clay-btn gap-1"
         >
           <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
-          Refresh
+          {t('common.refresh')}
         </Button>
       </div>
 
       {suggestions.length === 0 ? (
         <div className="clay-card p-8 flex flex-col items-center gap-3 text-center">
-          <p className="text-default-400 text-sm">No suggestions right now.</p>
+          <p className="text-default-400 text-sm">{t('dashboard.noSuggestions')}</p>
           <Button
             size="sm"
             variant="outline"
@@ -62,7 +64,7 @@ export function DashboardClient({ initialSuggestions }: DashboardClientProps) {
             isDisabled={refreshing}
             className="clay-btn"
           >
-            Generate suggestions
+            {t('dashboard.generateSuggestions')}
           </Button>
         </div>
       ) : (

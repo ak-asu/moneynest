@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Trophy } from 'lucide-react'
 import type { DbLeaderboardEntry } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 const MEDAL = ['🥇', '🥈', '🥉']
 
@@ -10,6 +11,7 @@ interface LeaderboardProps {
 }
 
 export function Leaderboard({ compact = false }: LeaderboardProps) {
+  const { t } = useI18n()
   const [entries, setEntries] = useState<DbLeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -27,13 +29,15 @@ export function Leaderboard({ compact = false }: LeaderboardProps) {
     <section aria-label="XP Leaderboard">
       <div>
         <Trophy size={13} className="text-warning-500 shrink-0" />
-        <h2 className="font-bold text-xs text-default-600 uppercase tracking-wide">Leaderboard</h2>
+        <h2 className="font-bold text-xs text-default-600 uppercase tracking-wide">
+          {t('leaderboard.title')}
+        </h2>
       </div>
       <div className="rounded-xl border border-divider overflow-hidden bg-default-50">
         {loading ? (
-          <p className="text-default-400 text-xs p-3">Loading…</p>
+          <p className="text-default-400 text-xs p-3">{t('common.loading')}</p>
         ) : entries.length === 0 ? (
-          <p className="text-default-400 text-xs p-3">No XP yet — play a game!</p>
+          <p className="text-default-400 text-xs p-3">{t('leaderboard.noneSubtitle')}</p>
         ) : (
           <ul className="divide-y divide-divider">
             {visible.map((entry) => (

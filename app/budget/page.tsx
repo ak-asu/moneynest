@@ -9,9 +9,12 @@ import { AddEntryForm } from './_components/add-entry-form'
 import { CsvImport } from './_components/csv-import'
 import { ProfileSyncBanner } from './_components/profile-sync-banner'
 import type { DbBudgetEntry, DbProfile } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
+import type { Locale } from '@/lib/i18n/config'
 
 function SummaryCard({ label, value, color }: { label: string; value: number; color: string }) {
-  const formatted = `$${Math.abs(value).toLocaleString()}`
+  const { formatCurrency } = useI18n()
+  const formatted = formatCurrency(Math.abs(value), { maximumFractionDigits: 0 })
   return (
     <dl className="clay-card p-4 flex flex-col gap-1">
       <dt className="text-xs font-semibold text-default-400 uppercase tracking-wide">{label}</dt>
@@ -20,8 +23,8 @@ function SummaryCard({ label, value, color }: { label: string; value: number; co
   )
 }
 
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(
+function formatDate(iso: string, intlLocale: string) {
+  return new Intl.DateTimeFormat(intlLocale, { month: 'short', day: 'numeric' }).format(
     new Date(iso + 'T00:00:00')
   )
 }
@@ -73,7 +76,11 @@ function hasMeaningfulDiff(
 }
 
 /** Builds the pre-filled Vela chat message from the current entries. */
-function buildVelaSeed(entries: DbBudgetEntry[]): string {
+function buildVelaSeed(
+  entries: DbBudgetEntry[],
+  locale: Locale,
+  formatNumber: (value: number) => string
+): string {
   const totalIncome = entries
     .filter((e) => e.entry_type === 'income')
     .reduce((s, e) => s + e.amount, 0)
@@ -89,7 +96,7 @@ function buildVelaSeed(entries: DbBudgetEntry[]): string {
   const top5 = Object.entries(catTotals)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
-    .map(([cat, amt]) => `${cat}: $${Math.round(amt).toLocaleString()}`)
+    .map(([cat, amt]) => `${cat}: $${formatNumber(Math.round(amt))}`)
     .join(', ')
 
   const d30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -103,11 +110,23 @@ function buildVelaSeed(entries: DbBudgetEntry[]): string {
   const trend =
     prevTotal > 0 ? (recentTotal > prevTotal ? 'trending up' : 'trending down') : 'no prior data'
 
+  if (locale === 'es') {
+    return (
+      `Este es mi resumen de presupuesto de los últimos 90 días: ` +
+      `Ingresos $${formatNumber(totalIncome)}, ` +
+      `Gastos $${formatNumber(totalExpenses)}, ` +
+      `${surplus >= 0 ? 'Superávit' : 'Déficit'} $${formatNumber(Math.abs(surplus))}. ` +
+      `Categorías con más gasto: ${top5 || 'ninguna'}. ` +
+      `Tendencia de gasto vs los 30 días previos: ${trend}. ` +
+      `¿Puedes analizarlo y sugerirme cómo mejorar?`
+    )
+  }
+
   return (
     `Here's my budget breakdown for the last 90 days: ` +
-    `Income $${totalIncome.toLocaleString()}, ` +
-    `Expenses $${totalExpenses.toLocaleString()}, ` +
-    `${surplus >= 0 ? 'Surplus' : 'Deficit'} $${Math.abs(surplus).toLocaleString()}. ` +
+    `Income $${formatNumber(totalIncome)}, ` +
+    `Expenses $${formatNumber(totalExpenses)}, ` +
+    `${surplus >= 0 ? 'Surplus' : 'Deficit'} $${formatNumber(Math.abs(surplus))}. ` +
     `Top spending categories: ${top5 || 'none'}. ` +
     `Spending trend vs prior 30 days: ${trend}. ` +
     `Can you help me analyze this and suggest ways to improve?`
@@ -115,6 +134,7 @@ function buildVelaSeed(entries: DbBudgetEntry[]): string {
 }
 
 export default function BudgetPage() {
+  const { t, formatNumber, locale, intlLocale } = useI18n()
   const router = useRouter()
   const [entries, setEntries] = useState<DbBudgetEntry[]>([])
   const [loading, setLoading] = useState(true)
@@ -133,7 +153,7 @@ export default function BudgetPage() {
         fetch('/api/profile'),
       ])
       if (!entriesRes.ok) {
-        setFetchError(`Failed to load entries (${entriesRes.status}). Please try again.`)
+        setFetchError(t('budget.fetchFailed', { status: entriesRes.status }))
         return
       }
       const data: DbBudgetEntry[] = await entriesRes.json()
@@ -149,11 +169,11 @@ export default function BudgetPage() {
         }
       }
     } catch {
-      setFetchError('Network error — please try again.')
+      setFetchError(t('budget.networkFailed'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     load()
@@ -261,9 +281,9 @@ export default function BudgetPage() {
   }, [syncBanner, profile])
 
   const handleAnalyzeWithVela = useCallback(() => {
-    sessionStorage.setItem('vela_chat_seed', buildVelaSeed(entries))
+    sessionStorage.setItem('vela_chat_seed', buildVelaSeed(entries, locale, formatNumber))
     router.push('/chat')
-  }, [entries, router])
+  }, [entries, formatNumber, locale, router])
 
   return (
     <div className="flex h-[100dvh] min-h-0 overflow-hidden">
@@ -272,8 +292,8 @@ export default function BudgetPage() {
         <div className="mx-auto w-full max-w-5xl p-6 space-y-6">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-2xl font-bold">Budget & Tracking</h1>
-              <p className="text-default-500 text-sm mt-1">Last 90 days of activity.</p>
+              <h1 className="text-2xl font-bold">{t('budget.title')}</h1>
+              <p className="text-default-500 text-sm mt-1">{t('budget.subtitle')}</p>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -284,7 +304,7 @@ export default function BudgetPage() {
                 className="clay-btn gap-1"
               >
                 <BrainCircuit size={14} />
-                Analyze with Vela
+                {t('budget.analyze')}
               </Button>
               <AddEntryForm onAdded={handleAdded} />
             </div>
@@ -302,10 +322,18 @@ export default function BudgetPage() {
 
           {/* Summary cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <SummaryCard label="Income" value={totalIncome} color="text-success-600" />
-            <SummaryCard label="Expenses" value={totalExpenses} color="text-danger-600" />
             <SummaryCard
-              label={surplus >= 0 ? 'Surplus' : 'Deficit'}
+              label={t('budget.summary.income')}
+              value={totalIncome}
+              color="text-success-600"
+            />
+            <SummaryCard
+              label={t('budget.summary.expenses')}
+              value={totalExpenses}
+              color="text-danger-600"
+            />
+            <SummaryCard
+              label={surplus >= 0 ? t('budget.summary.surplus') : t('budget.summary.deficit')}
               value={surplus}
               color={surplus >= 0 ? 'text-primary-600' : 'text-warning-600'}
             />
@@ -316,21 +344,19 @@ export default function BudgetPage() {
 
           {/* CSV Import */}
           <div className="clay-card p-5 space-y-3">
-            <h2 className="font-bold text-sm">Import from Bank / App</h2>
+            <h2 className="font-bold text-sm">{t('budget.importTitle')}</h2>
             <CsvImport onImported={handleImported} />
           </div>
 
           {/* Entries list */}
           <div className="clay-card p-5 space-y-3">
-            <h2 className="font-bold text-sm">Recent Entries</h2>
+            <h2 className="font-bold text-sm">{t('budget.entriesTitle')}</h2>
             {loading ? (
-              <p className="text-default-400 text-sm">Loading…</p>
+              <p className="text-default-400 text-sm">{t('common.loading')}</p>
             ) : fetchError ? (
               <p className="text-danger text-sm">{fetchError}</p>
             ) : entries.length === 0 ? (
-              <p className="text-default-400 text-sm">
-                No entries yet. Add one above or import a CSV.
-              </p>
+              <p className="text-default-400 text-sm">{t('budget.noEntries')}</p>
             ) : (
               <div className="space-y-1">
                 {entries.map((entry) => (
@@ -345,7 +371,7 @@ export default function BudgetPage() {
                       />
                       <span className="text-sm text-default-700 truncate">{entry.category}</span>
                       <span className="text-xs text-default-400 shrink-0">
-                        {formatDate(entry.date)}
+                        {formatDate(entry.date, intlLocale)}
                       </span>
                       {entry.source === 'csv' && (
                         <span className="shrink-0 text-xs bg-default-100 text-default-500 px-1.5 py-0.5 rounded-md">
@@ -356,7 +382,7 @@ export default function BudgetPage() {
                     <span
                       className={`text-sm font-semibold shrink-0 ml-4 ${entry.entry_type === 'income' ? 'text-success-600' : 'text-danger-600'}`}
                     >
-                      {entry.entry_type === 'income' ? '+' : '-'}${entry.amount.toLocaleString()}
+                      {entry.entry_type === 'income' ? '+' : '-'}${formatNumber(entry.amount)}
                     </span>
                   </div>
                 ))}

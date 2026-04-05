@@ -43,20 +43,26 @@ export async function POST(req: Request) {
     profileData.onboarding_completed = Boolean(body.onboarding_completed)
   }
 
-  const savingsBalance =
-    typeof body.savings_balance === 'number'
-      ? body.savings_balance
-      : Number(body.savings_balance) || 0
-  profileData.savings_balance = savingsBalance
+  let savingsBalanceForScore: number | undefined
+  if (body.savings_balance !== undefined) {
+    const parsedSavings =
+      typeof body.savings_balance === 'number'
+        ? body.savings_balance
+        : Number(body.savings_balance) || 0
+    profileData.savings_balance = parsedSavings
+    savingsBalanceForScore = parsedSavings
+  }
+
   if (
     profileData.income_monthly != null &&
     profileData.expenses != null &&
     profileData.debts != null &&
-    profileData.goals != null
+    profileData.goals != null &&
+    savingsBalanceForScore != null
   ) {
     profileData.financial_health_score = computeHealthScore(
       profileData as DbProfile,
-      savingsBalance
+      savingsBalanceForScore
     )
   }
 

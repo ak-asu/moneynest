@@ -19,6 +19,7 @@ import { COMPONENT_REGISTRY } from '@/components/generative/component-registry'
 import { GAME_CATALOG } from '@/lib/games/catalog'
 import type { CatalogGame } from '@/lib/games/catalog'
 import type { DbSavedItem, SavedItemType } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 // Minimal shape the modal needs — satisfied by both DbSavedItem and catalog entries
 interface DialogItem {
@@ -30,13 +31,13 @@ interface DialogItem {
   created_at: string | null
 }
 
-const TYPE_LABELS: Record<SavedItemType, string> = {
-  simulation: 'Simulation',
-  game: 'Game',
-  learning: 'Learning',
-  plan: 'Plan',
-  document: 'Document',
-  audio: 'Audio',
+const TYPE_LABEL_KEYS: Record<SavedItemType, string> = {
+  simulation: 'library.type.simulation',
+  game: 'library.type.game',
+  learning: 'library.type.learning',
+  plan: 'library.type.plan',
+  document: 'library.type.document',
+  audio: 'library.type.audio',
 }
 
 const TYPE_CHIP_COLOR: Record<
@@ -51,26 +52,26 @@ const TYPE_CHIP_COLOR: Record<
   audio: 'danger',
 }
 
-const GAME_TYPE_LABELS: Record<string, string> = {
-  allocation_puzzle: 'Allocation',
-  time_pressure: 'Time Challenge',
-  tradeoff_slider: 'Tradeoff',
-  drag_drop: 'Drag & Drop',
-  insurance_card_game: 'Insurance Card',
-  credit_quest_game: 'Credit Score Sim',
-  term_match: 'Term Match',
-  fin_word: 'FinWord',
-  wealth_farm: 'Wealth Farm',
+const GAME_TYPE_LABEL_KEYS: Record<string, string> = {
+  allocation_puzzle: 'library.gameType.allocation_puzzle',
+  time_pressure: 'library.gameType.time_pressure',
+  tradeoff_slider: 'library.gameType.tradeoff_slider',
+  drag_drop: 'library.gameType.drag_drop',
+  insurance_card_game: 'library.gameType.insurance_card_game',
+  credit_quest_game: 'library.gameType.credit_quest_game',
+  term_match: 'library.gameType.term_match',
+  fin_word: 'library.gameType.fin_word',
+  wealth_farm: 'library.gameType.wealth_farm',
 }
 
-const FILTER_OPTIONS: Array<{ value: SavedItemType | 'all'; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'game', label: 'Game' },
-  { value: 'simulation', label: 'Simulation' },
-  { value: 'learning', label: 'Learning' },
-  { value: 'plan', label: 'Plan' },
-  { value: 'document', label: 'Document' },
-  { value: 'audio', label: 'Audio' },
+const FILTER_OPTIONS: Array<{ value: SavedItemType | 'all'; labelKey: string }> = [
+  { value: 'all', labelKey: 'common.all' },
+  { value: 'game', labelKey: 'library.type.game' },
+  { value: 'simulation', labelKey: 'library.type.simulation' },
+  { value: 'learning', labelKey: 'library.type.learning' },
+  { value: 'plan', labelKey: 'library.type.plan' },
+  { value: 'document', labelKey: 'library.type.document' },
+  { value: 'audio', labelKey: 'library.type.audio' },
 ]
 
 const MINI_GAME_PREVIEW_PLACEHOLDER = '/assets/mini-game-placeholder.svg'
@@ -94,10 +95,10 @@ function catalogToDialogItem(game: CatalogGame): DialogItem {
   }
 }
 
-function formatDate(iso: string) {
+function formatDate(iso: string, intlLocale: string, unknownLabel: string) {
   const d = new Date(iso)
-  if (isNaN(d.getTime())) return 'Unknown date'
-  return new Intl.DateTimeFormat('en-US', {
+  if (isNaN(d.getTime())) return unknownLabel
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -111,6 +112,9 @@ function CatalogGameCard({
   game: CatalogGame
   onOpen: (item: DialogItem) => void
 }) {
+  const { t } = useI18n()
+  const gameTypeLabelKey = GAME_TYPE_LABEL_KEYS[game.game_type]
+
   return (
     <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 p-5 transition-all duration-300 hover:-translate-y-1">
       <div className="relative overflow-hidden rounded-2xl border border-default-200 bg-default-100/60">
@@ -126,7 +130,7 @@ function CatalogGameCard({
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-sm leading-snug flex-1 min-w-0 truncate">{game.title}</h3>
         <Chip size="sm" color="default" variant="soft" className="shrink-0 text-xs">
-          {GAME_TYPE_LABELS[game.game_type] ?? game.game_type}
+          {gameTypeLabelKey ? t(gameTypeLabelKey) : game.game_type}
         </Chip>
       </div>
       <p className="text-xs text-default-400 line-clamp-3 flex-1">{game.instructions}</p>
@@ -141,13 +145,15 @@ function CatalogGameCard({
           aria-hidden="true"
           className="transition-transform duration-300 group-hover/play:[animation:controller-wiggle_300ms_ease-in-out_infinite]"
         />
-        Play
+        {t('library.play')}
       </Button>
     </div>
   )
 }
 
 function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: DialogItem) => void }) {
+  const { t, intlLocale } = useI18n()
+
   return (
     <div className="clay-card group relative flex h-full overflow-hidden flex-col gap-3 p-5 transition-all duration-300 hover:-translate-y-1">
       <div className="flex items-start justify-between gap-2">
@@ -158,17 +164,21 @@ function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: Dialo
           variant="soft"
           className="shrink-0 text-xs capitalize"
         >
-          {TYPE_LABELS[item.type]}
+          {t(TYPE_LABEL_KEYS[item.type])}
         </Chip>
       </div>
-      <p className="text-xs text-default-400 flex-1">Saved {formatDate(item.created_at)}</p>
+      <p className="text-xs text-default-400 flex-1">
+        {t('library.savedOn', {
+          date: formatDate(item.created_at, intlLocale, t('common.unknownDate')),
+        })}
+      </p>
       <Button
         size="sm"
         variant="ghost"
         onPress={() => onOpen(item as unknown as DialogItem)}
         className="clay-btn group/play mt-auto w-full gap-2 border border-primary/25 bg-primary/10 text-primary-700 transition-all duration-300 hover:-translate-y-0.5"
       >
-        Open
+        {t('library.open')}
         <ExternalLink size={13} aria-hidden="true" />
       </Button>
     </div>
@@ -176,6 +186,7 @@ function LibraryCard({ item, onOpen }: { item: DbSavedItem; onOpen: (item: Dialo
 }
 
 export default function LibraryPage() {
+  const { t, intlLocale } = useI18n()
   const [items, setItems] = useState<DbSavedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -189,17 +200,17 @@ export default function LibraryPage() {
     try {
       const res = await fetch('/api/library')
       if (!res.ok) {
-        setFetchError(`Failed to load library (${res.status}). Please try again.`)
+        setFetchError(t('library.fetchFailed', { status: res.status }))
         return
       }
       const data: DbSavedItem[] = await res.json()
       setItems(data)
     } catch {
-      setFetchError('Network error — please try again.')
+      setFetchError(t('library.networkFailed'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     load()
@@ -245,10 +256,8 @@ export default function LibraryPage() {
           {/* Header + search */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">Library</h1>
-              <p className="text-default-500 text-sm mt-1">
-                Pre-built games and your saved content from Vela.
-              </p>
+              <h1 className="text-2xl font-bold">{t('library.title')}</h1>
+              <p className="text-default-500 text-sm mt-1">{t('library.subtitle')}</p>
             </div>
             <div className="relative w-full sm:w-64">
               <Search
@@ -257,7 +266,7 @@ export default function LibraryPage() {
               />
               <input
                 type="search"
-                placeholder="Search…"
+                placeholder={t('common.search')}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="clay-input w-full pl-9 pr-3 py-2 text-sm outline-none"
@@ -275,7 +284,7 @@ export default function LibraryPage() {
                 onPress={() => setActiveFilter(opt.value)}
                 className="clay-btn rounded-full"
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </Button>
             ))}
           </div>
@@ -283,7 +292,7 @@ export default function LibraryPage() {
           {/* Catalog games */}
           {visibleCatalog.length > 0 && (
             <section aria-label="Mini-games">
-              <h2 className="font-bold text-sm mb-3">Mini-Games</h2>
+              <h2 className="font-bold text-sm mb-3">{t('library.miniGames')}</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
                 {visibleCatalog.map((game) => (
                   <CatalogGameCard key={game.id} game={game} onOpen={setDialogItem} />
@@ -299,7 +308,7 @@ export default function LibraryPage() {
             <p className="text-danger text-sm">{fetchError}</p>
           ) : visibleItems.length > 0 ? (
             <section aria-label="Saved items">
-              <h2 className="font-bold text-sm mb-3">Saved</h2>
+              <h2 className="font-bold text-sm mb-3">{t('library.savedItems')}</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
                 {visibleItems.map((item) => (
                   <LibraryCard key={item.id} item={item} onOpen={setDialogItem} />
@@ -309,12 +318,10 @@ export default function LibraryPage() {
           ) : visibleCatalog.length === 0 ? (
             <div className="clay-card p-8 text-center">
               <p className="font-semibold text-default-600">
-                {query ? 'No results' : 'Your library is empty'}
+                {query ? t('library.noResults') : t('library.empty')}
               </p>
               <p className="text-default-400 text-sm mt-1">
-                {query
-                  ? 'Try a different search term or clear the filter.'
-                  : 'Save simulations, plans, and learning cards from chat to see them here.'}
+                {query ? t('library.noResultsHint') : t('library.emptyHint')}
               </p>
             </div>
           ) : null}
@@ -334,8 +341,16 @@ export default function LibraryPage() {
                 <ModalHeading>{dialogItem?.title ?? ''}</ModalHeading>
                 {dialogItem && (
                   <p className="text-xs text-default-400 mt-0.5">
-                    {TYPE_LABELS[dialogItem.type]}
-                    {dialogItem.created_at ? ` · Saved ${formatDate(dialogItem.created_at)}` : ''}
+                    {t(TYPE_LABEL_KEYS[dialogItem.type])}
+                    {dialogItem.created_at
+                      ? ` · ${t('library.savedOn', {
+                          date: formatDate(
+                            dialogItem.created_at,
+                            intlLocale,
+                            t('common.unknownDate')
+                          ),
+                        })}`
+                      : ''}
                   </p>
                 )}
                 <ModalCloseTrigger />
@@ -344,7 +359,7 @@ export default function LibraryPage() {
                 {DialogComponent && dialogItem ? (
                   <DialogComponent {...dialogItem.component_props} />
                 ) : (
-                  <p className="text-sm text-default-400">This component cannot be previewed.</p>
+                  <p className="text-sm text-default-400">{t('library.unavailablePreview')}</p>
                 )}
               </ModalBody>
             </ModalDialog>

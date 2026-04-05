@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@heroui/react'
 import { Building2 } from 'lucide-react'
+import { useI18n } from '@/components/i18n-provider'
 
 declare global {
   interface Window {
@@ -14,6 +15,7 @@ interface PlaidPathProps {
 }
 
 export function PlaidPath({ onComplete }: PlaidPathProps) {
+  const { t } = useI18n()
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [institutionName, setInstitutionName] = useState('')
 
@@ -55,23 +57,25 @@ export function PlaidPath({ onComplete }: PlaidPathProps) {
     <div className="flex flex-col items-center gap-6 py-8">
       <Building2 size={48} className="text-primary" />
       <p className="text-sm text-default-600 text-center max-w-xs">
-        Securely connect your bank. Vela reads transactions read-only — it can never move money.
+        {t('onboarding.plaid.prompt')}
       </p>
       {status === 'idle' && (
         <Button variant="primary" size="lg" className="clay-btn" onPress={openPlaid}>
-          Connect my bank
+          {t('onboarding.plaid.connect')}
         </Button>
       )}
-      {status === 'loading' && <p className="text-sm text-primary animate-pulse">Connecting...</p>}
-      {status === 'error' && (
-        <p className="text-danger text-sm">Connection failed. Please try again.</p>
+      {status === 'loading' && (
+        <p className="text-sm text-primary animate-pulse">{t('onboarding.plaid.connecting')}</p>
       )}
+      {status === 'error' && <p className="text-danger text-sm">{t('onboarding.plaid.failed')}</p>}
       {status === 'done' && (
         <div className="clay-card p-4 text-center flex flex-col gap-3">
-          <p className="font-semibold">✅ {institutionName} connected</p>
-          <p className="text-xs text-default-500">Your last 30 days of transactions imported</p>
+          <p className="font-semibold">
+            {t('onboarding.plaid.connected', { institution: institutionName })}
+          </p>
+          <p className="text-xs text-default-500">{t('onboarding.plaid.imported')}</p>
           <Button variant="primary" className="clay-btn" onPress={onComplete}>
-            Go to Dashboard
+            {t('onboarding.voice.goDashboard')}
           </Button>
         </div>
       )}

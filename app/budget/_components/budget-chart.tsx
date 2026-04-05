@@ -11,12 +11,15 @@ import {
   Legend,
 } from 'recharts'
 import type { DbBudgetEntry } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 interface BudgetChartProps {
   entries: DbBudgetEntry[]
 }
 
 export function BudgetChart({ entries }: BudgetChartProps) {
+  const { t, intlLocale, formatNumber } = useI18n()
+
   // Group by month for the trend chart (last 6 months)
   const byMonth: Record<string, { income: number; expense: number }> = {}
   for (const e of entries) {
@@ -28,7 +31,7 @@ export function BudgetChart({ entries }: BudgetChartProps) {
     .sort(([a], [b]) => a.localeCompare(b))
     .slice(-6)
     .map(([month, totals]) => ({
-      month: new Date(month + '-01').toLocaleDateString('en-US', {
+      month: new Date(month + '-01').toLocaleDateString(intlLocale, {
         month: 'short',
         year: '2-digit',
         timeZone: 'UTC',
@@ -52,7 +55,7 @@ export function BudgetChart({ entries }: BudgetChartProps) {
   if (entries.length === 0) {
     return (
       <div className="clay-card p-8 text-center text-default-400 text-sm">
-        No data yet. Add entries or import a CSV to see charts.
+        {t('budget.chartNoData')}
       </div>
     )
   }
@@ -62,7 +65,7 @@ export function BudgetChart({ entries }: BudgetChartProps) {
       {monthData.length > 0 && (
         <div className="clay-card p-5">
           <h3 className="text-sm font-semibold text-default-600 mb-4">
-            Monthly Income vs Expenses
+            {t('budget.chartMonthly')}
           </h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={monthData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
@@ -71,12 +74,22 @@ export function BudgetChart({ entries }: BudgetChartProps) {
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip
                 formatter={(v: unknown) =>
-                  typeof v === 'number' ? `$${v.toLocaleString()}` : String(v)
+                  typeof v === 'number' ? `$${formatNumber(v)}` : String(v)
                 }
               />
               <Legend />
-              <Bar dataKey="income" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="expense" name="Expenses" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="income"
+                name={t('budget.summary.income')}
+                fill="#10b981"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="expense"
+                name={t('budget.summary.expenses')}
+                fill="#f43f5e"
+                radius={[4, 4, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -84,7 +97,9 @@ export function BudgetChart({ entries }: BudgetChartProps) {
 
       {categoryData.length > 0 && (
         <div className="clay-card p-5">
-          <h3 className="text-sm font-semibold text-default-600 mb-4">Top Expense Categories</h3>
+          <h3 className="text-sm font-semibold text-default-600 mb-4">
+            {t('budget.chartTopExpense')}
+          </h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart
               data={categoryData}
@@ -96,10 +111,15 @@ export function BudgetChart({ entries }: BudgetChartProps) {
               <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} width={80} />
               <Tooltip
                 formatter={(v: unknown) =>
-                  typeof v === 'number' ? `$${v.toLocaleString()}` : String(v)
+                  typeof v === 'number' ? `$${formatNumber(v)}` : String(v)
                 }
               />
-              <Bar dataKey="amount" name="Total spent" fill="#818cf8" radius={[0, 4, 4, 0]} />
+              <Bar
+                dataKey="amount"
+                name={t('budget.chartTotalSpent')}
+                fill="#818cf8"
+                radius={[0, 4, 4, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

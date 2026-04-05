@@ -3,17 +3,13 @@
 import { createClient } from '@/lib/supabase/client'
 import { Suspense, FormEvent, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useI18n } from '@/components/i18n-provider'
 
 type AuthMode = 'sign-in' | 'sign-up'
 
-const QUERY_ERROR_MESSAGES: Record<string, string> = {
-  missing_code: 'Google sign-in was interrupted. Please try again.',
-  auth_failed: 'We could not complete Google sign-in. Please try again.',
-}
-
-function normalizeAuthMessage(message: string) {
+function normalizeAuthMessage(message: string, t: (key: string) => string) {
   if (message.toLowerCase().includes('invalid login credentials')) {
-    return 'Invalid email or password.'
+    return t('login.invalidCredentials')
   }
   return message
 }
@@ -31,18 +27,22 @@ export default function LoginPage() {
 }
 
 function LoginPageContent() {
+  const { t } = useI18n()
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const searchParams = useSearchParams()
   const queryError = searchParams.get('error')
 
+  const queryErrorMessageMap: Record<string, string> = {
+    missing_code: t('login.interrupted'),
+    auth_failed: t('login.failedGoogle'),
+  }
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState<AuthMode>('sign-in')
   const [errorMessage, setErrorMessage] = useState<string | null>(
-    queryError
-      ? (QUERY_ERROR_MESSAGES[queryError] ?? 'Authentication error. Please try again.')
-      : null
+    queryError ? (queryErrorMessageMap[queryError] ?? t('login.authError')) : null
   )
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -52,7 +52,7 @@ function LoginPageContent() {
     const response = await fetch('/auth/session', { method: 'POST' })
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null
-      throw new Error(payload?.error ?? 'Failed to initialize your account.')
+      throw new Error(payload?.error ?? t('login.initAccountError'))
     }
   }
 
@@ -88,10 +88,10 @@ function LoginPageContent() {
         return
       }
 
-      setSuccessMessage('Account created. Check your email to verify your address, then sign in.')
+      setSuccessMessage(t('login.accountCreated'))
     } catch (error) {
       const message =
-        error instanceof Error ? normalizeAuthMessage(error.message) : 'Authentication failed.'
+        error instanceof Error ? normalizeAuthMessage(error.message, t) : t('login.authFailed')
       setErrorMessage(message)
     } finally {
       setIsSubmitting(false)
@@ -109,7 +109,7 @@ function LoginPageContent() {
     })
 
     if (error) {
-      setErrorMessage(normalizeAuthMessage(error.message))
+      setErrorMessage(normalizeAuthMessage(error.message, t))
       setIsGoogleLoading(false)
     }
   }
@@ -125,14 +125,13 @@ function LoginPageContent() {
       <div className="relative mx-auto grid min-h-screen w-full max-w-6xl items-center gap-10 px-6 py-10 lg:grid-cols-[1.1fr_1fr] lg:px-12">
         <section className="space-y-6">
           <p className="inline-flex items-center rounded-full border border-primary/25 bg-primary/10 px-4 py-1 text-xs font-semibold tracking-[0.16em] text-primary-700 uppercase">
-            Vela Financial Companion
+            {t('login.heroBadge')}
           </p>
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-foreground sm:text-5xl">
-            Manage life with calm, clear money decisions.
+            {t('login.heroTitle')}
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-default-600 sm:text-base">
-            Track your financial pulse, spot risks early, and build confidence with guidance made
-            for real everyday choices.
+            {t('login.heroSubtitle')}
           </p>
         </section>
 
@@ -151,7 +150,7 @@ function LoginPageContent() {
                   : 'text-default-600 hover:text-foreground'
               }`}
             >
-              Sign in
+              {t('login.signIn')}
             </button>
             <button
               type="button"
@@ -166,14 +165,14 @@ function LoginPageContent() {
                   : 'text-default-600 hover:text-foreground'
               }`}
             >
-              Create account
+              {t('login.createAccount')}
             </button>
           </div>
 
           <form className="space-y-4" onSubmit={handlePasswordAuth}>
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-default-700" htmlFor="email">
-                Email
+                {t('login.email')}
               </label>
               <input
                 id="email"
@@ -183,13 +182,13 @@ function LoginPageContent() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 className="clay-input w-full px-4 py-3 text-sm outline-none transition"
-                placeholder="you@example.com"
+                placeholder={t('login.emailPlaceholder')}
               />
             </div>
 
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-default-700" htmlFor="password">
-                Password
+                {t('login.password')}
               </label>
               <input
                 id="password"
@@ -200,7 +199,7 @@ function LoginPageContent() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className="clay-input w-full px-4 py-3 text-sm outline-none transition"
-                placeholder="At least 6 characters"
+                placeholder={t('login.passwordPlaceholder')}
               />
             </div>
 
@@ -222,16 +221,16 @@ function LoginPageContent() {
               className="clay-btn w-full border-primary/35 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary-700 transition hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting
-                ? 'Please wait...'
+                ? t('login.pleaseWait')
                 : mode === 'sign-in'
-                  ? 'Sign in with password'
-                  : 'Create account'}
+                  ? t('login.signInWithPassword')
+                  : t('login.createAccount')}
             </button>
           </form>
 
           <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-[0.12em] text-default-500">
             <span className="h-px flex-1 bg-default-200" />
-            <span>or</span>
+            <span>{t('common.or')}</span>
             <span className="h-px flex-1 bg-default-200" />
           </div>
 
@@ -241,7 +240,7 @@ function LoginPageContent() {
             disabled={isSubmitting || isGoogleLoading}
             className="clay-btn w-full px-4 py-3 text-sm font-semibold text-default-700 transition disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isGoogleLoading ? 'Redirecting...' : 'Continue with Google'}
+            {isGoogleLoading ? t('login.redirecting') : t('login.continueGoogle')}
           </button>
         </section>
       </div>

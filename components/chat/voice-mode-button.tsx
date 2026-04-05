@@ -3,12 +3,14 @@ import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { Mic, MicOff } from 'lucide-react'
 import { useConversation } from '@11labs/react'
+import { useI18n } from '@/components/i18n-provider'
 
 interface VoiceModeButtonProps {
   onTranscript: (text: string) => void
 }
 
 export function VoiceModeButton({ onTranscript }: VoiceModeButtonProps) {
+  const { t } = useI18n()
   const [active, setActive] = useState(false)
   const [pending, setPending] = useState(false)
 
@@ -56,7 +58,7 @@ export function VoiceModeButton({ onTranscript }: VoiceModeButtonProps) {
       isDisabled={pending}
       onPress={active ? stopVoice : startVoice}
       className="clay-btn"
-      aria-label={active ? 'End voice mode' : 'Start voice mode'}
+      aria-label={active ? t('chat.voiceEndAria') : t('chat.voiceStartAria')}
     >
       {active ? <MicOff size={16} /> : <Mic size={16} />}
     </Button>

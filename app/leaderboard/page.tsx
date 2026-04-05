@@ -3,19 +3,21 @@ import { useEffect, useState } from 'react'
 import { AppNav } from '@/components/app-nav'
 import { Trophy } from 'lucide-react'
 import type { DbLeaderboardEntry } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 const MEDAL = ['🥇', '🥈', '🥉']
 
-const XP_BADGE = (xp: number) =>
+const XP_BADGE = (xp: number, t: (key: string) => string) =>
   xp >= 500
-    ? { label: 'Legend', color: 'text-yellow-600 bg-yellow-50' }
+    ? { label: t('leaderboard.legend'), color: 'text-yellow-600 bg-yellow-50' }
     : xp >= 200
-      ? { label: 'Pro', color: 'text-purple-600 bg-purple-50' }
+      ? { label: t('leaderboard.pro'), color: 'text-purple-600 bg-purple-50' }
       : xp >= 100
-        ? { label: 'Rising', color: 'text-blue-600 bg-blue-50' }
-        : { label: 'Beginner', color: 'text-default-500 bg-default-100' }
+        ? { label: t('leaderboard.rising'), color: 'text-blue-600 bg-blue-50' }
+        : { label: t('leaderboard.beginner'), color: 'text-default-500 bg-default-100' }
 
 export default function LeaderboardPage() {
+  const { t } = useI18n()
   const [entries, setEntries] = useState<DbLeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -35,27 +37,25 @@ export default function LeaderboardPage() {
           <div className="flex items-center gap-3">
             <Trophy size={22} className="text-warning-500" />
             <div>
-              <h1 className="text-2xl font-bold">Leaderboard</h1>
-              <p className="text-default-500 text-sm mt-0.5">
-                Top players ranked by XP earned across all games.
-              </p>
+              <h1 className="text-2xl font-bold">{t('leaderboard.title')}</h1>
+              <p className="text-default-500 text-sm mt-0.5">{t('leaderboard.subtitle')}</p>
             </div>
           </div>
 
           {loading ? (
-            <div className="clay-card p-6 text-center text-default-400 text-sm">Loading…</div>
+            <div className="clay-card p-6 text-center text-default-400 text-sm">
+              {t('common.loading')}
+            </div>
           ) : entries.length === 0 ? (
             <div className="clay-card p-8 text-center">
-              <p className="font-semibold text-default-600">No scores yet</p>
-              <p className="text-default-400 text-sm mt-1">
-                Play a game to appear on the leaderboard!
-              </p>
+              <p className="font-semibold text-default-600">{t('leaderboard.noneTitle')}</p>
+              <p className="text-default-400 text-sm mt-1">{t('leaderboard.noneSubtitle')}</p>
             </div>
           ) : (
             <div className="clay-card rounded-2xl overflow-hidden">
               <ul className="divide-y divide-divider">
                 {entries.map((entry) => {
-                  const badge = XP_BADGE(entry.total_xp)
+                  const badge = XP_BADGE(entry.total_xp, t)
                   return (
                     <li key={entry.rank} className="flex items-center gap-4 px-5 py-4">
                       <span className="text-2xl w-8 text-center shrink-0">
@@ -72,7 +72,7 @@ export default function LeaderboardPage() {
                         {badge.label}
                       </span>
                       <span className="text-sm font-bold text-warning-600 shrink-0 min-w-[60px] text-right">
-                        {entry.total_xp} XP
+                        {t('leaderboard.xp', { xp: entry.total_xp })}
                       </span>
                     </li>
                   )

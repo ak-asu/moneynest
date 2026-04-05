@@ -13,8 +13,10 @@ import {
   formatSystemEvent,
   type InteractionEvent,
 } from '@/lib/ai/interaction-events'
+import { useI18n } from '@/components/i18n-provider'
 
 export default function ChatPage() {
+  const { t } = useI18n()
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionListKey, setSessionListKey] = useState(0)
   const [replayIds, setReplayIds] = useState<Set<string>>(new Set())
@@ -174,10 +176,8 @@ export default function ChatPage() {
             {messages.length === 0 && !isLoading && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center max-w-sm">
-                  <p className="text-2xl font-bold text-primary mb-2">Hi, I&apos;m Vela</p>
-                  <p className="text-default-500 text-sm">
-                    Ask me anything about your finances, upload a document, or try a simulation.
-                  </p>
+                  <p className="text-2xl font-bold text-primary mb-2">{t('chat.greetingTitle')}</p>
+                  <p className="text-default-500 text-sm">{t('chat.greetingBody')}</p>
                 </div>
               </div>
             )}
@@ -197,8 +197,8 @@ export default function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKeyDown}
-                aria-label="Message to Vela"
-                placeholder="Ask Vela anything..."
+                aria-label={t('chat.inputAria')}
+                placeholder={t('chat.inputPlaceholder')}
                 rows={2}
                 className="flex-1 clay-input resize-none rounded-xl border border-divider p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
@@ -208,7 +208,7 @@ export default function ChatPage() {
                 variant="primary"
                 isDisabled={isLoading}
                 isIconOnly
-                aria-label="Send message"
+                aria-label={t('chat.sendAria')}
                 className="clay-btn h-10 w-10"
               >
                 <Send size={16} aria-hidden="true" />

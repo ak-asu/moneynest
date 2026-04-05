@@ -2,6 +2,7 @@
 'use client'
 import { Button } from '@heroui/react'
 import { RefreshCw } from 'lucide-react'
+import { useI18n } from '@/components/i18n-provider'
 
 interface ProfileSyncBannerProps {
   suggestedExpenses: Record<string, number>
@@ -16,6 +17,7 @@ export function ProfileSyncBanner({
   onConfirm,
   onDismiss,
 }: ProfileSyncBannerProps) {
+  const { t } = useI18n()
   const top3 = Object.entries(suggestedExpenses)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3)
@@ -29,10 +31,12 @@ export function ProfileSyncBanner({
     >
       <RefreshCw size={16} className="shrink-0 text-warning-600 mt-0.5 sm:mt-0" />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-warning-800">
-          Your budget data suggests different expenses than your profile
-        </p>
-        {top3 && <p className="text-xs text-warning-700 mt-0.5 truncate">Suggested: {top3}</p>}
+        <p className="text-sm font-semibold text-warning-800">{t('budget.syncBannerTitle')}</p>
+        {top3 && (
+          <p className="text-xs text-warning-700 mt-0.5 truncate">
+            {t('budget.syncBannerSuggested', { top3 })}
+          </p>
+        )}
       </div>
       <div className="flex gap-2 shrink-0">
         <Button
@@ -42,7 +46,7 @@ export function ProfileSyncBanner({
           onPress={onConfirm}
           className="clay-btn"
         >
-          {confirming ? 'Updating…' : 'Update profile'}
+          {confirming ? t('budget.syncBannerUpdating') : t('budget.syncBannerUpdate')}
         </Button>
         <Button
           size="sm"
@@ -51,7 +55,7 @@ export function ProfileSyncBanner({
           onPress={onDismiss}
           className="clay-btn"
         >
-          Dismiss
+          {t('common.dismiss')}
         </Button>
       </div>
     </div>

@@ -4,12 +4,14 @@ import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@heroui/react'
 import { Upload, CheckCircle, AlertCircle } from 'lucide-react'
+import { useI18n } from '@/components/i18n-provider'
 
 interface CsvImportProps {
   onImported: (count: number) => void
 }
 
 export function CsvImport({ onImported }: CsvImportProps) {
+  const { t } = useI18n()
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
@@ -29,19 +31,19 @@ export function CsvImport({ onImported }: CsvImportProps) {
         const data = await res.json()
         if (!res.ok) {
           setStatus('error')
-          setMessage(data.error ?? 'Import failed.')
+          setMessage(data.error ?? t('budget.importFailed'))
         } else {
           setStatus('success')
-          setMessage(`${data.imported} entries imported.`)
+          setMessage(t('budget.entriesImported', { count: data.imported }))
           onImported(data.imported)
           setTimeout(() => setStatus('idle'), 4000)
         }
       } catch {
         setStatus('error')
-        setMessage('Failed to read file.')
+        setMessage(t('budget.fileReadFailed'))
       }
     },
-    [onImported]
+    [onImported, t]
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -76,16 +78,20 @@ export function CsvImport({ onImported }: CsvImportProps) {
             onPress={() => setStatus('idle')}
             className="clay-btn"
           >
-            Try again
+            {t('common.tryAgain')}
           </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 text-default-400">
           <Upload size={24} />
           <p className="text-sm font-medium text-default-600">
-            {status === 'uploading' ? 'Importing…' : isDragActive ? 'Drop CSV here' : 'Import CSV'}
+            {status === 'uploading'
+              ? t('budget.importing')
+              : isDragActive
+                ? t('budget.dropCsv')
+                : t('budget.importCsv')}
           </p>
-          <p className="text-xs">YNAB, Mint, or generic bank export. Drag and drop or click.</p>
+          <p className="text-xs">{t('budget.importHelp')}</p>
         </div>
       )}
     </div>

@@ -2,12 +2,14 @@
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, FileCheck, Loader2 } from 'lucide-react'
+import { useI18n } from '@/components/i18n-provider'
 
 interface UploadZoneProps {
   onUploaded: () => void
 }
 
 export function UploadZone({ onUploaded }: UploadZoneProps) {
+  const { t } = useI18n()
   const [uploading, setUploading] = useState(false)
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -56,15 +58,13 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
       <div className="text-center">
         <p className="text-sm font-medium text-default-700">
           {uploading
-            ? 'Analyzing document...'
+            ? t('documents.uploadAnalyzing')
             : isDragActive
-              ? 'Drop to add to vault'
-              : 'Drop a document or click to browse'}
+              ? t('documents.uploadDrop')
+              : t('documents.uploadBrowse')}
         </p>
         {!uploading && !isDragActive && (
-          <p className="text-xs text-default-400 mt-1">
-            Bills · Insurance · Leases · Pay Stubs &nbsp;·&nbsp; PDF or image
-          </p>
+          <p className="text-xs text-default-400 mt-1">{t('documents.uploadHelp')}</p>
         )}
       </div>
     </div>

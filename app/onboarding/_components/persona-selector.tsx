@@ -1,43 +1,49 @@
 'use client'
 import { cn } from '@/lib/utils/cn'
 import type { PersonaType } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
-const PERSONAS: Array<{ value: PersonaType; label: string; emoji: string; description: string }> = [
+const PERSONAS: Array<{
+  value: PersonaType
+  labelKey: string
+  emoji: string
+  descriptionKey: string
+}> = [
   {
     value: 'gig_worker',
-    label: 'Gig Worker',
+    labelKey: 'onboarding.persona.gig_worker.label',
     emoji: '🚗',
-    description: 'Uber, DoorDash, freelance — irregular income',
+    descriptionKey: 'onboarding.persona.gig_worker.description',
   },
   {
     value: 'student',
-    label: 'Student',
+    labelKey: 'onboarding.persona.student.label',
     emoji: '🎓',
-    description: 'College or recent grad, starting out',
+    descriptionKey: 'onboarding.persona.student.description',
   },
   {
     value: 'immigrant',
-    label: 'New to the US',
+    labelKey: 'onboarding.persona.immigrant.label',
     emoji: '🌎',
-    description: 'Navigating a new financial system',
+    descriptionKey: 'onboarding.persona.immigrant.description',
   },
   {
     value: 'single_parent',
-    label: 'Single Parent',
+    labelKey: 'onboarding.persona.single_parent.label',
     emoji: '👨‍👧',
-    description: 'Managing a household solo',
+    descriptionKey: 'onboarding.persona.single_parent.description',
   },
   {
     value: 'retiree',
-    label: 'Retiree',
+    labelKey: 'onboarding.persona.retiree.label',
     emoji: '🏡',
-    description: 'Fixed income, long-term planning',
+    descriptionKey: 'onboarding.persona.retiree.description',
   },
   {
     value: 'other',
-    label: 'Other',
+    labelKey: 'onboarding.persona.other.label',
     emoji: '👤',
-    description: "Something else — we'll adapt to you",
+    descriptionKey: 'onboarding.persona.other.description',
   },
 ]
 
@@ -47,23 +53,25 @@ interface PersonaSelectorProps {
 }
 
 export function PersonaSelector({ value, onChange }: PersonaSelectorProps) {
+  const { t } = useI18n()
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-      {PERSONAS.map((p) => (
+      {PERSONAS.map(({ value: personaValue, labelKey, emoji, descriptionKey }) => (
         <button
-          key={p.value}
+          key={personaValue}
           type="button"
-          onClick={() => onChange(p.value)}
+          onClick={() => onChange(personaValue)}
           className={cn(
             'clay-card p-5 text-left flex flex-col gap-2 cursor-pointer transition-all hover:border-primary-300',
-            value === p.value
+            value === personaValue
               ? 'ring-2 ring-primary border-primary-400 bg-primary-50 scale-[1.02]'
               : 'hover:bg-default-50'
           )}
         >
-          <span className="text-3xl">{p.emoji}</span>
-          <span className="font-semibold text-sm">{p.label}</span>
-          <span className="text-xs text-default-400 leading-relaxed">{p.description}</span>
+          <span className="text-3xl">{emoji}</span>
+          <span className="font-semibold text-sm">{t(labelKey)}</span>
+          <span className="text-xs text-default-400 leading-relaxed">{t(descriptionKey)}</span>
         </button>
       ))}
     </div>

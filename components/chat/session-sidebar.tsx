@@ -4,6 +4,7 @@ import { Button } from '@heroui/react'
 import { Plus, MessageCircle, Trash2, PanelRightClose, PanelRightOpen } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import type { DbChatSession } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 const SIDEBAR_COLLAPSED_KEY = 'vela_chat_sidebar_collapsed'
 
@@ -22,6 +23,7 @@ export function SessionSidebar({
   onNewSession,
   onDeleteSession,
 }: SessionSidebarProps) {
+  const { t } = useI18n()
   const [sessions, setSessions] = useState<DbChatSession[]>([])
   const [collapsed, setCollapsed] = useState(false)
 
@@ -65,12 +67,12 @@ export function SessionSidebar({
         {!collapsed && (
           <Button onPress={onNewSession} size="sm" variant="primary" fullWidth className="clay-btn">
             <Plus size={14} />
-            New chat
+            {t('chat.sidebarNewChat')}
           </Button>
         )}
         <button
           type="button"
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
           onClick={() => setCollapsed((prev) => !prev)}
           className="clay-btn h-8 w-8 shrink-0 text-default-700 transition-colors grid place-items-center"
         >
@@ -81,7 +83,7 @@ export function SessionSidebar({
         <div className="px-2 pt-2">
           <button
             type="button"
-            title="New chat"
+            title={t('chat.sidebarNewChat')}
             onClick={onNewSession}
             className="clay-btn w-full h-8 text-default-700 hover:bg-primary/10 hover:text-primary-700 transition-colors grid place-items-center"
           >
@@ -118,7 +120,7 @@ export function SessionSidebar({
                   e.stopPropagation()
                   onDeleteSession(s.id)
                 }}
-                aria-label={`Delete "${s.title}"`}
+                aria-label={t('chat.sidebarDeleteAria', { title: s.title })}
                 className="shrink-0 opacity-0 group-hover:opacity-100 p-1.5 mr-1 rounded-lg hover:bg-danger-50/80 hover:text-danger-600 transition-all"
               >
                 <Trash2 size={13} />

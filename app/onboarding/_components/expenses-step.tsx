@@ -3,17 +3,7 @@ import { useForm } from 'react-hook-form'
 import { Button } from '@heroui/react'
 import { MoneyInput } from '@/components/ui/money-input'
 import type { OnboardingFormData } from './form-schema'
-
-const EXPENSE_FIELDS: {
-  name: keyof Pick<OnboardingFormData, 'rent' | 'food' | 'transport' | 'other_expenses'>
-  label: string
-  placeholder: string
-}[] = [
-  { name: 'rent', label: 'Rent / Mortgage', placeholder: '1100' },
-  { name: 'food', label: 'Food & Groceries', placeholder: '400' },
-  { name: 'transport', label: 'Transport', placeholder: '200' },
-  { name: 'other_expenses', label: 'Everything else', placeholder: '300' },
-]
+import { useI18n } from '@/components/i18n-provider'
 
 interface ExpensesStepProps {
   register: ReturnType<typeof useForm<OnboardingFormData>>['register']
@@ -23,9 +13,18 @@ interface ExpensesStepProps {
 }
 
 export function ExpensesStep({ register, errors, isSubmitting, onBack }: ExpensesStepProps) {
+  const { t } = useI18n()
+
+  const localizedFields = [
+    { name: 'rent', label: t('onboarding.expense.rent'), placeholder: '1100' },
+    { name: 'food', label: t('onboarding.expense.food'), placeholder: '400' },
+    { name: 'transport', label: t('onboarding.expense.transport'), placeholder: '200' },
+    { name: 'other_expenses', label: t('onboarding.expense.other'), placeholder: '300' },
+  ] as const
+
   return (
     <div className="flex flex-col gap-6">
-      {EXPENSE_FIELDS.map((f) => (
+      {localizedFields.map((f) => (
         <MoneyInput
           key={f.name}
           label={f.label}
@@ -38,7 +37,7 @@ export function ExpensesStep({ register, errors, isSubmitting, onBack }: Expense
 
       <div className="flex gap-3 pt-2">
         <Button variant="ghost" className="clay-btn" onPress={onBack}>
-          ← Back
+          {t('common.back')}
         </Button>
         <Button
           type="submit"
@@ -46,7 +45,7 @@ export function ExpensesStep({ register, errors, isSubmitting, onBack }: Expense
           className="clay-btn flex-1"
           isDisabled={isSubmitting}
         >
-          {isSubmitting ? 'Saving...' : 'Complete setup'}
+          {isSubmitting ? t('common.saving') : t('onboarding.completeSetup')}
         </Button>
       </div>
     </div>

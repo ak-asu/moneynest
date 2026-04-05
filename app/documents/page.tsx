@@ -5,15 +5,7 @@ import { UploadZone } from './_components/upload-zone'
 import { DocumentCard } from './_components/document-card'
 import type { DbDocument, DbProfile, DocumentKind } from '@/types/database'
 import { Search, FileText } from 'lucide-react'
-
-const DOC_TYPE_LABELS: Record<DocumentKind | 'all', string> = {
-  all: 'All',
-  insurance: 'Insurance',
-  lease: 'Lease',
-  bill: 'Bill',
-  payslip: 'Pay Stub',
-  other: 'Other',
-}
+import { useI18n } from '@/components/i18n-provider'
 
 const ALL_FILTER_TYPES: Array<DocumentKind | 'all'> = [
   'all',
@@ -25,6 +17,7 @@ const ALL_FILTER_TYPES: Array<DocumentKind | 'all'> = [
 ]
 
 export default function DocumentsPage() {
+  const { t } = useI18n()
   const [docs, setDocs] = useState<DbDocument[]>([])
   const [profile, setProfile] = useState<DbProfile | null>(null)
   const [search, setSearch] = useState('')
@@ -89,6 +82,15 @@ export default function DocumentsPage() {
     [counts]
   )
 
+  const docTypeLabels: Record<DocumentKind | 'all', string> = {
+    all: t('documents.type.all'),
+    insurance: t('documents.type.insurance'),
+    lease: t('documents.type.lease'),
+    bill: t('documents.type.bill'),
+    payslip: t('documents.type.payslip'),
+    other: t('documents.type.other'),
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       <AppNav />
@@ -96,11 +98,11 @@ export default function DocumentsPage() {
         <div className="p-6 max-w-3xl mx-auto flex flex-col gap-6">
           {/* Header */}
           <div>
-            <h1 className="text-2xl font-bold">Document Vault</h1>
+            <h1 className="text-2xl font-bold">{t('documents.title')}</h1>
             <p className="text-sm text-default-400 mt-1">
               {docs.length === 0
-                ? 'Securely store and analyze your financial documents'
-                : `${docs.length} document${docs.length !== 1 ? 's' : ''} · AI-analyzed and organized`}
+                ? t('documents.subtitleEmpty')
+                : t('documents.subtitleCount', { count: docs.length })}
             </p>
           </div>
 
@@ -117,7 +119,7 @@ export default function DocumentsPage() {
                 />
                 <input
                   type="search"
-                  placeholder="Search by filename or content..."
+                  placeholder={t('documents.searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full clay-input pl-9 pr-4 py-2.5 text-sm outline-none transition-all placeholder:text-default-400"
@@ -139,7 +141,7 @@ export default function DocumentsPage() {
                             : 'clay-btn text-default-600 border-default-200 hover:border-primary/40 hover:text-default-800'
                         }`}
                       >
-                        {DOC_TYPE_LABELS[t]}
+                        {docTypeLabels[t]}
                         {count > 0 && (
                           <span className={`ml-1 ${active ? 'opacity-80' : 'opacity-50'}`}>
                             ({count})
@@ -162,7 +164,7 @@ export default function DocumentsPage() {
             {filtered.length === 0 && docs.length > 0 && (
               <div className="clay-card p-10 flex flex-col items-center gap-3 text-center">
                 <Search size={22} className="text-default-300" />
-                <p className="text-default-400 text-sm">No documents match your search.</p>
+                <p className="text-default-400 text-sm">{t('documents.noMatch')}</p>
                 <button
                   onClick={() => {
                     setSearch('')
@@ -170,7 +172,7 @@ export default function DocumentsPage() {
                   }}
                   className="text-xs text-primary hover:underline"
                 >
-                  Clear filters
+                  {t('common.clearFilters')}
                 </button>
               </div>
             )}
@@ -178,9 +180,7 @@ export default function DocumentsPage() {
             {docs.length === 0 && (
               <div className="clay-card p-10 flex flex-col items-center gap-3 text-center">
                 <FileText size={22} className="text-default-300" />
-                <p className="text-default-400 text-sm">
-                  Your vault is empty. Upload a document above to get started.
-                </p>
+                <p className="text-default-400 text-sm">{t('documents.empty')}</p>
               </div>
             )}
           </div>

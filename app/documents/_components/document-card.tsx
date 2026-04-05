@@ -20,6 +20,8 @@ import {
 import { useTTS } from '@/components/audio/use-tts'
 import { DocumentVisual } from '@/components/documents/document-visual'
 import type { DbDocument, DbProfile, DocumentKind } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
+import type { Locale } from '@/lib/i18n/config'
 
 const RISK_COLOR = { low: 'success', medium: 'warning', high: 'danger' } as const
 
@@ -27,7 +29,7 @@ type TypeConfig = {
   icon: React.ElementType
   accentClass: string
   badgeClass: string
-  label: string
+  labelKey: string
 }
 
 const TYPE_CONFIG: Record<DocumentKind, TypeConfig> = {
@@ -35,58 +37,75 @@ const TYPE_CONFIG: Record<DocumentKind, TypeConfig> = {
     icon: Shield,
     accentClass: 'border-l-blue-500/60',
     badgeClass: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    label: 'Insurance',
+    labelKey: 'documents.type.insurance',
   },
   lease: {
     icon: Home,
     accentClass: 'border-l-amber-500/60',
     badgeClass: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    label: 'Lease',
+    labelKey: 'documents.type.lease',
   },
   bill: {
     icon: Receipt,
     accentClass: 'border-l-rose-500/60',
     badgeClass: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-    label: 'Bill',
+    labelKey: 'documents.type.bill',
   },
   payslip: {
     icon: Banknote,
     accentClass: 'border-l-emerald-500/60',
     badgeClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    label: 'Pay Stub',
+    labelKey: 'documents.type.payslip',
   },
   other: {
     icon: FileText,
     accentClass: 'border-l-slate-500/60',
     badgeClass: 'bg-default-100 text-default-600 border-default-200',
-    label: 'Document',
+    labelKey: 'library.type.document',
   },
 }
 
-function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', {
+function formatDate(iso: string, intlLocale: string) {
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   }).format(new Date(iso))
 }
 
-function buildChatSeed(doc: DbDocument): string {
-  const config = TYPE_CONFIG[doc.document_type] ?? TYPE_CONFIG.other
+function buildChatSeed(doc: DbDocument, locale: Locale, typeLabel: string): string {
   const explanation = doc.ai_explanation
   const lines: string[] = [
-    `I'd like to go over my ${config.label.toLowerCase()} document "${doc.filename}".`,
+    locale === 'es'
+      ? `Quiero revisar mi documento de ${typeLabel.toLowerCase()} "${doc.filename}".`
+      : `I'd like to go over my ${typeLabel.toLowerCase()} document "${doc.filename}".`,
   ]
   if (explanation?.plain_summaries?.[0]) {
-    lines.push(`\nSummary: ${explanation.plain_summaries[0]}`)
+    lines.push(
+      locale === 'es'
+        ? `\nResumen: ${explanation.plain_summaries[0]}`
+        : `\nSummary: ${explanation.plain_summaries[0]}`
+    )
   }
   if (explanation?.risk_flags?.length) {
-    lines.push(`\nKey concerns: ${explanation.risk_flags.join('; ')}`)
+    lines.push(
+      locale === 'es'
+        ? `\nPuntos clave de riesgo: ${explanation.risk_flags.join('; ')}`
+        : `\nKey concerns: ${explanation.risk_flags.join('; ')}`
+    )
   }
   if (explanation?.what_ifs?.length) {
-    lines.push(`\nI'd like to explore: ${explanation.what_ifs[0].label}`)
+    lines.push(
+      locale === 'es'
+        ? `\nMe gustaría explorar: ${explanation.what_ifs[0].label}`
+        : `\nI'd like to explore: ${explanation.what_ifs[0].label}`
+    )
   }
-  lines.push('\nCan you walk me through what I should know and what to do next?')
+  lines.push(
+    locale === 'es'
+      ? '\n¿Puedes explicarme qué debería saber y qué hacer después?'
+      : '\nCan you walk me through what I should know and what to do next?'
+  )
   return lines.join('')
 }
 
@@ -96,6 +115,7 @@ interface DocumentCardProps {
 }
 
 export function DocumentCard({ doc, profile }: DocumentCardProps) {
+  const { t, locale, intlLocale } = useI18n()
   const router = useRouter()
   const [expanded, setExpanded] = useState(false)
   const [showVisual, setShowVisual] = useState(false)
@@ -103,13 +123,14 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
   const explanation = doc.ai_explanation
   const config = TYPE_CONFIG[doc.document_type] ?? TYPE_CONFIG.other
   const TypeIcon = config.icon
+  const typeLabel = t(config.labelKey)
 
   const highRiskCount = explanation?.clauses.filter((c) => c.risk === 'high').length ?? 0
   const medRiskCount = explanation?.clauses.filter((c) => c.risk === 'medium').length ?? 0
   const allLow = explanation != null && highRiskCount === 0 && medRiskCount === 0
 
   function discussInChat() {
-    sessionStorage.setItem('vela_chat_seed', buildChatSeed(doc))
+    sessionStorage.setItem('vela_chat_seed', buildChatSeed(doc, locale, typeLabel))
     router.push('/chat')
   }
 
@@ -130,9 +151,11 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
                 <span
                   className={`text-xs px-2 py-0.5 rounded-full border font-medium ${config.badgeClass}`}
                 >
-                  {config.label}
+                  {typeLabel}
                 </span>
-                <span className="text-xs text-default-400">{formatDate(doc.created_at)}</span>
+                <span className="text-xs text-default-400">
+                  {formatDate(doc.created_at, intlLocale)}
+                </span>
               </div>
             </div>
           </div>
@@ -146,7 +169,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
                 onPress={() => speak(explanation.plain_summaries.join('. '))}
                 isDisabled={isPlaying}
                 className="text-default-400 hover:text-default-600"
-                aria-label="Listen to summary"
+                aria-label={t('documents.listenSummary')}
               >
                 <Volume2 size={14} />
               </Button>
@@ -157,7 +180,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
               isIconOnly
               onPress={() => setShowVisual((v) => !v)}
               className={`transition-colors ${showVisual ? 'text-primary' : 'text-default-400 hover:text-default-600'}`}
-              aria-label="Toggle visuals"
+              aria-label={t('documents.toggleVisuals')}
             >
               <BarChart2 size={14} />
             </Button>
@@ -167,7 +190,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
               isIconOnly
               onPress={() => setExpanded((e) => !e)}
               className="text-default-400 hover:text-default-600"
-              aria-label={expanded ? 'Collapse details' : 'Show details'}
+              aria-label={expanded ? t('documents.collapseDetails') : t('documents.showDetails')}
             >
               {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </Button>
@@ -187,19 +210,19 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
             {highRiskCount > 0 && (
               <div className="flex items-center gap-1.5 text-xs text-danger-700 bg-danger-50 px-2.5 py-1 rounded-full border border-danger-200">
                 <AlertTriangle size={11} />
-                {highRiskCount} high risk
+                {t('documents.highRisk', { count: highRiskCount })}
               </div>
             )}
             {medRiskCount > 0 && (
               <div className="flex items-center gap-1.5 text-xs text-warning-700 bg-warning-50 px-2.5 py-1 rounded-full border border-warning-200">
                 <Info size={11} />
-                {medRiskCount} medium risk
+                {t('documents.mediumRisk', { count: medRiskCount })}
               </div>
             )}
             {allLow && (
               <div className="flex items-center gap-1.5 text-xs text-success-700 bg-success-50 px-2.5 py-1 rounded-full border border-success-200">
                 <CheckCircle size={11} />
-                All clear
+                {t('documents.allClear')}
               </div>
             )}
           </div>
@@ -216,7 +239,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="text-sm font-semibold">{clause.label}</span>
                   <Chip size="sm" color={RISK_COLOR[clause.risk]} variant="soft">
-                    {clause.risk} risk
+                    {t('documents.riskLabel', { risk: clause.risk })}
                   </Chip>
                 </div>
                 <p className="text-xs text-default-600">{clause.plain}</p>
@@ -230,7 +253,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
               <div className="rounded-2xl p-3 bg-danger-50 border border-danger-200">
                 <p className="text-xs font-semibold text-danger-700 mb-1.5 flex items-center gap-1.5">
                   <AlertTriangle size={11} />
-                  Watch out for
+                  {t('documents.watchOut')}
                 </p>
                 <div className="flex flex-col gap-1">
                   {explanation.risk_flags.map((f, i) => (
@@ -244,7 +267,9 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
 
             {explanation.what_ifs.length > 0 && (
               <div className="rounded-2xl p-3 bg-primary-50 border border-primary-200">
-                <p className="text-xs font-semibold text-primary-700 mb-2">What-if scenarios</p>
+                <p className="text-xs font-semibold text-primary-700 mb-2">
+                  {t('documents.whatIf')}
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {explanation.what_ifs.map((w, i) => (
                     <span
@@ -267,7 +292,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
             className="flex items-center gap-1.5 text-xs text-default-400 hover:text-primary transition-colors"
           >
             <MessageSquare size={12} />
-            Discuss in Chat
+            {t('documents.discussInChat')}
           </button>
         </div>
       </div>

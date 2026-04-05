@@ -3,6 +3,7 @@ import { Button } from '@heroui/react'
 import { PersonaSelector } from './persona-selector'
 import { OptionButton } from './option-button'
 import type { PersonaType } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 interface IdentityStepProps {
   persona: PersonaType | null
@@ -21,30 +22,35 @@ export function IdentityStep({
   onLanguageChange,
   onNext,
 }: IdentityStepProps) {
+  const { t } = useI18n()
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
         <p className="text-sm font-semibold text-default-foreground">
-          Who are you? <span className="text-danger">*</span>
+          {t('onboarding.identity.question')}{' '}
+          <span className="text-danger">{t('onboarding.identity.required')}</span>
         </p>
         <PersonaSelector value={persona} onChange={onPersonaChange} />
         {personaError && <p className="text-danger text-xs">{personaError}</p>}
       </div>
 
       <div className="flex flex-col gap-3">
-        <p className="text-sm font-semibold text-default-foreground">Preferred language</p>
+        <p className="text-sm font-semibold text-default-foreground">
+          {t('onboarding.identity.preferredLanguage')}
+        </p>
         <div className="flex gap-3">
           <OptionButton selected={language === 'en'} onSelect={() => onLanguageChange('en')}>
-            English
+            {t('common.english')}
           </OptionButton>
           <OptionButton selected={language === 'es'} onSelect={() => onLanguageChange('es')}>
-            Español
+            {t('common.spanish')}
           </OptionButton>
         </div>
       </div>
 
       <Button variant="primary" className="clay-btn w-full" isDisabled={!persona} onPress={onNext}>
-        Next →
+        {t('common.next')}
       </Button>
     </div>
   )

@@ -7,17 +7,19 @@ import { VoicePath } from './_components/voice-path'
 import { DocPath } from './_components/doc-path'
 import { PlaidPath } from './_components/plaid-path'
 import { cn } from '@/lib/utils/cn'
+import { useI18n } from '@/components/i18n-provider'
 
 const TABS = [
-  { id: 'voice', label: 'Talk to me', icon: Mic },
-  { id: 'form', label: 'Fill it in', icon: ClipboardList },
-  { id: 'doc', label: 'Upload docs', icon: FileUp },
-  { id: 'plaid', label: 'Connect bank', icon: Building2 },
+  { id: 'voice', labelKey: 'onboarding.tab.voice', icon: Mic },
+  { id: 'form', labelKey: 'onboarding.tab.form', icon: ClipboardList },
+  { id: 'doc', labelKey: 'onboarding.tab.doc', icon: FileUp },
+  { id: 'plaid', labelKey: 'onboarding.tab.plaid', icon: Building2 },
 ] as const
 
 type TabId = (typeof TABS)[number]['id']
 
 export default function OnboardingPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>('voice')
 
@@ -31,17 +33,15 @@ export default function OnboardingPage() {
         {/* Header */}
         <div className="flex items-start justify-between px-8 pt-8 pb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Welcome to Vela 🕯️</h1>
-            <p className="text-default-500 text-sm mt-1">
-              Set up your financial profile to get started.
-            </p>
+            <h1 className="text-2xl font-extrabold text-foreground">{t('onboarding.welcome')}</h1>
+            <p className="text-default-500 text-sm mt-1">{t('onboarding.subtitle')}</p>
           </div>
         </div>
 
         {/* Tab bar */}
         <div className="px-8 pb-2">
           <div className="grid grid-cols-4 gap-1 rounded-2xl bg-default-100/60 p-1 border border-default-200">
-            {TABS.map(({ id, label, icon: Icon }) => (
+            {TABS.map(({ id, labelKey, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
@@ -54,7 +54,7 @@ export default function OnboardingPage() {
                 )}
               >
                 <Icon size={15} />
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
               </button>
             ))}
           </div>

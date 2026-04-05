@@ -4,13 +4,14 @@ import { AppNav } from '@/components/app-nav'
 import { Chip } from '@heroui/react'
 import { CheckCircle2, Circle } from 'lucide-react'
 import type { DbActionPlan } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 type PlanWithStaleness = DbActionPlan & { is_stale: boolean }
 
-function formatDate(iso: string) {
+function formatDate(iso: string, intlLocale: string, unknownDateLabel: string) {
   const d = new Date(iso)
-  if (isNaN(d.getTime())) return 'Unknown date'
-  return new Intl.DateTimeFormat('en-US', {
+  if (isNaN(d.getTime())) return unknownDateLabel
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -24,6 +25,7 @@ function PlanCard({
   plan: PlanWithStaleness
   onUpdate: (updated: PlanWithStaleness) => void
 }) {
+  const { t, intlLocale, formatNumber } = useI18n()
   const [saving, setSaving] = useState(false)
 
   const total = plan.steps.length
@@ -68,12 +70,12 @@ function PlanCard({
         <div className="flex items-center gap-2 shrink-0">
           {plan.is_stale && (
             <Chip size="sm" color="warning" variant="soft" className="text-xs">
-              Based on older profile
+              {t('plans.basedOnOlderProfile')}
             </Chip>
           )}
           {pct === 100 && (
             <Chip size="sm" color="success" variant="soft" className="text-xs">
-              Complete
+              {t('plans.complete')}
             </Chip>
           )}
         </div>
@@ -82,9 +84,7 @@ function PlanCard({
       {/* Progress bar */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs text-default-500">
-          <span>
-            {done} of {total} steps done
-          </span>
+          <span>{t('plans.stepsDone', { done, total })}</span>
           <span>{pct}%</span>
         </div>
         <div
@@ -92,7 +92,7 @@ function PlanCard({
           aria-valuenow={pct}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label={`${done} of ${total} steps completed`}
+          aria-label={t('plans.stepsCompletedAria', { done, total })}
           className="w-full bg-default-200 rounded-full h-2"
         >
           <div
@@ -121,24 +121,31 @@ function PlanCard({
               >
                 {step.label}
                 {step.amount != null && (
-                  <span className="text-primary ml-1.5">${step.amount.toLocaleString()}</span>
+                  <span className="text-primary ml-1.5">${formatNumber(step.amount)}</span>
                 )}
               </span>
               {step.detail && <span className="text-xs text-default-500">{step.detail}</span>}
               {step.deadline && (
-                <span className="text-xs text-warning-600">by {step.deadline}</span>
+                <span className="text-xs text-warning-600">
+                  {t('plans.deadline', { date: step.deadline })}
+                </span>
               )}
             </div>
           </li>
         ))}
       </ol>
 
-      <p className="text-xs text-default-400">Created {formatDate(plan.created_at)}</p>
+      <p className="text-xs text-default-400">
+        {t('plans.created', {
+          date: formatDate(plan.created_at, intlLocale, t('common.unknownDate')),
+        })}
+      </p>
     </div>
   )
 }
 
 export default function PlansPage() {
+  const { t } = useI18n()
   const [plans, setPlans] = useState<PlanWithStaleness[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
@@ -149,17 +156,17 @@ export default function PlansPage() {
     try {
       const res = await fetch('/api/plans')
       if (!res.ok) {
-        setFetchError(`Failed to load plans (${res.status}). Please try again.`)
+        setFetchError(t('plans.fetchFailed', { status: res.status }))
         return
       }
       const data: PlanWithStaleness[] = await res.json()
       setPlans(data)
     } catch {
-      setFetchError('Network error — please try again.')
+      setFetchError(t('plans.networkFailed'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     load()
@@ -175,22 +182,18 @@ export default function PlansPage() {
       <main aria-label="Action plans" className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6 max-w-3xl">
           <div>
-            <h1 className="text-2xl font-bold">Action Plans</h1>
-            <p className="text-default-500 text-sm mt-1">
-              Your personalised financial action plans from Vela.
-            </p>
+            <h1 className="text-2xl font-bold">{t('plans.title')}</h1>
+            <p className="text-default-500 text-sm mt-1">{t('plans.subtitle')}</p>
           </div>
 
           {loading ? (
-            <p className="text-default-400 text-sm">Loading…</p>
+            <p className="text-default-400 text-sm">{t('common.loading')}</p>
           ) : fetchError ? (
             <p className="text-danger text-sm">{fetchError}</p>
           ) : plans.length === 0 ? (
             <div className="clay-card p-8 text-center">
-              <p className="font-semibold text-default-600">No action plans yet</p>
-              <p className="text-default-400 text-sm mt-1">
-                Ask Vela in chat to create a plan for you.
-              </p>
+              <p className="font-semibold text-default-600">{t('plans.noneTitle')}</p>
+              <p className="text-default-400 text-sm mt-1">{t('plans.noneSubtitle')}</p>
             </div>
           ) : (
             <div className="space-y-4">

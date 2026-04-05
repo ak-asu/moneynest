@@ -1,4 +1,5 @@
 // components/health-score-ring.tsx
+import { useI18n } from '@/components/i18n-provider'
 
 const RADIUS = 44
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
@@ -8,10 +9,12 @@ interface HealthScoreRingProps {
 }
 
 export function HealthScoreRing({ score }: HealthScoreRingProps) {
+  const { t } = useI18n()
   const clamped = Math.max(0, Math.min(100, score))
   const dashOffset = CIRCUMFERENCE - (clamped / 100) * CIRCUMFERENCE
   const color = clamped >= 70 ? '#10b981' : clamped >= 40 ? '#f59e0b' : '#ef4444'
-  const label = clamped >= 70 ? 'Healthy' : clamped >= 40 ? 'Building' : 'At Risk'
+  const label =
+    clamped >= 70 ? t('health.healthy') : clamped >= 40 ? t('health.building') : t('health.atRisk')
 
   return (
     <div className="flex flex-col items-center gap-2">

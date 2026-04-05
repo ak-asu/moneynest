@@ -1,10 +1,26 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getPreferredLocaleFromHeader, isLocale, LOCALE_COOKIE_NAME } from '@/lib/i18n/config'
 
 const PUBLIC_PATHS = ['/login', '/auth/callback', '/auth/session']
 
+function resolveRequestLocale(request: NextRequest) {
+  const cookieLocale = request.cookies.get(LOCALE_COOKIE_NAME)?.value
+  if (isLocale(cookieLocale)) return cookieLocale
+  return getPreferredLocaleFromHeader(request.headers.get('accept-language'))
+}
+
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
+  const locale = resolveRequestLocale(request)
+
+  if (!isLocale(request.cookies.get(LOCALE_COOKIE_NAME)?.value)) {
+    supabaseResponse.cookies.set(LOCALE_COOKIE_NAME, locale, {
+      path: '/',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365,
+    })
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,7 +49,13 @@ export async function middleware(request: NextRequest) {
   if (!user && !PUBLIC_PATHS.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
-    return NextResponse.redirect(url)
+    const redirectResponse = NextResponse.redirect(url)
+    redirectResponse.cookies.set(LOCALE_COOKIE_NAME, locale, {
+      path: '/',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365,
+    })
+    return redirectResponse
   }
 
   return supabaseResponse

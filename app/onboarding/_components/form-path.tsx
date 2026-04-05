@@ -8,8 +8,10 @@ import { IncomeStep } from './income-step'
 import { ExpensesStep } from './expenses-step'
 import { onboardingSchema, type OnboardingFormData } from './form-schema'
 import type { PersonaType } from '@/types/database'
+import { useI18n } from '@/components/i18n-provider'
 
 export function FormPath({ onComplete }: { onComplete: () => void }) {
+  const { t } = useI18n()
   const [step, setStep] = useState(0)
   const [persona, setPersona] = useState<PersonaType | null>(null)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -42,7 +44,7 @@ export function FormPath({ onComplete }: { onComplete: () => void }) {
       }),
     })
     if (!res.ok) {
-      setSubmitError('Failed to save. Please try again.')
+      setSubmitError(t('onboarding.saveFailed'))
       return
     }
     onComplete()

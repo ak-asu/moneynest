@@ -4,17 +4,19 @@ import { AppNav } from '@/components/app-nav'
 import { HealthScoreRing } from '@/components/health-score-ring'
 import { DashboardClient } from './_components/dashboard-client'
 import type { DbProfile, DbSuggestion, DbUser } from '@/types/database'
+import { getServerI18n } from '@/lib/i18n/server'
 
-const PERSONA_LABELS: Record<string, string> = {
-  gig_worker: 'Gig Worker',
-  student: 'Student',
-  immigrant: 'Immigrant',
-  retiree: 'Retiree',
-  single_parent: 'Single Parent',
-  other: 'Individual',
+const PERSONA_KEYS: Record<string, string> = {
+  gig_worker: 'persona.gig_worker',
+  student: 'persona.student',
+  immigrant: 'persona.immigrant',
+  retiree: 'persona.retiree',
+  single_parent: 'persona.single_parent',
+  other: 'persona.other',
 }
 
 export default async function DashboardPage() {
+  const { t } = await getServerI18n()
   const supabase = await createClient()
   const {
     data: { user },
@@ -56,10 +58,11 @@ export default async function DashboardPage() {
       <main className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-8 max-w-5xl">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <h1 className="text-2xl font-bold">{t('dashboard.title')}</h1>
             <p className="text-default-500 text-sm mt-1">
-              Welcome back{profile ? `, ${PERSONA_LABELS[profile.persona] ?? ''}` : ''}. Here&apos;s
-              your financial pulse.
+              {t('dashboard.welcome', {
+                persona: profile ? `, ${t(PERSONA_KEYS[profile.persona] ?? 'persona.other')}` : '',
+              })}
             </p>
           </div>
 
@@ -68,16 +71,16 @@ export default async function DashboardPage() {
             <HealthScoreRing score={profile?.financial_health_score ?? 0} />
             <div>
               <p className="text-xs font-semibold text-default-400 uppercase tracking-wide mb-1">
-                Financial Health Score
+                {t('dashboard.healthScore')}
               </p>
               <p className="text-sm text-default-600">
                 {profile?.financial_health_score != null
                   ? profile.financial_health_score >= 70
-                    ? 'Your finances are in great shape.'
+                    ? t('dashboard.healthExcellent')
                     : profile.financial_health_score >= 40
-                      ? 'Making progress — keep going.'
-                      : "Let's build a stronger foundation together."
-                  : 'Complete your profile to see your score.'}
+                      ? t('dashboard.healthProgress')
+                      : t('dashboard.healthBuild')
+                  : t('dashboard.healthMissing')}
               </p>
             </div>
           </div>
