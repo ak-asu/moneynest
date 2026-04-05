@@ -1,10 +1,14 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@heroui/react'
+import { BrainCircuit } from 'lucide-react'
 import { AppNav } from '@/components/app-nav'
 import { BudgetChart } from './_components/budget-chart'
 import { AddEntryForm } from './_components/add-entry-form'
 import { CsvImport } from './_components/csv-import'
-import type { DbBudgetEntry } from '@/types/database'
+import { ProfileSyncBanner } from './_components/profile-sync-banner'
+import type { DbBudgetEntry, DbProfile } from '@/types/database'
 
 function SummaryCard({ label, value, color }: { label: string; value: number; color: string }) {
   const formatted = `$${Math.abs(value).toLocaleString()}`
@@ -22,22 +26,112 @@ function formatDate(iso: string) {
   )
 }
 
+/** Returns per-category expense totals from the last 30 days of entries. */
+function computeMonthlyExpenses(entries: DbBudgetEntry[]): Record<string, number> {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const totals: Record<string, number> = {}
+  for (const e of entries) {
+    if (e.entry_type !== 'expense' || e.date < since) continue
+    totals[e.category] = (totals[e.category] ?? 0) + e.amount
+  }
+  return totals
+}
+
+/**
+ * Returns true if the budget-derived expenses differ meaningfully from the
+ * profile's stored expenses. "Meaningful" = a category is new with >$50/mo,
+ * or an existing category differs by more than 10%.
+ */
+function hasMeaningfulDiff(
+  budgetExpenses: Record<string, number>,
+  profileExpenses: Record<string, number>,
+): boolean {
+  const allCats = new Set([...Object.keys(budgetExpenses), ...Object.keys(profileExpenses)])
+  for (const cat of allCats) {
+    const budget = budgetExpenses[cat] ?? 0
+    const profile = profileExpenses[cat] ?? 0
+    if (profile === 0 && budget > 50) return true
+    if (profile > 0 && Math.abs(budget - profile) / profile > 0.1) return true
+  }
+  return false
+}
+
+/** Builds the pre-filled Vela chat message from the current entries. */
+function buildVelaSeed(entries: DbBudgetEntry[]): string {
+  const totalIncome = entries
+    .filter(e => e.entry_type === 'income')
+    .reduce((s, e) => s + e.amount, 0)
+  const totalExpenses = entries
+    .filter(e => e.entry_type === 'expense')
+    .reduce((s, e) => s + e.amount, 0)
+  const surplus = totalIncome - totalExpenses
+
+  const catTotals: Record<string, number> = {}
+  for (const e of entries.filter(e => e.entry_type === 'expense')) {
+    catTotals[e.category] = (catTotals[e.category] ?? 0) + e.amount
+  }
+  const top5 = Object.entries(catTotals)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([cat, amt]) => `${cat}: $${Math.round(amt).toLocaleString()}`)
+    .join(', ')
+
+  const d30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const d60 = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const recentTotal = entries
+    .filter(e => e.entry_type === 'expense' && e.date >= d30)
+    .reduce((s, e) => s + e.amount, 0)
+  const prevTotal = entries
+    .filter(e => e.entry_type === 'expense' && e.date >= d60 && e.date < d30)
+    .reduce((s, e) => s + e.amount, 0)
+  const trend =
+    prevTotal > 0 ? (recentTotal > prevTotal ? 'trending up' : 'trending down') : 'no prior data'
+
+  return (
+    `Here's my budget breakdown for the last 90 days: ` +
+    `Income $${totalIncome.toLocaleString()}, ` +
+    `Expenses $${totalExpenses.toLocaleString()}, ` +
+    `${surplus >= 0 ? 'Surplus' : 'Deficit'} $${Math.abs(surplus).toLocaleString()}. ` +
+    `Top spending categories: ${top5 || 'none'}. ` +
+    `Spending trend vs prior 30 days: ${trend}. ` +
+    `Can you help me analyze this and suggest ways to improve?`
+  )
+}
+
 export default function BudgetPage() {
+  const router = useRouter()
   const [entries, setEntries] = useState<DbBudgetEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
+
+  const [profile, setProfile] = useState<DbProfile | null>(null)
+  const [syncBanner, setSyncBanner] = useState<Record<string, number> | null>(null)
+  const [syncing, setSyncing] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
     setFetchError(null)
     try {
-      const res = await fetch('/api/budget?days=90')
-      if (!res.ok) {
-        setFetchError(`Failed to load entries (${res.status}). Please try again.`)
+      const [entriesRes, profileRes] = await Promise.all([
+        fetch('/api/budget?days=90'),
+        fetch('/api/profile'),
+      ])
+      if (!entriesRes.ok) {
+        setFetchError(`Failed to load entries (${entriesRes.status}). Please try again.`)
         return
       }
-      const data: DbBudgetEntry[] = await res.json()
+      const data: DbBudgetEntry[] = await entriesRes.json()
+      const prof: DbProfile | null = profileRes.ok ? await profileRes.json() : null
       setEntries(data)
+      setProfile(prof)
+
+      if (prof) {
+        const budgetExpenses = computeMonthlyExpenses(data)
+        const profileExpenses = prof.expenses as Record<string, number>
+        if (hasMeaningfulDiff(budgetExpenses, profileExpenses)) {
+          setSyncBanner(budgetExpenses)
+        }
+      }
     } catch {
       setFetchError('Network error — please try again.')
     } finally {
@@ -52,10 +146,48 @@ export default function BudgetPage() {
   const surplus = totalIncome - totalExpenses
 
   const handleAdded = useCallback((entry: DbBudgetEntry) => {
-    setEntries(prev => [entry, ...prev])
-  }, [])
+    setEntries(prev => {
+      const next = [entry, ...prev]
+      if (profile) {
+        const budgetExpenses = computeMonthlyExpenses(next)
+        const profileExpenses = profile.expenses as Record<string, number>
+        if (hasMeaningfulDiff(budgetExpenses, profileExpenses)) {
+          setSyncBanner(budgetExpenses)
+        }
+      }
+      return next
+    })
+  }, [profile])
 
-  const handleImported = useCallback(() => { load() }, [load])
+  const handleImported = useCallback((_count: number) => { load() }, [load])
+
+  const handleConfirmSync = useCallback(async () => {
+    if (!syncBanner || !profile) return
+    setSyncing(true)
+    try {
+      await fetch('/api/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          income_monthly: profile.income_monthly,
+          income_type: profile.income_type,
+          debts: profile.debts,
+          goals: profile.goals,
+          savings_balance: profile.savings_balance,
+          expenses: syncBanner,
+        }),
+      })
+      setProfile(prev => prev ? { ...prev, expenses: syncBanner } : prev)
+      setSyncBanner(null)
+    } finally {
+      setSyncing(false)
+    }
+  }, [syncBanner, profile])
+
+  const handleAnalyzeWithVela = useCallback(() => {
+    sessionStorage.setItem('vela_chat_seed', buildVelaSeed(entries))
+    router.push('/chat')
+  }, [entries, router])
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -67,8 +199,30 @@ export default function BudgetPage() {
               <h1 className="text-2xl font-bold">Budget & Tracking</h1>
               <p className="text-default-500 text-sm mt-1">Last 90 days of activity.</p>
             </div>
-            <AddEntryForm onAdded={handleAdded} />
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                onPress={handleAnalyzeWithVela}
+                isDisabled={entries.length === 0}
+                className="clay-btn gap-1"
+              >
+                <BrainCircuit size={14} />
+                Analyze with Vela
+              </Button>
+              <AddEntryForm onAdded={handleAdded} />
+            </div>
           </div>
+
+          {/* Profile sync banner */}
+          {syncBanner && (
+            <ProfileSyncBanner
+              suggestedExpenses={syncBanner}
+              confirming={syncing}
+              onConfirm={handleConfirmSync}
+              onDismiss={() => setSyncBanner(null)}
+            />
+          )}
 
           {/* Summary cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
