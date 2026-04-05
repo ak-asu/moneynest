@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Button } from '@heroui/react'
 import { callClaude } from '@/lib/ai/chat'
 import { useSFX } from '@/components/audio/use-sfx'
+import type { DbProfile } from '@/types/database'
 
 type CreditQuestMood = 'normal' | 'stressed' | 'happy'
 type CreditQuestRole = 'ai' | 'user' | 'system'
@@ -38,6 +39,19 @@ type CreditQuestCampaign = {
   endingSummary: string
   turns: CreditQuestTurn[]
 }
+
+type CreditQuestPromptProfile = Pick<
+  DbProfile,
+  | 'persona'
+  | 'language'
+  | 'income_monthly'
+  | 'income_type'
+  | 'expenses'
+  | 'debts'
+  | 'goals'
+  | 'savings_balance'
+  | 'financial_health_score'
+>
 
 type CreditQuestMessage = {
   id: string
@@ -332,9 +346,47 @@ function applyChoice(base: CreditQuestState, option: CreditQuestOption): CreditQ
   return nextState
 }
 
-function buildCampaignPrompt() {
+function buildProfileContext(profile: CreditQuestPromptProfile | null) {
+  if (!profile) {
+    return [
+      '- Profile data: unavailable',
+      '- Use a neutral creator persona and keep the campaign broadly relatable',
+    ].join('\n')
+  }
+
+  const expenses = Object.entries(profile.expenses || {})
+    .map(([category, amount]) => `${category}: $${amount}/mo`)
+    .join(', ')
+
+  const debts = profile.debts?.length
+    ? profile.debts.map((debt) => `${debt.type} $${debt.amount} at ${debt.rate}%`).join(', ')
+    : 'none'
+
+  const goals = profile.goals?.length
+    ? profile.goals
+        .map((goal) => `${goal.label} ($${goal.target_amount} by ${goal.target_date})`)
+        .join(', ')
+    : 'none'
+
+  return [
+    `- Persona: ${profile.persona.replace(/_/g, ' ')}`,
+    `- Language: ${profile.language}`,
+    `- Monthly income: $${profile.income_monthly} (${profile.income_type})`,
+    `- Monthly expenses: ${expenses || 'none'}`,
+    `- Savings balance: $${profile.savings_balance}`,
+    `- Debts: ${debts}`,
+    `- Goals: ${goals}`,
+    `- Financial health score: ${profile.financial_health_score}/100`,
+    '- Tailor the streamer story so it feels connected to this user profile without naming private details directly',
+  ].join('\n')
+}
+
+function buildCampaignPrompt(profile: CreditQuestPromptProfile | null) {
   return `You are generating a complete interactive browser mini-game called Credit Quest.
 Create the entire campaign up front so the game does not need more AI calls during play.
+
+## User Profile
+${buildProfileContext(profile)}
 
 Return ONLY valid JSON with this shape:
 {
@@ -352,7 +404,7 @@ Return ONLY valid JSON with this shape:
       "options": [
         {
           "text": "button label",
-          "insight": "one sentence explanation",
+          "insight": "one sentence explanation, relevant to users and regarding credit score and financial literacy",
           "effects": { "cash": number, "debt": number, "followers": number, "creditScore": number }
         }
       ]
@@ -369,6 +421,7 @@ Rules:
 - Keep debt effects between -250 and 300.
 - Keep followers effects between -20 and 80.
 - Keep creditScore effects between -15 and 15.
+- Make the scenario feel personalized to the user's profile data, especially persona, income, savings, debts, and goals.
 - Do not use markdown fences.
 - Do not mention that the game needs future AI calls.
 - Make the tone warm, playful, and practical.`
@@ -379,7 +432,7 @@ function buildFallbackCampaign(): CreditQuestCampaign {
 }
 
 export function CreditQuestGame() {
-  const { play, SFX } = useSFX()
+  const { play, preload, SFX } = useSFX()
   const [campaign, setCampaign] = useState<CreditQuestCampaign | null>(null)
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0)
   const [gameState, setGameState] = useState<CreditQuestState>(INITIAL_STATE)
@@ -390,11 +443,25 @@ export function CreditQuestGame() {
   const [queuedTurnIndex, setQueuedTurnIndex] = useState<number | null>(null)
   const [turnLocked, setTurnLocked] = useState(false)
   const [gameOver, setGameOver] = useState(false)
+  const [flashMood, setFlashMood] = useState<CreditQuestMood | null>(null)
   const messageId = useRef(1)
-  const scrollRef = useRef<HTMLDivElement | null>(null)
   const chatLogRef = useRef<HTMLDivElement | null>(null)
   const messagesRef = useRef<CreditQuestMessage[]>([])
+  const previousCreditScoreRef = useRef(INITIAL_STATE.creditScore)
+  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const currentTurn = campaign?.turns[currentTurnIndex] ?? null
+
+  function playButtonSound() {
+    void play(SFX.BUTTON_CLICK)
+  }
+
+  async function warmSoundPack() {
+    await preload([
+      { description: SFX.BUTTON_CLICK },
+      { description: SFX.CREDIT_UP },
+      { description: SFX.CREDIT_DOWN },
+    ])
+  }
 
   function syncMessages(nextMessages: CreditQuestMessage[]) {
     messagesRef.current = nextMessages
@@ -438,6 +505,12 @@ export function CreditQuestGame() {
     setBill(null)
     setQueuedTurnIndex(null)
     setGameOver(false)
+    setFlashMood(null)
+    if (flashTimeoutRef.current) {
+      clearTimeout(flashTimeoutRef.current)
+      flashTimeoutRef.current = null
+    }
+    previousCreditScoreRef.current = INITIAL_STATE.creditScore
     setGameState(INITIAL_STATE)
     setCurrentTurnIndex(0)
     setMessages([])
@@ -446,7 +519,11 @@ export function CreditQuestGame() {
     setInsightText('Preparing your campaign...')
 
     try {
-      const raw = await callClaude(buildCampaignPrompt())
+      const profileRes = await fetch('/api/profile', { cache: 'no-store' })
+      const profile = profileRes.ok
+        ? ((await profileRes.json()) as CreditQuestPromptProfile | null)
+        : null
+      const raw = await callClaude(buildCampaignPrompt(profile))
       const nextCampaign = normalizeCampaign(raw) ?? buildFallbackCampaign()
       setCampaign(nextCampaign)
       syncMessages([
@@ -458,11 +535,12 @@ export function CreditQuestGame() {
         },
       ])
       setInsightText(nextCampaign.turns[0]?.lesson ?? nextCampaign.intro)
+      previousCreditScoreRef.current = INITIAL_STATE.creditScore
       setGameState(INITIAL_STATE)
       setCurrentTurnIndex(0)
       setGameOver(false)
       setTurnLocked(false)
-      play(SFX.MILESTONE)
+      await warmSoundPack()
     } catch {
       const nextCampaign = buildFallbackCampaign()
       setCampaign(nextCampaign)
@@ -475,14 +553,20 @@ export function CreditQuestGame() {
         },
       ])
       setInsightText(nextCampaign.turns[0]?.lesson ?? nextCampaign.intro)
+      previousCreditScoreRef.current = INITIAL_STATE.creditScore
       setGameState(INITIAL_STATE)
       setCurrentTurnIndex(0)
       setGameOver(false)
       setTurnLocked(false)
-      play(SFX.MILESTONE)
+      await warmSoundPack()
     } finally {
       setLoadingCampaign(false)
     }
+  }
+
+  function restartCampaign() {
+    playButtonSound()
+    void initializeCampaign()
   }
 
   useEffect(() => {
@@ -495,6 +579,42 @@ export function CreditQuestGame() {
     if (!el) return
     el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [messages, currentTurnIndex, bill, loadingCampaign, gameOver])
+
+  useEffect(() => {
+    const previousScore = previousCreditScoreRef.current
+    const nextScore = gameState.creditScore
+
+    if (nextScore === previousScore) return
+
+    if (flashTimeoutRef.current) {
+      clearTimeout(flashTimeoutRef.current)
+      flashTimeoutRef.current = null
+    }
+
+    if (nextScore > previousScore) {
+      setFlashMood('happy')
+      void play(SFX.CREDIT_UP)
+    } else {
+      setFlashMood('stressed')
+      void play(SFX.CREDIT_DOWN)
+    }
+
+    flashTimeoutRef.current = setTimeout(() => {
+      setFlashMood(null)
+      flashTimeoutRef.current = null
+    }, 1000)
+
+    previousCreditScoreRef.current = nextScore
+  }, [SFX.CREDIT_DOWN, SFX.CREDIT_UP, gameState.creditScore, play])
+
+  useEffect(() => {
+    return () => {
+      if (flashTimeoutRef.current) {
+        clearTimeout(flashTimeoutRef.current)
+        flashTimeoutRef.current = null
+      }
+    }
+  }, [])
 
   function processEndOfDay(nextState: CreditQuestState, turnIndex: number) {
     const earnings = Math.floor(DAILY_BASE_INCOME + nextState.followers * FOLLOWER_MULTIPLIER)
@@ -530,6 +650,7 @@ export function CreditQuestGame() {
   function handleChoice(option: CreditQuestOption) {
     if (turnLocked || !currentTurn || gameOver || !campaign) return
 
+    playButtonSound()
     setTurnLocked(true)
     addMessage('user', option.text)
     setInsightText(option.insight)
@@ -547,6 +668,7 @@ export function CreditQuestGame() {
   function payBill(mode: 'full' | 'min') {
     if (!bill || queuedTurnIndex === null || !campaign || turnLocked) return
 
+    playButtonSound()
     setTurnLocked(true)
     const desiredAmount = mode === 'full' ? bill.fullAmount : bill.minimumAmount
     const actualPaid = Math.min(gameState.cash, desiredAmount)
@@ -618,18 +740,19 @@ export function CreditQuestGame() {
         : gameState.creditScore >= 580
           ? 'Fair'
           : 'Poor'
+  const displayedMood = flashMood ?? gameState.mood
 
   const moodLabel = {
     normal: 'NORMAL',
     stressed: 'STRESSED',
     happy: 'THRIVING',
-  }[gameState.mood]
+  }[displayedMood]
 
-  const moodImage = `/assets/${gameState.mood}.png`
+  const moodImage = `/assets/${displayedMood}.png`
   const panelBackground = '/assets/background.png'
 
   return (
-    <div className="grid h-[75vh] gap-6 lg:grid-cols-[320px_minmax(0,1fr)_320px]">
+    <div className="grid h-[75vh] gap-6 lg:grid-cols-[350px_minmax(0,1fr)_320px]">
       <div
         className="clay-card relative flex flex-col overflow-hidden border-4 border-white p-5"
         style={{
@@ -645,10 +768,10 @@ export function CreditQuestGame() {
         <div className="mt-12 flex flex-1 flex-col items-center justify-center gap-4 text-center">
           <Image
             src={moodImage}
-            alt={gameState.mood}
+            alt={displayedMood}
             width={280}
             height={280}
-            className="h-auto w-[85%] max-w-[280px] drop-shadow-[0_10px_15px_rgba(0,0,0,0.1)]"
+            className="h-auto w-[88%] max-w-[300px] drop-shadow-[0_10px_15px_rgba(0,0,0,0.1)]"
           />
           <div className="rounded-full bg-white px-4 py-2 text-sm font-black tracking-[0.2em] text-[#5d4037] shadow-md">
             {moodLabel}
@@ -712,7 +835,6 @@ export function CreditQuestGame() {
                   AI is writing the full campaign...
                 </div>
               )}
-              <div ref={scrollRef} />
             </div>
           </div>
 
@@ -728,7 +850,7 @@ export function CreditQuestGame() {
                   </p>
                 </div>
                 <Button
-                  onPress={initializeCampaign}
+                  onPress={restartCampaign}
                   variant="primary"
                   className="clay-btn bg-[#8b5e3c] text-white"
                 >
@@ -799,32 +921,36 @@ export function CreditQuestGame() {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-white px-3 py-3 text-center shadow-inner">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b5e3c]">Cash</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b5e3c]">
+              💵 Cash
+            </div>
             <div className="mt-1 text-sm font-black text-[#4d3428]">
               {formatMoney(gameState.cash)}
             </div>
           </div>
           <div className="rounded-2xl bg-white px-3 py-3 text-center shadow-inner">
-            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b5e3c]">Debt</div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b5e3c]">
+              💳 Debt
+            </div>
             <div className="mt-1 text-sm font-black text-[#4d3428]">
               {formatMoney(gameState.debt)}
             </div>
           </div>
           <div className="rounded-2xl bg-white px-3 py-3 text-center shadow-inner">
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b5e3c]">
-              Income
+              📈 Income
             </div>
             <div className="mt-1 text-sm font-black text-[#4d3428]">{formatMoney(dailyIncome)}</div>
           </div>
           <div className="rounded-2xl bg-white px-3 py-3 text-center shadow-inner">
             <div className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b5e3c]">
-              Followers
+              👥 Fans
             </div>
             <div className="mt-1 text-sm font-black text-[#4d3428]">{gameState.followers}</div>
           </div>
         </div>
 
-        <div className="self-start inline-flex max-w-[360px] flex-col items-center rounded-[28px] border-2 border-dashed border-[#d7ccc8] bg-[#fffdfa] px-4 py-4 text-sm leading-6 text-[#6d4c41] shadow-inner">
+        <div className="inline-flex w-full flex-col items-center self-start rounded-[28px] border-2 border-dashed border-[#d7ccc8] bg-[#fffdfa] px-4 py-4 text-sm leading-6 text-[#6d4c41] shadow-inner">
           <h4 className="mb-2 text-base font-black text-center text-[#8b5e3c]">AI Insights</h4>
           <p className="w-full text-justify">{insightText}</p>
         </div>
