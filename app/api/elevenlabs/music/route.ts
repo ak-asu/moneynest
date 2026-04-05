@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(req: Request) {
   let mood: MusicMood
   try {
-    const body = await req.json() as { mood: MusicMood }
+    const body = (await req.json()) as { mood: MusicMood }
     mood = body.mood
   } catch {
     return new Response('mood is required', { status: 400 })
@@ -12,7 +12,9 @@ export async function POST(req: Request) {
   if (!mood) return new Response('mood is required', { status: 400 })
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
   try {

@@ -11,7 +11,7 @@ export function ActionPlan({ title, steps }: ActionPlanProps) {
   const [saveError, setSaveError] = useState(false)
 
   function toggle(i: number) {
-    setChecked(prev => {
+    setChecked((prev) => {
       const next = new Set(prev)
       if (next.has(i)) {
         next.delete(i)
@@ -64,16 +64,22 @@ export function ActionPlan({ title, steps }: ActionPlanProps) {
             className="flex items-start gap-3 p-3 rounded-2xl bg-default-50 cursor-pointer"
             onClick={() => toggle(i)}
           >
-            {checked.has(i)
-              ? <CheckCircle2 size={18} className="text-success shrink-0 mt-0.5" />
-              : <Circle size={18} className="text-default-300 shrink-0 mt-0.5" />}
+            {checked.has(i) ? (
+              <CheckCircle2 size={18} className="text-success shrink-0 mt-0.5" />
+            ) : (
+              <Circle size={18} className="text-default-300 shrink-0 mt-0.5" />
+            )}
             <div className="flex flex-col gap-0.5">
-              <span className={`text-sm font-medium ${checked.has(i) ? 'line-through text-default-400' : ''}`}>
+              <span
+                className={`text-sm font-medium ${checked.has(i) ? 'line-through text-default-400' : ''}`}
+              >
                 {step.label}
                 {step.amount && <span className="text-primary ml-1">${step.amount}</span>}
               </span>
               <span className="text-xs text-default-500">{step.detail}</span>
-              {step.deadline && <span className="text-xs text-warning-600">by {step.deadline}</span>}
+              {step.deadline && (
+                <span className="text-xs text-warning-600">by {step.deadline}</span>
+              )}
             </div>
           </li>
         ))}

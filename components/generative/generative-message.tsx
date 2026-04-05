@@ -117,10 +117,13 @@ export function GenerativeMessage({
   }
 
   if (message.role === 'user') {
-    const userText = message.parts
+    const rawText = message.parts
       .filter((p) => p.type === 'text')
       .map((p) => (p as { type: 'text'; text: string }).text)
       .join('')
+    // Strip any [Vela-System: ...] prefixes injected by game/simulation outcome events
+    const userText = rawText.replace(/^\[Vela-System:[^\]]*\]\n?/gm, '').trim()
+    if (!userText) return null
     return (
       <div className="flex justify-end">
         <div className="clay-card bg-primary-50 border-primary-100 px-4 py-3 max-w-lg">

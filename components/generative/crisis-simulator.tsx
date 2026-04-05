@@ -6,20 +6,29 @@ import type { CrisisSimulatorProps } from '@/types/components'
 import { useSFX } from '@/components/audio/use-sfx'
 import { useMusic } from '@/components/audio/use-music'
 import { useIsReplay } from '@/components/generative/replay-context'
+import { useInteractionEvent } from '@/lib/ai/interaction-events'
 
 export function CrisisSimulator({
-  scenario_label, duration_days, income_monthly, fixed_expenses, savings, decision_points
+  scenario_label,
+  duration_days,
+  income_monthly,
+  fixed_expenses,
+  savings,
+  decision_points,
 }: CrisisSimulatorProps) {
   const isReplay = useIsReplay()
   useMusic('tense')
   const { play, SFX } = useSFX()
+  const dispatchEvent = useInteractionEvent()
   const [stepIndex, setStepIndex] = useState(0)
   const [day, setDay] = useState(0)
   const [balance, setBalance] = useState(savings)
   const [log, setLog] = useState<string[]>([])
   const [complete, setComplete] = useState(false)
 
-  useEffect(() => { if (!isReplay) play(SFX.CRISIS_START) }, [play, SFX.CRISIS_START, isReplay])
+  useEffect(() => {
+    if (!isReplay) play(SFX.CRISIS_START)
+  }, [play, SFX.CRISIS_START, isReplay])
 
   const dailyExpenses = Object.values(fixed_expenses).reduce((a, b) => a + b, 0) / 30
   const currentDecision = decision_points[stepIndex]
@@ -27,19 +36,25 @@ export function CrisisSimulator({
   function makeChoice(impact: number, consequence: string) {
     const newBalance = balance + impact - dailyExpenses
     setBalance(newBalance)
-    setLog(prev => [...prev, consequence])
+    setLog((prev) => [...prev, consequence])
     const nextIndex = stepIndex + 1
     if (nextIndex >= decision_points.length) {
       setComplete(true)
       setDay(duration_days)
+      dispatchEvent({
+        componentName: 'crisis_simulator',
+        status: 'completed',
+        summary: `scenario: "${scenario_label}", ending balance: $${newBalance.toFixed(0)} after ${duration_days} days. ${newBalance >= 0 ? 'Survived.' : 'Ran out of funds.'}`,
+        autoSend: true,
+      })
     } else {
       setStepIndex(nextIndex)
       setDay(decision_points[nextIndex].day)
     }
     if (newBalance < 0) {
-      play(SFX.CRISIS_ESCALATE)
+      play(SFX.CRISIS_START)
     } else if (nextIndex >= decision_points.length) {
-      play(newBalance >= 0 ? SFX.CRISIS_RESOLVE : SFX.CRISIS_ESCALATE)
+      play(newBalance >= 0 ? SFX.CRISIS_END : SFX.CRISIS_START)
     } else {
       play(SFX.CRISIS_START)
     }
@@ -56,8 +71,15 @@ export function CrisisSimulator({
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <p className="text-xs text-default-500 mb-1">Day {day} of {duration_days}</p>
-          <ProgressBar value={(day / duration_days) * 100} color="accent" size="sm" className="mb-2" />
+          <p className="text-xs text-default-500 mb-1">
+            Day {day} of {duration_days}
+          </p>
+          <ProgressBar
+            value={(day / duration_days) * 100}
+            color="accent"
+            size="sm"
+            className="mb-2"
+          />
         </div>
         <div className="text-right">
           <p className="text-xs text-default-500">Balance</p>
@@ -71,7 +93,9 @@ export function CrisisSimulator({
       {log.length > 0 && (
         <div className="bg-default-50 rounded-2xl p-3 max-h-32 overflow-y-auto">
           {log.map((entry, i) => (
-            <p key={i} className="text-xs text-default-600 mb-1">• {entry}</p>
+            <p key={i} className="text-xs text-default-600 mb-1">
+              • {entry}
+            </p>
           ))}
         </div>
       )}
@@ -96,7 +120,9 @@ export function CrisisSimulator({
       )}
 
       {complete && (
-        <div className={`rounded-2xl p-3 ${dangerLevel === 'danger' ? 'bg-danger-50' : 'bg-success-50'}`}>
+        <div
+          className={`rounded-2xl p-3 ${dangerLevel === 'danger' ? 'bg-danger-50' : 'bg-success-50'}`}
+        >
           <p className="text-sm font-semibold">
             {balance < 0 ? '⚠️ You ran out of funds.' : '✅ You made it through.'}
           </p>
@@ -104,6 +130,22 @@ export function CrisisSimulator({
             Ending balance: ${balance.toFixed(0)} after {duration_days} days
           </p>
         </div>
+      )}
+      {!complete && (
+        <button
+          type="button"
+          onClick={() =>
+            dispatchEvent({
+              componentName: 'crisis_simulator',
+              status: 'skipped',
+              summary: 'did not complete',
+              autoSend: true,
+            })
+          }
+          className="text-xs text-default-400 hover:text-default-600 underline self-start"
+        >
+          Skip
+        </button>
       )}
     </div>
   )

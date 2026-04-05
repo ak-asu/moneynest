@@ -4,12 +4,12 @@ const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY! })
 
 // Default voice IDs per persona — update with real ElevenLabs voice IDs from dashboard
 export const PERSONA_VOICE_MAP: Record<string, string> = {
-  gig_worker:    'EXAVITQu4vr4xnSDxMaL', // Sarah — warm, conversational
-  student:       'TX3LPaxmHKxFdv7VOQHJ', // Liam — young, clear
-  immigrant:     'pqHfZKP75CvOlQylNhV4', // Bill — measured, neutral
-  retiree:       'onwK4e9ZLuTAKqWW03F9', // Daniel — calm, authoritative
+  gig_worker: 'EXAVITQu4vr4xnSDxMaL', // Sarah — warm, conversational
+  student: 'TX3LPaxmHKxFdv7VOQHJ', // Liam — young, clear
+  immigrant: 'pqHfZKP75CvOlQylNhV4', // Bill — measured, neutral
+  retiree: 'onwK4e9ZLuTAKqWW03F9', // Daniel — calm, authoritative
   single_parent: 'XB0fDUnXU5powFXDhCwa', // Charlotte — warm female
-  other:         'EXAVITQu4vr4xnSDxMaL', // default Sarah
+  other: 'EXAVITQu4vr4xnSDxMaL', // default Sarah
 }
 
 export const LANGUAGE_VOICE_MAP: Record<string, string> = {

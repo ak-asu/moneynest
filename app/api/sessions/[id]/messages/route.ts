@@ -4,7 +4,9 @@ import { NextResponse } from 'next/server'
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json([], { status: 401 })
 
   const { data } = await (supabase.from('messages') as any)
@@ -14,7 +16,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
   // Convert DB messages to UIMessage format for ai@6 useChat
   // Each message needs: id, role, parts
-  const messages = ((data as import('@/types/database').DbMessage[]) || []).map(m => ({
+  const messages = ((data as import('@/types/database').DbMessage[]) || []).map((m) => ({
     id: m.id,
     role: m.role as 'user' | 'assistant',
     parts: [

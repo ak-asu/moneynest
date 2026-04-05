@@ -15,7 +15,14 @@ const DOC_TYPE_LABELS: Record<DocumentKind | 'all', string> = {
   other: 'Other',
 }
 
-const ALL_FILTER_TYPES: Array<DocumentKind | 'all'> = ['all', 'insurance', 'lease', 'bill', 'payslip', 'other']
+const ALL_FILTER_TYPES: Array<DocumentKind | 'all'> = [
+  'all',
+  'insurance',
+  'lease',
+  'bill',
+  'payslip',
+  'other',
+]
 
 export default function DocumentsPage() {
   const [docs, setDocs] = useState<DbDocument[]>([])
@@ -27,7 +34,7 @@ export default function DocumentsPage() {
     try {
       const res = await fetch('/api/documents')
       if (!res.ok) return []
-      return await res.json() as DbDocument[]
+      return (await res.json()) as DbDocument[]
     } catch {
       return []
     }
@@ -42,7 +49,9 @@ export default function DocumentsPage() {
 
     Promise.all([
       fetchDocs(),
-      fetch('/api/profile').then(r => r.ok ? r.json() as Promise<DbProfile> : null).catch(() => null),
+      fetch('/api/profile')
+        .then((r) => (r.ok ? (r.json() as Promise<DbProfile>) : null))
+        .catch(() => null),
     ]).then(([initialDocs, prof]) => {
       if (!cancelled) {
         setDocs(initialDocs)
@@ -50,16 +59,19 @@ export default function DocumentsPage() {
       }
     })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [fetchDocs])
 
   const filtered = useMemo(() => {
-    return docs.filter(doc => {
+    return docs.filter((doc) => {
       const matchType = filter === 'all' || doc.document_type === filter
       const q = search.toLowerCase().trim()
-      const matchSearch = !q
-        || doc.filename.toLowerCase().includes(q)
-        || doc.ai_explanation?.plain_summaries.some(s => s.toLowerCase().includes(q))
+      const matchSearch =
+        !q ||
+        doc.filename.toLowerCase().includes(q) ||
+        doc.ai_explanation?.plain_summaries.some((s) => s.toLowerCase().includes(q))
       return matchType && matchSearch
     })
   }, [docs, search, filter])
@@ -73,8 +85,8 @@ export default function DocumentsPage() {
   }, [docs])
 
   const visibleTypes = useMemo(
-    () => ALL_FILTER_TYPES.filter(t => t === 'all' || (counts[t] ?? 0) > 0),
-    [counts],
+    () => ALL_FILTER_TYPES.filter((t) => t === 'all' || (counts[t] ?? 0) > 0),
+    [counts]
   )
 
   return (
@@ -99,19 +111,22 @@ export default function DocumentsPage() {
           {docs.length > 0 && (
             <div className="flex flex-col gap-3">
               <div className="relative">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-default-400 pointer-events-none" />
+                <Search
+                  size={15}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-default-400 pointer-events-none"
+                />
                 <input
                   type="search"
                   placeholder="Search by filename or content..."
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="w-full clay-input pl-9 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 transition-all dark:text-white placeholder:text-default-400"
                 />
               </div>
 
               {visibleTypes.length > 1 && (
                 <div className="flex gap-2 flex-wrap">
-                  {visibleTypes.map(t => {
+                  {visibleTypes.map((t) => {
                     const count = counts[t] ?? 0
                     const active = filter === t
                     return (
@@ -126,7 +141,9 @@ export default function DocumentsPage() {
                       >
                         {DOC_TYPE_LABELS[t]}
                         {count > 0 && (
-                          <span className={`ml-1 ${active ? 'opacity-80' : 'opacity-50'}`}>({count})</span>
+                          <span className={`ml-1 ${active ? 'opacity-80' : 'opacity-50'}`}>
+                            ({count})
+                          </span>
                         )}
                       </button>
                     )
@@ -138,7 +155,7 @@ export default function DocumentsPage() {
 
           {/* Documents list */}
           <div className="flex flex-col gap-3">
-            {filtered.map(doc => (
+            {filtered.map((doc) => (
               <DocumentCard key={doc.id} doc={doc} profile={profile} />
             ))}
 
@@ -147,7 +164,10 @@ export default function DocumentsPage() {
                 <Search size={22} className="text-default-300" />
                 <p className="text-default-400 text-sm">No documents match your search.</p>
                 <button
-                  onClick={() => { setSearch(''); setFilter('all') }}
+                  onClick={() => {
+                    setSearch('')
+                    setFilter('all')
+                  }}
                   className="text-xs text-primary hover:underline"
                 >
                   Clear filters
@@ -158,7 +178,9 @@ export default function DocumentsPage() {
             {docs.length === 0 && (
               <div className="clay-card p-10 flex flex-col items-center gap-3 text-center">
                 <FileText size={22} className="text-default-300" />
-                <p className="text-default-400 text-sm">Your vault is empty. Upload a document above to get started.</p>
+                <p className="text-default-400 text-sm">
+                  Your vault is empty. Upload a document above to get started.
+                </p>
               </div>
             )}
           </div>

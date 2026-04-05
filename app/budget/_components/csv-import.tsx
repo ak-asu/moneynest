@@ -13,33 +13,36 @@ export function CsvImport({ onImported }: CsvImportProps) {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const file = acceptedFiles[0]
-    if (!file) return
-    setStatus('uploading')
-    setMessage('')
-    try {
-      const text = await file.text()
-      const res = await fetch('/api/budget/csv', {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: text,
-      })
-      const data = await res.json()
-      if (!res.ok) {
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const file = acceptedFiles[0]
+      if (!file) return
+      setStatus('uploading')
+      setMessage('')
+      try {
+        const text = await file.text()
+        const res = await fetch('/api/budget/csv', {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: text,
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          setStatus('error')
+          setMessage(data.error ?? 'Import failed.')
+        } else {
+          setStatus('success')
+          setMessage(`${data.imported} entries imported.`)
+          onImported(data.imported)
+          setTimeout(() => setStatus('idle'), 4000)
+        }
+      } catch {
         setStatus('error')
-        setMessage(data.error ?? 'Import failed.')
-      } else {
-        setStatus('success')
-        setMessage(`${data.imported} entries imported.`)
-        onImported(data.imported)
-        setTimeout(() => setStatus('idle'), 4000)
+        setMessage('Failed to read file.')
       }
-    } catch {
-      setStatus('error')
-      setMessage('Failed to read file.')
-    }
-  }, [onImported])
+    },
+    [onImported]
+  )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -52,7 +55,9 @@ export function CsvImport({ onImported }: CsvImportProps) {
     <div
       {...getRootProps()}
       className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors ${
-        isDragActive ? 'border-primary bg-primary-50' : 'border-default-200 hover:border-primary-300'
+        isDragActive
+          ? 'border-primary bg-primary-50'
+          : 'border-default-200 hover:border-primary-300'
       } ${status === 'uploading' ? 'opacity-60 pointer-events-none' : ''}`}
     >
       <input {...getInputProps()} />
@@ -65,7 +70,12 @@ export function CsvImport({ onImported }: CsvImportProps) {
         <div className="flex flex-col items-center gap-2 text-danger">
           <AlertCircle size={24} />
           <p className="text-sm">{message}</p>
-          <Button size="sm" variant="outline" onPress={() => setStatus('idle')} className="clay-btn">
+          <Button
+            size="sm"
+            variant="outline"
+            onPress={() => setStatus('idle')}
+            className="clay-btn"
+          >
             Try again
           </Button>
         </div>

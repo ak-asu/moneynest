@@ -22,7 +22,7 @@ function SummaryCard({ label, value, color }: { label: string; value: number; co
 
 function formatDate(iso: string) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(
-    new Date(iso + 'T00:00:00'),
+    new Date(iso + 'T00:00:00')
   )
 }
 
@@ -60,7 +60,7 @@ function normalizeExpenseMap(expenses: Record<string, number>) {
  */
 function hasMeaningfulDiff(
   budgetExpenses: Record<string, number>,
-  profileExpenses: Record<string, number>,
+  profileExpenses: Record<string, number>
 ): boolean {
   const allCats = new Set([...Object.keys(budgetExpenses), ...Object.keys(profileExpenses)])
   for (const cat of allCats) {
@@ -75,15 +75,15 @@ function hasMeaningfulDiff(
 /** Builds the pre-filled Vela chat message from the current entries. */
 function buildVelaSeed(entries: DbBudgetEntry[]): string {
   const totalIncome = entries
-    .filter(e => e.entry_type === 'income')
+    .filter((e) => e.entry_type === 'income')
     .reduce((s, e) => s + e.amount, 0)
   const totalExpenses = entries
-    .filter(e => e.entry_type === 'expense')
+    .filter((e) => e.entry_type === 'expense')
     .reduce((s, e) => s + e.amount, 0)
   const surplus = totalIncome - totalExpenses
 
   const catTotals: Record<string, number> = {}
-  for (const e of entries.filter(e => e.entry_type === 'expense')) {
+  for (const e of entries.filter((e) => e.entry_type === 'expense')) {
     catTotals[e.category] = (catTotals[e.category] ?? 0) + e.amount
   }
   const top5 = Object.entries(catTotals)
@@ -95,10 +95,10 @@ function buildVelaSeed(entries: DbBudgetEntry[]): string {
   const d30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const d60 = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const recentTotal = entries
-    .filter(e => e.entry_type === 'expense' && e.date >= d30)
+    .filter((e) => e.entry_type === 'expense' && e.date >= d30)
     .reduce((s, e) => s + e.amount, 0)
   const prevTotal = entries
-    .filter(e => e.entry_type === 'expense' && e.date >= d60 && e.date < d30)
+    .filter((e) => e.entry_type === 'expense' && e.date >= d60 && e.date < d30)
     .reduce((s, e) => s + e.amount, 0)
   const trend =
     prevTotal > 0 ? (recentTotal > prevTotal ? 'trending up' : 'trending down') : 'no prior data'
@@ -155,56 +155,72 @@ export default function BudgetPage() {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
-  const totalIncome = entries.filter(e => e.entry_type === 'income').reduce((s, e) => s + e.amount, 0)
-  const totalExpenses = entries.filter(e => e.entry_type === 'expense').reduce((s, e) => s + e.amount, 0)
+  const totalIncome = entries
+    .filter((e) => e.entry_type === 'income')
+    .reduce((s, e) => s + e.amount, 0)
+  const totalExpenses = entries
+    .filter((e) => e.entry_type === 'expense')
+    .reduce((s, e) => s + e.amount, 0)
   const surplus = totalIncome - totalExpenses
 
-  const handleAdded = useCallback((entry: DbBudgetEntry) => {
-    setEntries(prev => {
-      const next = [entry, ...prev]
-      if (profile) {
-        const budgetExpenses = computeMonthlyExpenses(next)
-        const profileExpenses = normalizeExpenseMap(profile.expenses as Record<string, number>)
-        if (hasMeaningfulDiff(budgetExpenses, profileExpenses)) {
-          setSyncBanner(budgetExpenses)
-        } else {
-          setSyncBanner(null)
+  const handleAdded = useCallback(
+    (entry: DbBudgetEntry) => {
+      setEntries((prev) => {
+        const next = [entry, ...prev]
+        if (profile) {
+          const budgetExpenses = computeMonthlyExpenses(next)
+          const profileExpenses = normalizeExpenseMap(profile.expenses as Record<string, number>)
+          if (hasMeaningfulDiff(budgetExpenses, profileExpenses)) {
+            setSyncBanner(budgetExpenses)
+          } else {
+            setSyncBanner(null)
+          }
         }
+        return next
+      })
+
+      if (entry.entry_type !== 'expense' || !profile) return
+
+      const profileExpenses = normalizeExpenseMap(
+        (profile.expenses as Record<string, number>) ?? {}
+      )
+      const normalizedCategory = normalizeCategory(entry.category)
+      if (!normalizedCategory) return
+      const mergedExpenses = {
+        ...profileExpenses,
+        [normalizedCategory]: (profileExpenses[normalizedCategory] ?? 0) + entry.amount,
       }
-      return next
-    })
+      const nextProfile = { ...profile, expenses: mergedExpenses }
+      setProfile(nextProfile)
 
-    if (entry.entry_type !== 'expense' || !profile) return
+      void fetch('/api/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          persona: profile.persona,
+          language: profile.language,
+          income_monthly: profile.income_monthly,
+          income_type: profile.income_type,
+          debts: profile.debts,
+          goals: profile.goals,
+          savings_balance: profile.savings_balance,
+          expenses: mergedExpenses,
+        }),
+      })
+    },
+    [profile]
+  )
 
-    const profileExpenses = normalizeExpenseMap((profile.expenses as Record<string, number>) ?? {})
-    const normalizedCategory = normalizeCategory(entry.category)
-    if (!normalizedCategory) return
-    const mergedExpenses = {
-      ...profileExpenses,
-      [normalizedCategory]: (profileExpenses[normalizedCategory] ?? 0) + entry.amount,
-    }
-    const nextProfile = { ...profile, expenses: mergedExpenses }
-    setProfile(nextProfile)
-
-    void fetch('/api/profile/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        persona: profile.persona,
-        language: profile.language,
-        income_monthly: profile.income_monthly,
-        income_type: profile.income_type,
-        debts: profile.debts,
-        goals: profile.goals,
-        savings_balance: profile.savings_balance,
-        expenses: mergedExpenses,
-      }),
-    })
-  }, [profile])
-
-  const handleImported = useCallback((_count: number) => { load() }, [load])
+  const handleImported = useCallback(
+    (_count: number) => {
+      load()
+    },
+    [load]
+  )
 
   const handleConfirmSync = useCallback(async () => {
     if (!syncBanner || !profile) return
@@ -222,7 +238,7 @@ export default function BudgetPage() {
           expenses: syncBanner,
         }),
       })
-      setProfile(prev => prev ? { ...prev, expenses: syncBanner } : prev)
+      setProfile((prev) => (prev ? { ...prev, expenses: syncBanner } : prev))
       setSyncBanner(null)
     } finally {
       setSyncing(false)
@@ -297,23 +313,34 @@ export default function BudgetPage() {
             ) : fetchError ? (
               <p className="text-danger text-sm">{fetchError}</p>
             ) : entries.length === 0 ? (
-              <p className="text-default-400 text-sm">No entries yet. Add one above or import a CSV.</p>
+              <p className="text-default-400 text-sm">
+                No entries yet. Add one above or import a CSV.
+              </p>
             ) : (
               <div className="space-y-1">
-                {entries.map(entry => (
-                  <div key={entry.id} className="flex items-center justify-between py-2 border-b border-divider last:border-0">
+                {entries.map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex items-center justify-between py-2 border-b border-divider last:border-0"
+                  >
                     <div className="flex items-center gap-3 min-w-0">
                       <span
                         className={`shrink-0 w-2 h-2 rounded-full ${entry.entry_type === 'income' ? 'bg-success' : 'bg-danger'}`}
                         aria-hidden="true"
                       />
                       <span className="text-sm text-default-700 truncate">{entry.category}</span>
-                      <span className="text-xs text-default-400 shrink-0">{formatDate(entry.date)}</span>
+                      <span className="text-xs text-default-400 shrink-0">
+                        {formatDate(entry.date)}
+                      </span>
                       {entry.source === 'csv' && (
-                        <span className="shrink-0 text-xs bg-default-100 text-default-500 px-1.5 py-0.5 rounded-md">CSV</span>
+                        <span className="shrink-0 text-xs bg-default-100 text-default-500 px-1.5 py-0.5 rounded-md">
+                          CSV
+                        </span>
                       )}
                     </div>
-                    <span className={`text-sm font-semibold shrink-0 ml-4 ${entry.entry_type === 'income' ? 'text-success-600' : 'text-danger-600'}`}>
+                    <span
+                      className={`text-sm font-semibold shrink-0 ml-4 ${entry.entry_type === 'income' ? 'text-success-600' : 'text-danger-600'}`}
+                    >
                       {entry.entry_type === 'income' ? '+' : '-'}${entry.amount.toLocaleString()}
                     </span>
                   </div>

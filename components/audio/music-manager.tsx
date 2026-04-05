@@ -1,5 +1,13 @@
 'use client'
-import { createContext, useContext, useState, useCallback, useRef, useEffect, type ReactNode } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  type ReactNode,
+} from 'react'
 
 type MusicMood = 'calm' | 'tense' | 'curious' | 'celebratory' | 'silent'
 
@@ -62,7 +70,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       audio.loop = true
       audio.volume = 0.15
       audioRef.current = audio
-      await audio.play().catch(err => {
+      await audio.play().catch((err) => {
         if (err.name !== 'NotAllowedError') console.error('Music playback error:', err)
       })
     } catch (err) {
@@ -83,9 +91,5 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  return (
-    <MusicContext.Provider value={{ currentMood, setMood }}>
-      {children}
-    </MusicContext.Provider>
-  )
+  return <MusicContext.Provider value={{ currentMood, setMood }}>{children}</MusicContext.Provider>
 }

@@ -3,9 +3,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, Chip } from '@heroui/react'
 import {
-  FileText, ChevronDown, ChevronUp, Volume2,
-  Shield, Home, Receipt, Banknote,
-  AlertTriangle, Info, CheckCircle, BarChart2, MessageSquare,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Volume2,
+  Shield,
+  Home,
+  Receipt,
+  Banknote,
+  AlertTriangle,
+  Info,
+  CheckCircle,
+  BarChart2,
+  MessageSquare,
 } from 'lucide-react'
 import { useTTS } from '@/components/audio/use-tts'
 import { DocumentVisual } from '@/components/documents/document-visual'
@@ -54,7 +64,11 @@ const TYPE_CONFIG: Record<DocumentKind, TypeConfig> = {
 }
 
 function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso))
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(iso))
 }
 
 function buildChatSeed(doc: DbDocument): string {
@@ -90,8 +104,8 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
   const config = TYPE_CONFIG[doc.document_type] ?? TYPE_CONFIG.other
   const TypeIcon = config.icon
 
-  const highRiskCount = explanation?.clauses.filter(c => c.risk === 'high').length ?? 0
-  const medRiskCount = explanation?.clauses.filter(c => c.risk === 'medium').length ?? 0
+  const highRiskCount = explanation?.clauses.filter((c) => c.risk === 'high').length ?? 0
+  const medRiskCount = explanation?.clauses.filter((c) => c.risk === 'medium').length ?? 0
   const allLow = explanation != null && highRiskCount === 0 && medRiskCount === 0
 
   function discussInChat() {
@@ -113,7 +127,9 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
                 {doc.filename}
               </p>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span className={`text-xs px-2 py-0.5 rounded-full border font-medium ${config.badgeClass}`}>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full border font-medium ${config.badgeClass}`}
+                >
                   {config.label}
                 </span>
                 <span className="text-xs text-default-400">{formatDate(doc.created_at)}</span>
@@ -139,7 +155,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
               size="sm"
               variant="ghost"
               isIconOnly
-              onPress={() => setShowVisual(v => !v)}
+              onPress={() => setShowVisual((v) => !v)}
               className={`transition-colors ${showVisual ? 'text-primary' : 'text-default-400 hover:text-default-600'}`}
               aria-label="Toggle visuals"
             >
@@ -149,7 +165,7 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
               size="sm"
               variant="ghost"
               isIconOnly
-              onPress={() => setExpanded(e => !e)}
+              onPress={() => setExpanded((e) => !e)}
               className="text-default-400 hover:text-default-600"
               aria-label={expanded ? 'Collapse details' : 'Show details'}
             >
@@ -190,18 +206,21 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
         )}
 
         {/* Visual Panel */}
-        {showVisual && (
-          <DocumentVisual doc={doc} profile={profile} />
-        )}
+        {showVisual && <DocumentVisual doc={doc} profile={profile} />}
 
         {/* Expanded clause details */}
         {expanded && explanation && (
           <div className="flex flex-col gap-2 pt-2 border-t border-default-200 dark:border-white/10">
             {explanation.clauses.map((clause, i) => (
-              <div key={i} className="bg-default-50 dark:bg-white/5 rounded-2xl p-3 flex flex-col gap-1">
+              <div
+                key={i}
+                className="bg-default-50 dark:bg-white/5 rounded-2xl p-3 flex flex-col gap-1"
+              >
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <span className="text-sm font-semibold">{clause.label}</span>
-                  <Chip size="sm" color={RISK_COLOR[clause.risk]} variant="soft">{clause.risk} risk</Chip>
+                  <Chip size="sm" color={RISK_COLOR[clause.risk]} variant="soft">
+                    {clause.risk} risk
+                  </Chip>
                 </div>
                 <p className="text-xs text-default-600">{clause.plain}</p>
                 {clause.detail && (
@@ -218,7 +237,9 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
                 </p>
                 <div className="flex flex-col gap-1">
                   {explanation.risk_flags.map((f, i) => (
-                    <p key={i} className="text-xs text-default-600">• {f}</p>
+                    <p key={i} className="text-xs text-default-600">
+                      • {f}
+                    </p>
                   ))}
                 </div>
               </div>
@@ -226,10 +247,15 @@ export function DocumentCard({ doc, profile }: DocumentCardProps) {
 
             {explanation.what_ifs.length > 0 && (
               <div className="rounded-2xl p-3 bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800/30">
-                <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 mb-2">What-if scenarios</p>
+                <p className="text-xs font-semibold text-primary-700 dark:text-primary-400 mb-2">
+                  What-if scenarios
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {explanation.what_ifs.map((w, i) => (
-                    <span key={i} className="text-xs bg-white dark:bg-white/10 border border-primary-100 dark:border-primary-800/30 text-primary-600 dark:text-primary-300 rounded-xl px-2.5 py-1">
+                    <span
+                      key={i}
+                      className="text-xs bg-white dark:bg-white/10 border border-primary-100 dark:border-primary-800/30 text-primary-600 dark:text-primary-300 rounded-xl px-2.5 py-1"
+                    >
                       {w.label}
                     </span>
                   ))}

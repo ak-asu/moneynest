@@ -8,7 +8,7 @@ import { z } from 'zod'
 export const agentTools = {
   voice_card: tool({
     description:
-      'Speak a message to the user using ElevenLabs TTS. Use this first to acknowledge emotionally significant moments.',
+      'Deliver audio narration for content that is inherently meant to be heard — e.g., a spoken financial summary, a guided reading, or an audiobook-style passage the user explicitly asked to hear. Do NOT use for standard conversational replies, greetings, component introductions, or emotional acknowledgements. Only use when the user has specifically requested audio or when reading a long document passage aloud.',
     inputSchema: z.object({
       script: z.string().describe('What to say out loud'),
       voice_id: z.string().describe('ElevenLabs voice ID from the user profile'),
@@ -33,13 +33,13 @@ export const agentTools = {
           plain: z.string(),
           risk: z.enum(['low', 'medium', 'high']),
           detail: z.string().optional(),
-        }),
+        })
       ),
       what_ifs: z.array(
         z.object({
           label: z.string(),
           simulation_id: z.string(),
-        }),
+        })
       ),
       voice_enabled: z.boolean().default(true),
       language: z.string().default('en'),
@@ -53,15 +53,18 @@ export const agentTools = {
     inputSchema: z.object({
       document_id: z.string().optional().describe('ID of the specific document, if known'),
       filename: z.string().optional().describe('Filename of the document for display'),
-      document_type: z.enum(['insurance', 'lease', 'bill', 'payslip', 'other', 'general']).default('general'),
-      message: z.string().describe('Brief message explaining why to view this document and what to look for'),
+      document_type: z
+        .enum(['insurance', 'lease', 'bill', 'payslip', 'other', 'general'])
+        .default('general'),
+      message: z
+        .string()
+        .describe('Brief message explaining why to view this document and what to look for'),
     }),
     execute: async (params) => params,
   }),
 
   crisis_simulator: tool({
-    description:
-      "Launch an interactive financial crisis simulation using the user's real numbers.",
+    description: "Launch an interactive financial crisis simulation using the user's real numbers.",
     inputSchema: z.object({
       scenario: z.string().describe('Machine-readable scenario id e.g. job_loss_2_weeks'),
       scenario_label: z.string().describe('Human readable label e.g. "2 weeks without income"'),
@@ -78,9 +81,9 @@ export const agentTools = {
               label: z.string(),
               impact: z.number().describe('Dollar impact (negative = loss)'),
               consequence: z.string(),
-            }),
+            })
           ),
-        }),
+        })
       ),
     }),
     execute: async (params) => params,
@@ -90,18 +93,30 @@ export const agentTools = {
     description:
       "Generate an interactive financial mini-game using the user's actual income and expense numbers.",
     inputSchema: z.object({
-      game_type: z.enum(['drag_drop', 'time_pressure', 'allocation_puzzle', 'tradeoff_slider', 'insurance_card_game', 'term_match', 'fin_word', 'wealth_farm', 'credit_quest_game']),
+      game_type: z.enum([
+        'drag_drop',
+        'time_pressure',
+        'allocation_puzzle',
+        'tradeoff_slider',
+        'insurance_card_game',
+        'term_match',
+        'fin_word',
+        'wealth_farm',
+        'credit_quest_game',
+      ]),
       title: z.string(),
       instructions: z.string().optional(),
       income: z.number().optional(),
-      categories: z.array(
-        z.object({
-          name: z.string(),
-          suggested: z.number(),
-          min: z.number(),
-          max: z.number(),
-        }),
-      ).optional(),
+      categories: z
+        .array(
+          z.object({
+            name: z.string(),
+            suggested: z.number(),
+            min: z.number(),
+            max: z.number(),
+          })
+        )
+        .optional(),
       win_condition: z.string().optional(),
       time_limit_seconds: z.number().optional(),
     }),
@@ -120,7 +135,7 @@ export const agentTools = {
           z.object({
             label: z.string(),
             detail: z.string(),
-          }),
+          })
         )
         .max(3),
       voice_enabled: z.boolean().default(true),
@@ -151,7 +166,7 @@ export const agentTools = {
           label: z.string(),
           amount: z.number(),
           type: z.enum(['income', 'expense', 'decision', 'outcome']),
-        }),
+        })
       ),
     }),
     execute: async (params) => params,
@@ -166,9 +181,19 @@ export const agentTools = {
       explanation: z.string(),
       key_takeaway: z.string().describe('One sentence the user should remember'),
       image_prompt: z.string().describe('Gemini image prompt for a simple visual metaphor'),
-      image_url: z.string().url().optional().describe('Populated server-side after Gemini image generation'),
+      image_url: z
+        .string()
+        .url()
+        .optional()
+        .describe('Populated server-side after Gemini image generation'),
       voice_enabled: z.boolean().default(true),
       language: z.string().default('en'),
+      links: z
+        .array(z.object({ label: z.string(), url: z.string().url() }))
+        .optional()
+        .describe(
+          'Relevant StateFarm resource links from the approved list in the system prompt. Only include when directly applicable.'
+        ),
     }),
     execute: async (params) => params,
   }),
@@ -184,7 +209,7 @@ export const agentTools = {
           amount: z.number().optional(),
           deadline: z.string().optional(),
           detail: z.string(),
-        }),
+        })
       ),
       language: z.string().default('en'),
     }),
@@ -194,21 +219,14 @@ export const agentTools = {
   profile_snapshot: tool({
     description: "Show the user's financial identity card with health score and detected gaps.",
     inputSchema: z.object({
-      persona: z.enum([
-        'gig_worker',
-        'student',
-        'immigrant',
-        'retiree',
-        'single_parent',
-        'other',
-      ]),
+      persona: z.enum(['gig_worker', 'student', 'immigrant', 'retiree', 'single_parent', 'other']),
       health_score: z.number().min(0).max(100),
       income_monthly: z.number(),
       gaps: z.array(
         z.object({
           label: z.string(),
           prompt: z.string(),
-        }),
+        })
       ),
     }),
     execute: async (params) => params,

@@ -22,10 +22,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html suppressHydrationWarning lang="en">
       <head />
-      <body className={clsx('min-h-screen bg-background text-foreground font-sans antialiased', fontSans.variable)}>
-        <Providers themeProps={{ attribute: 'class', defaultTheme: 'dark' }}>
-          {children}
-        </Providers>
+      <body
+        className={clsx(
+          'min-h-screen bg-background text-foreground font-sans antialiased',
+          fontSans.variable
+        )}
+      >
+        <Providers themeProps={{ attribute: 'class', defaultTheme: 'light' }}>{children}</Providers>
       </body>
     </html>
   )

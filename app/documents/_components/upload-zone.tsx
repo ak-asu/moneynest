@@ -31,31 +31,35 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
         isDragActive
           ? 'border-primary bg-primary/5 scale-[1.01]'
           : uploading
-          ? 'border-default-200 opacity-70 pointer-events-none'
-          : 'border-default-200 hover:border-primary/40 hover:bg-white/5 dark:hover:bg-white/[0.02]'
+            ? 'border-default-200 opacity-70 pointer-events-none'
+            : 'border-default-200 hover:border-primary/40 hover:bg-white/5 dark:hover:bg-white/[0.02]'
       }`}
     >
       <input {...getInputProps()} />
-      <div className={`p-3 rounded-2xl transition-colors ${
-        isDragActive
-          ? 'bg-primary/15 text-primary'
-          : uploading
-          ? 'bg-default-100 dark:bg-white/5 text-primary'
-          : 'bg-default-100 dark:bg-white/5 text-default-400'
-      }`}>
-        {uploading
-          ? <Loader2 size={22} className="animate-spin" />
-          : isDragActive
-          ? <FileCheck size={22} />
-          : <Upload size={22} />}
+      <div
+        className={`p-3 rounded-2xl transition-colors ${
+          isDragActive
+            ? 'bg-primary/15 text-primary'
+            : uploading
+              ? 'bg-default-100 dark:bg-white/5 text-primary'
+              : 'bg-default-100 dark:bg-white/5 text-default-400'
+        }`}
+      >
+        {uploading ? (
+          <Loader2 size={22} className="animate-spin" />
+        ) : isDragActive ? (
+          <FileCheck size={22} />
+        ) : (
+          <Upload size={22} />
+        )}
       </div>
       <div className="text-center">
         <p className="text-sm font-medium text-default-600 dark:text-default-300">
           {uploading
             ? 'Analyzing document...'
             : isDragActive
-            ? 'Drop to add to vault'
-            : 'Drop a document or click to browse'}
+              ? 'Drop to add to vault'
+              : 'Drop a document or click to browse'}
         </p>
         {!uploading && !isDragActive && (
           <p className="text-xs text-default-400 mt-1">

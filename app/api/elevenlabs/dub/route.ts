@@ -8,14 +8,17 @@ export const maxDuration = 60
 const VALID_MOODS = ['calm', 'tense', 'curious', 'celebratory', 'silent'] as const
 
 export async function POST(req: Request) {
-  const { mood, targetLanguage } = await req.json() as { mood: MusicMood; targetLanguage: string }
-  if (!mood || !targetLanguage) return new Response('mood and targetLanguage are required', { status: 400 })
-  if (!mood || !VALID_MOODS.includes(mood as typeof VALID_MOODS[number])) {
+  const { mood, targetLanguage } = (await req.json()) as { mood: MusicMood; targetLanguage: string }
+  if (!mood || !targetLanguage)
+    return new Response('mood and targetLanguage are required', { status: 400 })
+  if (!mood || !VALID_MOODS.includes(mood as (typeof VALID_MOODS)[number])) {
     return new Response('Invalid mood', { status: 400 })
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
   try {

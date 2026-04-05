@@ -94,8 +94,14 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-export function TermMatch() {
+const totalPairs = ROUNDS.reduce((a, r) => a + r.pairs.length, 0)
+
+export function TermMatch({ onComplete }: { onComplete?: (summary: string) => void } = {}) {
   const { speak } = useTTS()
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  })
 
   const [phase, setPhase] = useState<Phase>('instructions')
   const [round, setRound] = useState(0)
@@ -126,12 +132,16 @@ export function TermMatch() {
   const totalMatchedRef = useRef(0)
   const roundRef = useRef(0)
 
-  const totalPairs = ROUNDS.reduce((a, r) => a + r.pairs.length, 0)
-
   const endRound = useCallback((completed: boolean) => {
     const isLast = roundRef.current >= ROUNDS.length - 1
     if (isLast || !completed) {
       setPhase('results')
+      const finalXp = xpRef.current
+      const finalMatched = totalMatchedRef.current
+      const grade = finalXp >= 200 ? 'S' : finalXp >= 150 ? 'A' : finalXp >= 100 ? 'B' : 'C'
+      onCompleteRef.current?.(
+        `${finalMatched} of ${totalPairs} pairs matched — ${finalXp} XP — grade ${grade}`
+      )
       if (isLast && completed) {
         fetch('/api/xp', {
           method: 'POST',

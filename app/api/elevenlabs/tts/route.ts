@@ -9,14 +9,17 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
   // Resolve voice ID: explicit > persona default > language default
-  const resolvedVoiceId = voiceId
-    || PERSONA_VOICE_MAP[persona]
-    || LANGUAGE_VOICE_MAP[language || 'en']
-    || PERSONA_VOICE_MAP.other
+  const resolvedVoiceId =
+    voiceId ||
+    PERSONA_VOICE_MAP[persona] ||
+    LANGUAGE_VOICE_MAP[language || 'en'] ||
+    PERSONA_VOICE_MAP.other
 
   try {
     const audioBuffer = await generateSpeech(text, resolvedVoiceId, language || 'en')

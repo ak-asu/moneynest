@@ -32,11 +32,7 @@ export function ProfileSyncBanner({
         <p className="text-sm font-semibold text-warning-800">
           Your budget data suggests different expenses than your profile
         </p>
-        {top3 && (
-          <p className="text-xs text-warning-700 mt-0.5 truncate">
-            Suggested: {top3}
-          </p>
-        )}
+        {top3 && <p className="text-xs text-warning-700 mt-0.5 truncate">Suggested: {top3}</p>}
       </div>
       <div className="flex gap-2 shrink-0">
         <Button

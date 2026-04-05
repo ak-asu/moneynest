@@ -18,24 +18,37 @@ export function HealthScoreRing({ score }: HealthScoreRingProps) {
       <div className="relative w-[120px] h-[120px] flex items-center justify-center">
         <svg width="120" height="120" viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
           <circle
-            cx="50" cy="50" r={RADIUS}
-            fill="none" stroke="currentColor" strokeWidth="8"
+            cx="50"
+            cy="50"
+            r={RADIUS}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="8"
             className="text-default-200"
           />
           <circle
-            cx="50" cy="50" r={RADIUS}
-            fill="none" stroke={color} strokeWidth="8" strokeLinecap="round"
+            cx="50"
+            cy="50"
+            r={RADIUS}
+            fill="none"
+            stroke={color}
+            strokeWidth="8"
+            strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={dashOffset}
             style={{ transition: 'stroke-dashoffset 0.7s ease' }}
           />
         </svg>
         <div className="relative z-10 flex flex-col items-center">
-          <span className="text-3xl font-extrabold leading-none" style={{ color }}>{clamped}</span>
+          <span className="text-3xl font-extrabold leading-none" style={{ color }}>
+            {clamped}
+          </span>
           <span className="text-xs text-default-400">/ 100</span>
         </div>
       </div>
-      <p className="text-sm font-semibold" style={{ color }}>{label}</p>
+      <p className="text-sm font-semibold" style={{ color }}>
+        {label}
+      </p>
     </div>
   )
 }

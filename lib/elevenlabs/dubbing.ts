@@ -25,7 +25,7 @@ export async function dubAudio(
     let attempts = 0
     while (status === 'dubbing' && attempts < 20) {
       if (signal?.aborted) return null
-      await new Promise(r => setTimeout(r, 3000))
+      await new Promise((r) => setTimeout(r, 3000))
       const metadata = await client.dubbing.get(dubResponse.dubbingId)
       status = metadata.status
       attempts++

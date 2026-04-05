@@ -11,16 +11,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json(null, { status: 401 })
 
   // Cast needed: supabase-js@2 inference resolves some table Row types as
   // `never` when using select('id'); see known TS issue in existing routes.
-  const { data: dbUser } = await supabase
+  const { data: dbUser } = (await supabase
     .from('users')
     .select('id')
     .eq('auth_id', user.id)
-    .single() as { data: Pick<DbUser, 'id'> | null }
+    .single()) as { data: Pick<DbUser, 'id'> | null }
   if (!dbUser) return NextResponse.json(null, { status: 404 })
 
   // Only persist valid columns from profiles table.
@@ -32,7 +34,8 @@ export async function POST(req: Request) {
   if (body.language != null) profileData.language = body.language as DbProfile['language']
   if (body.voice_id !== undefined) profileData.voice_id = body.voice_id as DbProfile['voice_id']
   if (body.income_monthly != null) profileData.income_monthly = Number(body.income_monthly)
-  if (body.income_type != null) profileData.income_type = body.income_type as DbProfile['income_type']
+  if (body.income_type != null)
+    profileData.income_type = body.income_type as DbProfile['income_type']
   if (body.expenses != null) profileData.expenses = body.expenses as DbProfile['expenses']
   if (body.debts != null) profileData.debts = body.debts as DbProfile['debts']
   if (body.goals != null) profileData.goals = body.goals as DbProfile['goals']
@@ -40,7 +43,10 @@ export async function POST(req: Request) {
     profileData.onboarding_completed = Boolean(body.onboarding_completed)
   }
 
-  const savingsBalance = typeof body.savings_balance === 'number' ? body.savings_balance : Number(body.savings_balance) || 0
+  const savingsBalance =
+    typeof body.savings_balance === 'number'
+      ? body.savings_balance
+      : Number(body.savings_balance) || 0
   profileData.savings_balance = savingsBalance
   if (
     profileData.income_monthly != null &&
@@ -48,7 +54,10 @@ export async function POST(req: Request) {
     profileData.debts != null &&
     profileData.goals != null
   ) {
-    profileData.financial_health_score = computeHealthScore(profileData as DbProfile, savingsBalance)
+    profileData.financial_health_score = computeHealthScore(
+      profileData as DbProfile,
+      savingsBalance
+    )
   }
 
   const { data, error } = await (supabase

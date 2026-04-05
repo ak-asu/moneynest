@@ -42,13 +42,22 @@ export function SuggestionCard({ suggestion, onDismiss }: SuggestionCardProps) {
   }
 
   return (
-    <div className={cn('clay-card p-5 flex flex-col gap-3', SEVERITY_CARD_CLASS[suggestion.severity] ?? 'clay-card')}>
+    <div
+      className={cn(
+        'clay-card p-5 flex flex-col gap-3',
+        SEVERITY_CARD_CLASS[suggestion.severity] ?? 'clay-card'
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <Icon size={15} className="shrink-0 text-default-500" />
           <h3 className="font-bold text-sm leading-snug truncate">{suggestion.title}</h3>
         </div>
-        <Chip size="sm" color={SEVERITY_CHIP_COLOR[suggestion.severity] ?? 'default'} className="shrink-0">
+        <Chip
+          size="sm"
+          color={SEVERITY_CHIP_COLOR[suggestion.severity] ?? 'default'}
+          className="shrink-0"
+        >
           {suggestion.severity}
         </Chip>
       </div>

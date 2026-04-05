@@ -10,14 +10,24 @@ type PlanWithStaleness = DbActionPlan & { is_stale: boolean }
 function formatDate(iso: string) {
   const d = new Date(iso)
   if (isNaN(d.getTime())) return 'Unknown date'
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d)
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(d)
 }
 
-function PlanCard({ plan, onUpdate }: { plan: PlanWithStaleness; onUpdate: (updated: PlanWithStaleness) => void }) {
+function PlanCard({
+  plan,
+  onUpdate,
+}: {
+  plan: PlanWithStaleness
+  onUpdate: (updated: PlanWithStaleness) => void
+}) {
   const [saving, setSaving] = useState(false)
 
   const total = plan.steps.length
-  const done = plan.steps.filter(s => s.completed).length
+  const done = plan.steps.filter((s) => s.completed).length
   const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
 
   async function toggleStep(index: number) {
@@ -27,7 +37,7 @@ function PlanCard({ plan, onUpdate }: { plan: PlanWithStaleness; onUpdate: (upda
     const optimistic: PlanWithStaleness = {
       ...plan,
       steps: updatedSteps,
-      completed_steps: updatedSteps.filter(s => s.completed).length,
+      completed_steps: updatedSteps.filter((s) => s.completed).length,
     }
     onUpdate(optimistic)
 
@@ -72,7 +82,9 @@ function PlanCard({ plan, onUpdate }: { plan: PlanWithStaleness; onUpdate: (upda
       {/* Progress bar */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs text-default-500">
-          <span>{done} of {total} steps done</span>
+          <span>
+            {done} of {total} steps done
+          </span>
           <span>{pct}%</span>
         </div>
         <div
@@ -98,19 +110,21 @@ function PlanCard({ plan, onUpdate }: { plan: PlanWithStaleness; onUpdate: (upda
             onClick={() => !saving && toggleStep(i)}
             className="flex items-start gap-3 p-3 rounded-2xl bg-default-50 cursor-pointer hover:bg-default-100 transition-colors select-none"
           >
-            {step.completed
-              ? <CheckCircle2 size={18} className="text-success shrink-0 mt-0.5" />
-              : <Circle size={18} className="text-default-300 shrink-0 mt-0.5" />}
+            {step.completed ? (
+              <CheckCircle2 size={18} className="text-success shrink-0 mt-0.5" />
+            ) : (
+              <Circle size={18} className="text-default-300 shrink-0 mt-0.5" />
+            )}
             <div className="flex flex-col gap-0.5 min-w-0">
-              <span className={`text-sm font-medium ${step.completed ? 'line-through text-default-400' : ''}`}>
+              <span
+                className={`text-sm font-medium ${step.completed ? 'line-through text-default-400' : ''}`}
+              >
                 {step.label}
                 {step.amount != null && (
                   <span className="text-primary ml-1.5">${step.amount.toLocaleString()}</span>
                 )}
               </span>
-              {step.detail && (
-                <span className="text-xs text-default-500">{step.detail}</span>
-              )}
+              {step.detail && <span className="text-xs text-default-500">{step.detail}</span>}
               {step.deadline && (
                 <span className="text-xs text-warning-600">by {step.deadline}</span>
               )}
@@ -147,10 +161,12 @@ export default function PlansPage() {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const updatePlan = useCallback((updated: PlanWithStaleness) => {
-    setPlans(prev => prev.map(p => p.id === updated.id ? updated : p))
+    setPlans((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
   }, [])
 
   return (
@@ -160,7 +176,9 @@ export default function PlansPage() {
         <div className="p-6 space-y-6 max-w-3xl">
           <div>
             <h1 className="text-2xl font-bold">Action Plans</h1>
-            <p className="text-default-500 text-sm mt-1">Your personalised financial action plans from Vela.</p>
+            <p className="text-default-500 text-sm mt-1">
+              Your personalised financial action plans from Vela.
+            </p>
           </div>
 
           {loading ? (
@@ -170,11 +188,13 @@ export default function PlansPage() {
           ) : plans.length === 0 ? (
             <div className="clay-card p-8 text-center">
               <p className="font-semibold text-default-600">No action plans yet</p>
-              <p className="text-default-400 text-sm mt-1">Ask Vela in chat to create a plan for you.</p>
+              <p className="text-default-400 text-sm mt-1">
+                Ask Vela in chat to create a plan for you.
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
-              {plans.map(plan => (
+              {plans.map((plan) => (
                 <PlanCard key={plan.id} plan={plan} onUpdate={updatePlan} />
               ))}
             </div>

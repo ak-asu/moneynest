@@ -14,7 +14,7 @@ export async function addDocumentMemory(
   userId: string,
   docId: string,
   content: string,
-  metadata: Record<string, string | number | boolean> = {},
+  metadata: Record<string, string | number | boolean> = {}
 ): Promise<void> {
   const client = getClient()
   if (!client) return
@@ -37,7 +37,7 @@ export async function addDocumentMemory(
 export async function searchDocumentMemories(
   userId: string,
   query: string,
-  limit = 5,
+  limit = 5
 ): Promise<string[]> {
   const client = getClient()
   if (!client) return []
@@ -47,9 +47,7 @@ export async function searchDocumentMemories(
       containerTags: [userId],
       limit,
     })
-    return (response.results ?? [])
-      .map(r => r.content ?? '')
-      .filter(Boolean)
+    return (response.results ?? []).map((r) => r.content ?? '').filter(Boolean)
   } catch (err) {
     console.error('[supermemory] searchDocumentMemories error:', err)
     return []

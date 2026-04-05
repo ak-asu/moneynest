@@ -20,10 +20,15 @@ export async function POST(req: Request) {
   if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 })
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json(null, { status: 401 })
 
-  const { data: dbUser } = await (supabase.from('users') as any).select('id').eq('auth_id', user.id).single()
+  const { data: dbUser } = await (supabase.from('users') as any)
+    .select('id')
+    .eq('auth_id', user.id)
+    .single()
   if (!dbUser) return NextResponse.json(null, { status: 404 })
 
   // Upload to Supabase Storage
@@ -53,16 +58,18 @@ Keep plain language simple. Return only valid JSON.`
   const response = await anthropicSdk.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 8192,
-    messages: [{
-      role: 'user',
-      content: [
-        {
-          type: 'document',
-          source: { type: 'base64', media_type: mimeType, data: base64 },
-        } as any,
-        { type: 'text', text: extractionPrompt },
-      ],
-    }],
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'document',
+            source: { type: 'base64', media_type: mimeType, data: base64 },
+          } as any,
+          { type: 'text', text: extractionPrompt },
+        ],
+      },
+    ],
   })
 
   let explanation: DocumentExplanation
@@ -85,13 +92,16 @@ Keep plain language simple. Return only valid JSON.`
   }
 
   // Save document record
-  const { data: doc } = await (supabase.from('documents') as any).insert({
-    user_id: dbUser.id,
-    filename: file.name,
-    storage_path: storagePath,
-    document_type: explanation.document_type,
-    ai_explanation: explanation,
-  }).select().single()
+  const { data: doc } = await (supabase.from('documents') as any)
+    .insert({
+      user_id: dbUser.id,
+      filename: file.name,
+      storage_path: storagePath,
+      document_type: explanation.document_type,
+      ai_explanation: explanation,
+    })
+    .select()
+    .single()
 
   // Store document insights in Supermemory for persistent cross-session recall
   if (doc && explanation) {
@@ -99,10 +109,15 @@ Keep plain language simple. Return only valid JSON.`
       `Document: "${file.name}" (${explanation.document_type})`,
       explanation.plain_summaries[0] ? `Summary: ${explanation.plain_summaries[0]}` : '',
       explanation.risk_flags.length > 0 ? `Risk flags: ${explanation.risk_flags.join('; ')}` : '',
-      explanation.clauses.filter(c => c.risk === 'high').length > 0
-        ? `High-risk clauses: ${explanation.clauses.filter(c => c.risk === 'high').map(c => c.label).join(', ')}`
+      explanation.clauses.filter((c) => c.risk === 'high').length > 0
+        ? `High-risk clauses: ${explanation.clauses
+            .filter((c) => c.risk === 'high')
+            .map((c) => c.label)
+            .join(', ')}`
         : '',
-    ].filter(Boolean).join('. ')
+    ]
+      .filter(Boolean)
+      .join('. ')
 
     addDocumentMemory(user.id, doc.id, memoryContent, {
       documentType: explanation.document_type,

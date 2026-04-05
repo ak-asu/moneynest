@@ -32,7 +32,7 @@ export function DashboardClient({ initialSuggestions }: DashboardClientProps) {
       body: JSON.stringify({ id }),
     })
     if (res.ok) {
-      setSuggestions(prev => prev.filter(s => s.id !== id))
+      setSuggestions((prev) => prev.filter((s) => s.id !== id))
     }
   }
 
@@ -55,13 +55,19 @@ export function DashboardClient({ initialSuggestions }: DashboardClientProps) {
       {suggestions.length === 0 ? (
         <div className="clay-card p-8 flex flex-col items-center gap-3 text-center">
           <p className="text-default-400 text-sm">No suggestions right now.</p>
-          <Button size="sm" variant="outline" onPress={refresh} isDisabled={refreshing} className="clay-btn">
+          <Button
+            size="sm"
+            variant="outline"
+            onPress={refresh}
+            isDisabled={refreshing}
+            className="clay-btn"
+          >
             Generate suggestions
           </Button>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {suggestions.map(s => (
+          {suggestions.map((s) => (
             <SuggestionCard key={s.id} suggestion={s} onDismiss={dismiss} />
           ))}
         </div>

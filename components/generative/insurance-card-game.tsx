@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { callClaude } from '@/lib/ai/chat'
 
 type Screen =
@@ -1151,10 +1151,14 @@ function simulatePlan(selectedPlans: PlanMap, persona: Persona, rounds: number) 
   }
 }
 
-function InsuranceCardGame() {
+function InsuranceCardGame({ onComplete }: { onComplete?: (summary: string) => void } = {}) {
   const [screen, setScreen] = useState<Screen>('screen-title')
   const [modal, setModal] = useState<Modal>('none')
   const [state, setState] = useState<GameState>(initialState)
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  })
   const [flippedCards, setFlippedCards] = useState<Record<string, boolean>>({})
   const [guideFlippedCards, setGuideFlippedCards] = useState<Record<string, boolean>>({})
 
@@ -1534,6 +1538,9 @@ function InsuranceCardGame() {
 
       setState((prev) => ({ ...prev, endComparisons: comparisons }))
       setScreen('screen-end')
+      onCompleteRef.current?.(
+        `insurance card game finished — result: ${state.lastOutcome?.resultTitle ?? 'complete'} after ${state.totalRounds} rounds`
+      )
       fetch('/api/xp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

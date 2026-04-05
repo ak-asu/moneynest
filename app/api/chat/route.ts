@@ -39,16 +39,53 @@ export async function POST(request: Request) {
     // Historical messages loaded from the DB have tool result parts with random IDs
     // (no matching tool_use block), which Anthropic rejects. Text content is enough
     // for the LLM to understand the conversation context.
-    const strippedMessages = uiMessages.map(msg => ({
-      ...msg,
-      parts: msg.parts.filter((p: { type: string }) => p.type === 'text' || p.type === 'file'),
-    }))
+    const strippedMessages = uiMessages.map((msg) => {
+      const toolNames = msg.parts
+        .filter((p: { type: string }) => p.type !== 'text' && p.type !== 'file')
+        .map(
+          (p: any) =>
+            p.toolName ??
+            p.toolInvocation?.toolName ??
+            (typeof p.type === 'string' ? p.type.replace(/^tool-/, '') : '') ??
+            ''
+        )
+        .filter(Boolean)
+        .join(', ')
+
+      const textAndFileParts = msg.parts.filter(
+        (p: { type: string }) => p.type === 'text' || p.type === 'file'
+      )
+
+      if (msg.role === 'assistant' && toolNames) {
+        const componentNote = `\n[Components rendered: ${toolNames}]`
+        const lastTextIdx = [...textAndFileParts]
+          .map((p: { type: string }) => p.type)
+          .lastIndexOf('text')
+        if (lastTextIdx !== -1) {
+          return {
+            ...msg,
+            parts: textAndFileParts.map((p, i) =>
+              i === lastTextIdx
+                ? { ...p, text: (p as { type: string; text: string }).text + componentNote }
+                : p
+            ),
+          }
+        }
+        // No text part — inject one to carry the component note
+        return {
+          ...msg,
+          parts: [...textAndFileParts, { type: 'text' as const, text: componentNote.trim() }],
+        }
+      }
+
+      return { ...msg, parts: textAndFileParts }
+    })
     messages = await convertToModelMessages(
       strippedMessages.map(({ id, ...message }) => {
         void id
         return message
       }),
-      { tools: agentTools, ignoreIncompleteToolCalls: true },
+      { tools: agentTools, ignoreIncompleteToolCalls: true }
     )
     sessionId = body.sessionId
   } catch {
@@ -61,52 +98,41 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
-  const { data: dbUser } = await supabase
+  const { data: dbUser } = (await supabase
     .from('users')
     .select('id')
     .eq('auth_id', user.id)
-    .single() as { data: Pick<DbUser, 'id'> | null }
+    .single()) as { data: Pick<DbUser, 'id'> | null }
   if (!dbUser) return new Response('User not found', { status: 404 })
 
   // Extract the latest user message text for memory search
-  const lastUserMessage = [...uiMessages].reverse().find(m => m.role === 'user')
-  const lastUserText = lastUserMessage?.parts
-    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
-    .map(p => p.text)
-    .join(' ') ?? ''
+  const lastUserMessage = [...uiMessages].reverse().find((m) => m.role === 'user')
+  const lastUserText =
+    lastUserMessage?.parts
+      .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+      .map((p) => p.text)
+      .join(' ') ?? ''
 
   // Build agent context — fetch all data in parallel
-  const [profileRes, learningRes, budgetRes, plansRes, docsRes, memories] = await Promise.all([
+  const [profileRes, learningRes, budgetRes, plansRes, docsRes, memories] = (await Promise.all([
     supabase.from('profiles').select('*').eq('user_id', dbUser.id).single(),
-    supabase
-      .from('learning_progress')
-      .select('*')
-      .eq('user_id', dbUser.id) as unknown as Promise<{ data: DbLearningProgress[] | null }>,
+    supabase.from('learning_progress').select('*').eq('user_id', dbUser.id) as unknown as Promise<{
+      data: DbLearningProgress[] | null
+    }>,
     supabase
       .from('budget_entries')
       .select('*')
       .eq('user_id', dbUser.id)
-      .gte(
-        'date',
-        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0],
-      )
+      .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
       .order('date', { ascending: false }),
-    supabase
-      .from('action_plans')
-      .select('*')
-      .eq('user_id', dbUser.id)
-      .eq('completed_steps', 0),
+    supabase.from('action_plans').select('*').eq('user_id', dbUser.id).eq('completed_steps', 0),
     (supabase.from('documents') as any)
       .select('*')
       .eq('user_id', dbUser.id)
       .order('created_at', { ascending: false })
       .limit(10),
-    lastUserText
-      ? searchDocumentMemories(user.id, lastUserText, 4)
-      : Promise.resolve([]),
-  ]) as [
+    lastUserText ? searchDocumentMemories(user.id, lastUserText, 4) : Promise.resolve([]),
+  ])) as [
     { data: DbProfile | null },
     { data: DbLearningProgress[] | null },
     { data: DbBudgetEntry[] | null },
@@ -134,7 +160,7 @@ export async function POST(request: Request) {
     if (lastUserMsg?.role === 'user') {
       const userText = lastUserMsg.parts
         .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
-        .map(part => part.text)
+        .map((part) => part.text)
         .join('\n')
 
       const msgRow: Omit<DbMessage, 'id' | 'created_at'> = {
@@ -159,15 +185,15 @@ export async function POST(request: Request) {
       try {
         if (!sessionId) return
 
-        const allToolResults = event.steps.flatMap(step => step.toolResults)
+        const allToolResults = event.steps.flatMap((step) => step.toolResults)
 
-        const components = allToolResults.map(tr => ({
+        const components = allToolResults.map((tr) => ({
           name: tr.toolName,
           props: tr.output as Record<string, unknown>,
         }))
 
         const textContent = event.steps
-          .map(step => step.text)
+          .map((step) => step.text)
           .filter(Boolean)
           .join('')
 
@@ -181,9 +207,9 @@ export async function POST(request: Request) {
         await supabase.from('messages').insert(assistantRow)
 
         // Update learning_progress for any LearningCard rendered
-        const learningCards = components.filter(c => c.name === 'learning_card')
+        const learningCards = components.filter((c) => c.name === 'learning_card')
         const learningCountCache = new Map<string, number>(
-          (learningRes.data || []).map(l => [l.concept, l.exposure_count])
+          (learningRes.data || []).map((l) => [l.concept, l.exposure_count])
         )
         for (const card of learningCards) {
           const props = card.props as { concept: string }
@@ -212,9 +238,7 @@ export async function POST(request: Request) {
   return result.toUIMessageStreamResponse()
 }
 
-function computeConfidenceLevel(
-  exposureCount: number,
-): 'low' | 'medium' | 'high' {
+function computeConfidenceLevel(exposureCount: number): 'low' | 'medium' | 'high' {
   if (exposureCount >= 4) return 'high'
   if (exposureCount >= 2) return 'medium'
   return 'low'

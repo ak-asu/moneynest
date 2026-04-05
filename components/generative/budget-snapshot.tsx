@@ -4,7 +4,13 @@ import type { BudgetSnapshotProps } from '@/types/components'
 
 const COLORS = ['#6c5ce7', '#fd79a8', '#00b894', '#fdcb6e', '#e17055', '#74b9ff', '#a29bfe']
 
-export function BudgetSnapshot({ income_monthly, expenses, savings_rate, anomalies, coverage_gaps }: BudgetSnapshotProps) {
+export function BudgetSnapshot({
+  income_monthly,
+  expenses,
+  savings_rate,
+  anomalies,
+  coverage_gaps,
+}: BudgetSnapshotProps) {
   const data = Object.entries(expenses).map(([name, value]) => ({ name, value }))
   const totalExpenses = Object.values(expenses).reduce((a, b) => a + b, 0)
 
@@ -27,8 +33,17 @@ export function BudgetSnapshot({ income_monthly, expenses, savings_rate, anomali
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <PieChart>
-          <Pie data={data} cx="50%" cy="50%" outerRadius={70} dataKey="value" label={({ name }) => name}>
-            {data.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            outerRadius={70}
+            dataKey="value"
+            label={({ name }) => name}
+          >
+            {data.map((_, i) => (
+              <Cell key={i} fill={COLORS[i % COLORS.length]} />
+            ))}
           </Pie>
           <Tooltip formatter={(v) => `$${v}`} />
         </PieChart>
@@ -36,13 +51,21 @@ export function BudgetSnapshot({ income_monthly, expenses, savings_rate, anomali
       {anomalies.length > 0 && (
         <div className="clay-card-warning rounded-2xl p-3">
           <p className="text-xs font-semibold text-warning-700 mb-1">Anomalies</p>
-          {anomalies.map((a, i) => <p key={i} className="text-xs text-default-600">• {a}</p>)}
+          {anomalies.map((a, i) => (
+            <p key={i} className="text-xs text-default-600">
+              • {a}
+            </p>
+          ))}
         </div>
       )}
       {coverage_gaps.length > 0 && (
         <div className="clay-card-danger rounded-2xl p-3">
           <p className="text-xs font-semibold text-danger-700 mb-1">Coverage gaps</p>
-          {coverage_gaps.map((g, i) => <p key={i} className="text-xs text-default-600">• {g}</p>)}
+          {coverage_gaps.map((g, i) => (
+            <p key={i} className="text-xs text-default-600">
+              • {g}
+            </p>
+          ))}
         </div>
       )}
     </div>

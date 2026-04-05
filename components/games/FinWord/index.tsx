@@ -131,8 +131,12 @@ function scoreGuess(guess: string, word: string): TileResult[] {
   return result
 }
 
-export function FinWord() {
+export function FinWord({ onComplete }: { onComplete?: (summary: string) => void } = {}) {
   const { speak } = useTTS()
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  })
 
   const [entry, setEntry] = useState(() => WORDS[Math.floor(Math.random() * WORDS.length)])
   const [board, setBoard] = useState<TileState[][]>(() => emptyBoard(entry.word.length))
@@ -226,6 +230,9 @@ export function FinWord() {
       setTimeout(() => {
         setModal({ visible: true, won: true, earned, row: currentRow })
         speak(`${word}. ${entry.def}`)
+        onCompleteRef.current?.(
+          `guessed "${word}" in ${currentRow + 1} attempt${currentRow + 1 !== 1 ? 's' : ''}`
+        )
       }, 1800)
       return
     }
@@ -245,6 +252,7 @@ export function FinWord() {
       setTimeout(() => {
         setModal({ visible: true, won: false, earned: lossXp, row: maxRows - 1 })
         speak(`The word was ${word}. ${entry.def}`)
+        onCompleteRef.current?.(`failed to guess "${word}" — ran out of attempts`)
       }, 1200)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

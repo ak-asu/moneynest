@@ -7,11 +7,16 @@ export async function GET(req: Request) {
   const days = Math.min(parseInt(searchParams.get('days') ?? '90') || 90, 365)
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json([], { status: 401 })
 
-  const { data: dbUser } = await supabase
-    .from('users').select('id').eq('auth_id', user.id).single() as { data: Pick<DbUser, 'id'> | null }
+  const { data: dbUser } = (await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_id', user.id)
+    .single()) as { data: Pick<DbUser, 'id'> | null }
   if (!dbUser) return NextResponse.json([], { status: 404 })
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -27,7 +32,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   let body: Record<string, unknown>
-  try { body = await req.json() } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }) }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
 
   const { category, amount, entry_type, date } = body
   if (typeof category !== 'string' || !category.trim()) {
@@ -44,15 +53,19 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json(null, { status: 401 })
 
-  const { data: dbUser } = await supabase
-    .from('users').select('id').eq('auth_id', user.id).single() as { data: Pick<DbUser, 'id'> | null }
+  const { data: dbUser } = (await supabase
+    .from('users')
+    .select('id')
+    .eq('auth_id', user.id)
+    .single()) as { data: Pick<DbUser, 'id'> | null }
   if (!dbUser) return NextResponse.json(null, { status: 404 })
 
-  const { data, error } = await ((supabase
-    .from('budget_entries') as any)
+  const { data, error } = await ((supabase.from('budget_entries') as any)
     .insert({
       category: category.trim().slice(0, 100),
       amount,
@@ -62,7 +75,10 @@ export async function POST(req: Request) {
       source: 'manual',
     })
     .select()
-    .single() as unknown as Promise<{ data: DbBudgetEntry | null; error: { message: string } | null }>)
+    .single() as unknown as Promise<{
+    data: DbBudgetEntry | null
+    error: { message: string } | null
+  }>)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data, { status: 201 })

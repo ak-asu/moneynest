@@ -316,10 +316,14 @@ function emptyPortfolio(): Record<AssetId, number> {
   return { savings: 0, index: 0, stock: 0, bonds: 0, realty: 0 }
 }
 
-export function WealthFarm() {
+export function WealthFarm({ onComplete }: { onComplete?: (summary: string) => void } = {}) {
   const [phase, setPhase] = useState<Phase>('intro')
   const [simPhase, setSimPhase] = useState<SimPhase>('idle')
   const [simYear, setSimYear] = useState(1)
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  })
 
   const [cash, setCash] = useState(1000)
   const [portfolio, setPortfolio] = useState<Record<AssetId, number>>(emptyPortfolio)
@@ -351,6 +355,8 @@ export function WealthFarm() {
   const simYearRef = useRef(1)
   const portfolioRef = useRef(portfolio)
   portfolioRef.current = portfolio
+  const cashRef = useRef(cash)
+  cashRef.current = cash
   const gameEventsMapRef = useRef<Record<number, GameEvent | null>>({})
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -422,7 +428,10 @@ export function WealthFarm() {
       setSimPhase('finished')
       setTimeout(() => {
         setPhase('results')
-        const finalNw = netWorth(portfolioRef.current, cash)
+        const finalNw = netWorth(portfolioRef.current, cashRef.current)
+        onCompleteRef.current?.(
+          `10-year investment simulation — final net worth: $${Math.round(finalNw).toLocaleString()}`
+        )
         const xp = Math.max(10, Math.round(finalNw / 100))
         fetch('/api/xp', {
           method: 'POST',

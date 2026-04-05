@@ -1,16 +1,17 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button, ProgressBar } from '@heroui/react'
 import type { MiniGameProps } from '@/types/components'
 import { useSFX } from '@/components/audio/use-sfx'
+import { useInteractionEvent } from '@/lib/ai/interaction-events'
 import { TermMatch } from '@/components/games/TermMatch'
 import { FinWord } from '@/components/games/FinWord'
 import { WealthFarm } from '@/components/games/WealthFarm'
 import InsuranceCardGame from './insurance-card-game'
 import { CreditQuestGame } from './credit-quest-game'
 
-// Renders the appropriate game engine based on export function MiniGame({
-export function MiniGame({ 
+// Renders the appropriate game engine based on game_type
+export function MiniGame({
   game_type,
   title,
   instructions,
@@ -19,9 +20,32 @@ export function MiniGame({
   win_condition,
   time_limit_seconds,
 }: MiniGameProps) {
-  if (game_type === 'term_match') return <TermMatch />
-  if (game_type === 'fin_word') return <FinWord />
-  if (game_type === 'wealth_farm') return <WealthFarm />
+  const dispatchEvent = useInteractionEvent()
+
+  function handleResult(won: boolean) {
+    dispatchEvent({
+      componentName: `mini_game (${game_type})`,
+      status: 'completed',
+      summary: `game: "${title}" — ${won ? `Won. ${win_condition ?? ''}` : 'Lost. Budget overrun or time expired.'}`,
+      autoSend: true,
+    })
+  }
+
+  function handleSubGameComplete(summary: string) {
+    dispatchEvent({
+      componentName: `mini_game (${game_type})`,
+      status: 'completed',
+      summary,
+      autoSend: true,
+    })
+  }
+
+  if (game_type === 'term_match') return <TermMatch onComplete={handleSubGameComplete} />
+  if (game_type === 'fin_word') return <FinWord onComplete={handleSubGameComplete} />
+  if (game_type === 'wealth_farm') return <WealthFarm onComplete={handleSubGameComplete} />
+  if (game_type === 'insurance_card_game')
+    return <InsuranceCardGame onComplete={handleSubGameComplete} />
+  if (game_type === 'credit_quest_game') return <CreditQuestGame />
   if (game_type === 'allocation_puzzle')
     return (
       <AllocationPuzzle
@@ -30,6 +54,7 @@ export function MiniGame({
         income={income!}
         categories={categories!}
         win_condition={win_condition!}
+        onResult={handleResult}
       />
     )
   if (game_type === 'time_pressure')
@@ -41,12 +66,9 @@ export function MiniGame({
         categories={categories!}
         win_condition={win_condition!}
         time_limit_seconds={time_limit_seconds || 60}
+        onResult={handleResult}
       />
     )
-    if (game_type === 'insurance_card_game') return (
-    <InsuranceCardGame />
-  )
-  if (game_type === 'credit_quest_game') return <CreditQuestGame />
   // Default: drag_drop / tradeoff_slider fallback to allocation_puzzle layout
   return (
     <AllocationPuzzle
@@ -55,6 +77,7 @@ export function MiniGame({
       income={income!}
       categories={categories!}
       win_condition={win_condition!}
+      onResult={handleResult}
     />
   )
 }
@@ -65,6 +88,7 @@ type BudgetGameProps = {
   income: number
   categories: NonNullable<MiniGameProps['categories']>
   win_condition: string
+  onResult?: (won: boolean) => void
 }
 
 function AllocationPuzzle({
@@ -73,6 +97,7 @@ function AllocationPuzzle({
   income,
   categories,
   win_condition,
+  onResult,
 }: BudgetGameProps) {
   const { play, SFX } = useSFX()
   const [allocations, setAllocations] = useState<Record<string, number>>(
@@ -90,6 +115,7 @@ function AllocationPuzzle({
     const won = valid && remaining >= 0
     setWon(won)
     play(won ? SFX.GAME_WIN : SFX.GAME_LOSE)
+    onResult?.(won)
   }
 
   return (
@@ -148,6 +174,7 @@ function TimePressureGame({
   categories,
   win_condition,
   time_limit_seconds,
+  onResult,
 }: BudgetGameProps & { time_limit_seconds: number }) {
   const { play, SFX } = useSFX()
   const [timeLeft, setTimeLeft] = useState(time_limit_seconds)
@@ -156,11 +183,18 @@ function TimePressureGame({
     Object.fromEntries(categories.map((c) => [c.name, c.suggested]))
   )
   const [result, setResult] = useState<'win' | 'lose' | null>(null)
+  const onResultRef = useRef(onResult)
+  useEffect(() => {
+    onResultRef.current = onResult
+  })
 
   useEffect(() => {
     if (!started || timeLeft <= 0 || result) return
     const t = setTimeout(() => {
-      if (timeLeft === 1) setResult('lose')
+      if (timeLeft === 1) {
+        setResult('lose')
+        onResultRef.current?.(false)
+      }
       setTimeLeft((t) => t - 1)
     }, 1000)
     return () => clearTimeout(t)
@@ -175,6 +209,7 @@ function TimePressureGame({
     const won = valid && total <= income
     setResult(won ? 'win' : 'lose')
     play(won ? SFX.GAME_WIN : SFX.GAME_LOSE)
+    onResult?.(won)
   }
 
   return (
@@ -222,7 +257,9 @@ function TimePressureGame({
         </>
       )}
       {result === 'win' && <p className="text-success font-bold">✅ {win_condition}</p>}
-      {result === 'lose' && <p className="text-danger font-bold">⏱️ Time's up or budget overrun. Try again!</p>}
+      {result === 'lose' && (
+        <p className="text-danger font-bold">⏱️ Time's up or budget overrun. Try again!</p>
+      )}
     </div>
   )
 }

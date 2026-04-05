@@ -14,6 +14,7 @@ import {
 } from 'recharts'
 import { callClaude } from '@/lib/ai/chat'
 import { useSFX } from '@/components/audio/use-sfx'
+import { useInteractionEvent } from '@/lib/ai/interaction-events'
 import type { DbProfile } from '@/types/database'
 
 type CreditQuestMood = 'normal' | 'stressed' | 'happy'
@@ -454,6 +455,7 @@ function buildFallbackCampaign(): CreditQuestCampaign {
 
 export function CreditQuestGame() {
   const { play, preload, SFX } = useSFX()
+  const dispatchEvent = useInteractionEvent()
   const [campaign, setCampaign] = useState<CreditQuestCampaign | null>(null)
   const [currentTurnIndex, setCurrentTurnIndex] = useState(0)
   const [gameState, setGameState] = useState<CreditQuestState>(INITIAL_STATE)
@@ -572,6 +574,12 @@ ${recentMessages || 'No history available.'}`
     setQueuedTurnIndex(null)
     setInsightText('You reached the credit target. Reviewing the run...')
     setGameState(nextState)
+    dispatchEvent({
+      componentName: 'credit_quest_game',
+      status: 'completed',
+      summary: `Won — credit score reached ${nextState.creditScore}, cash: $${Math.max(0, Math.round(nextState.cash))}, debt: $${Math.max(0, Math.round(nextState.debt))}, followers: ${nextState.followers}`,
+      autoSend: true,
+    })
   }
 
   function syncMessages(nextMessages: CreditQuestMessage[]) {
@@ -596,6 +604,12 @@ ${recentMessages || 'No history available.'}`
         addMessage('system', nextCampaign.endingTitle)
         addMessage('ai', nextCampaign.endingSummary)
       }
+      dispatchEvent({
+        componentName: 'credit_quest_game',
+        status: 'completed',
+        summary: `All ${nextCampaign?.turns.length ?? 0} turns finished — ending credit score: ${state.creditScore}, cash: $${Math.max(0, Math.round(state.cash))}, debt: $${Math.max(0, Math.round(state.debt))}, followers: ${state.followers}`,
+        autoSend: true,
+      })
       return
     }
 

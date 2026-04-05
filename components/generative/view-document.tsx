@@ -4,12 +4,48 @@ import { FileText, Shield, Home, Receipt, Banknote, ArrowRight } from 'lucide-re
 import type { ViewDocumentProps } from '@/types/components'
 
 const TYPE_CONFIG = {
-  insurance: { icon: Shield, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20', label: 'Insurance' },
-  lease: { icon: Home, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', label: 'Lease' },
-  bill: { icon: Receipt, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', label: 'Bill' },
-  payslip: { icon: Banknote, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', label: 'Pay Stub' },
-  other: { icon: FileText, color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/20', label: 'Document' },
-  general: { icon: FileText, color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20', label: 'Document Vault' },
+  insurance: {
+    icon: Shield,
+    color: 'text-blue-400',
+    bg: 'bg-blue-500/10',
+    border: 'border-blue-500/20',
+    label: 'Insurance',
+  },
+  lease: {
+    icon: Home,
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    border: 'border-amber-500/20',
+    label: 'Lease',
+  },
+  bill: {
+    icon: Receipt,
+    color: 'text-rose-400',
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-500/20',
+    label: 'Bill',
+  },
+  payslip: {
+    icon: Banknote,
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/10',
+    border: 'border-emerald-500/20',
+    label: 'Pay Stub',
+  },
+  other: {
+    icon: FileText,
+    color: 'text-slate-400',
+    bg: 'bg-slate-500/10',
+    border: 'border-slate-500/20',
+    label: 'Document',
+  },
+  general: {
+    icon: FileText,
+    color: 'text-primary',
+    bg: 'bg-primary/10',
+    border: 'border-primary/20',
+    label: 'Document Vault',
+  },
 }
 
 export function ViewDocument({ filename, document_type = 'general', message }: ViewDocumentProps) {
@@ -24,14 +60,14 @@ export function ViewDocument({ filename, document_type = 'general', message }: V
           <DocIcon size={14} />
         </div>
         <div>
-          <p className="text-xs font-semibold text-default-500 uppercase tracking-wide">{config.label}</p>
+          <p className="text-xs font-semibold text-default-500 uppercase tracking-wide">
+            {config.label}
+          </p>
           {filename && <p className="text-sm font-medium truncate">{filename}</p>}
         </div>
       </div>
 
-      {message && (
-        <p className="text-sm text-default-600 leading-relaxed">{message}</p>
-      )}
+      {message && <p className="text-sm text-default-600 leading-relaxed">{message}</p>}
 
       <button
         onClick={() => router.push('/documents')}
@@ -40,7 +76,10 @@ export function ViewDocument({ filename, document_type = 'general', message }: V
         <span className="text-sm font-medium text-primary">
           {filename ? `View "${filename}"` : 'Open Document Vault'}
         </span>
-        <ArrowRight size={14} className="text-primary group-hover:translate-x-0.5 transition-transform" />
+        <ArrowRight
+          size={14}
+          className="text-primary group-hover:translate-x-0.5 transition-transform"
+        />
       </button>
     </div>
   )

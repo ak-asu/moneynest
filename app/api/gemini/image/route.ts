@@ -9,7 +9,9 @@ export async function POST(req: Request) {
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json(null, { status: 401 })
 
   const SAFE_CONCEPT = /^[a-zA-Z0-9_-]{1,100}$/
@@ -50,8 +52,8 @@ export async function POST(req: Request) {
       if (signed?.signedUrl) {
         return NextResponse.json({ url: signed.signedUrl })
       }
-      // Upload succeeded but signed URL unavailable
-      return NextResponse.json({ url: null })
+      // Upload succeeded but signed URL unavailable — fall back to inline data URI
+      return NextResponse.json({ url: dataUrl })
     } catch (err) {
       console.error('Storage upload error:', err)
       return NextResponse.json({ url: null })

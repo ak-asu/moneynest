@@ -4,10 +4,15 @@ import { NextResponse } from 'next/server'
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json(null, { status: 401 })
 
-  const { data: dbUser } = await (supabase.from('users') as any).select('id').eq('auth_id', user.id).single()
+  const { data: dbUser } = await (supabase.from('users') as any)
+    .select('id')
+    .eq('auth_id', user.id)
+    .single()
   if (!dbUser) return NextResponse.json(null, { status: 404 })
 
   // Delete messages first to avoid FK constraint issues

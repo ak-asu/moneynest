@@ -81,6 +81,7 @@ export interface LearningCardProps {
   image_url?: string
   voice_enabled: boolean
   language: string
+  links?: { label: string; url: string }[]
 }
 
 export interface ActionPlanProps {

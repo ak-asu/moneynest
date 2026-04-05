@@ -11,7 +11,10 @@ export async function GET(request: Request) {
   }
 
   const supabase = await createClient()
-  const { data: { user }, error } = await supabase.auth.exchangeCodeForSession(code)
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error || !user) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`)
@@ -24,10 +27,7 @@ export async function GET(request: Request) {
     ) => Promise<unknown>
   }
 
-  await usersTable.upsert(
-    { auth_id: user.id, email: user.email! },
-    { onConflict: 'auth_id' }
-  )
+  await usersTable.upsert({ auth_id: user.id, email: user.email! }, { onConflict: 'auth_id' })
 
   return NextResponse.redirect(`${origin}/`)
 }

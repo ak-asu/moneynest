@@ -5,7 +5,13 @@ import { cn } from '@/lib/utils/cn'
 import type { VoiceCardProps } from '@/types/components'
 import { useTTS } from '@/components/audio/use-tts'
 
-export function VoiceCard({ script, voice_id, language, emotion, show_transcript }: VoiceCardProps) {
+export function VoiceCard({
+  script,
+  voice_id,
+  language,
+  emotion,
+  show_transcript,
+}: VoiceCardProps) {
   const { speak, stop, isPlaying } = useTTS()
 
   function handlePlay() {
@@ -34,12 +40,17 @@ export function VoiceCard({ script, voice_id, language, emotion, show_transcript
           onPress={handlePlay}
           className="clay-btn"
         >
-          {isPlaying ? 'Speaking...' : <><Volume2 size={14} className="inline mr-1" />Listen</>}
+          {isPlaying ? (
+            'Speaking...'
+          ) : (
+            <>
+              <Volume2 size={14} className="inline mr-1" />
+              Listen
+            </>
+          )}
         </Button>
       </div>
-      {show_transcript && (
-        <p className="text-sm text-default-600 leading-relaxed">{script}</p>
-      )}
+      {show_transcript && <p className="text-sm text-default-600 leading-relaxed">{script}</p>}
     </div>
   )
 }

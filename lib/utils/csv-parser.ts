@@ -12,9 +12,10 @@ export interface ParsedBudgetEntry {
 type Format = 'ynab' | 'mint' | 'generic'
 
 function detectFormat(headers: string[]): Format {
-  const h = headers.map(s => s.toLowerCase().trim())
+  const h = headers.map((s) => s.toLowerCase().trim())
   if (h.includes('outflow') && h.includes('inflow')) return 'ynab'
-  if (h.includes('transaction type') && h.includes('category') && h.includes('amount')) return 'mint'
+  if (h.includes('transaction type') && h.includes('category') && h.includes('amount'))
+    return 'mint'
   return 'generic'
 }
 
@@ -45,7 +46,7 @@ export function parseCSV(csvText: string): ParsedBudgetEntry[] {
   if (!result.data.length) return []
 
   const headers = Object.keys(result.data[0])
-  if (headers.length === 0 || headers.every(h => !h.trim())) return []
+  if (headers.length === 0 || headers.every((h) => !h.trim())) return []
   const format = detectFormat(headers)
   const entries: ParsedBudgetEntry[] = []
 
@@ -54,23 +55,33 @@ export function parseCSV(csvText: string): ParsedBudgetEntry[] {
       // Columns: Date, Payee, Category Group/Category, Category Group, Category, Memo, Outflow, Inflow
       const outflow = parseMoney(row['Outflow'] ?? row['outflow'] ?? '0')
       const inflow = parseMoney(row['Inflow'] ?? row['inflow'] ?? '0')
-      const category = (row['Category'] ?? row['category'] ?? row['Payee'] ?? 'Other').trim() || 'Other'
+      const category =
+        (row['Category'] ?? row['category'] ?? row['Payee'] ?? 'Other').trim() || 'Other'
       const date = parseDate(row['Date'] ?? row['date'] ?? '')
-      if (outflow > 0) entries.push({ category, amount: outflow, entry_type: 'expense', date, source: 'csv' })
-      if (inflow > 0) entries.push({ category, amount: inflow, entry_type: 'income', date, source: 'csv' })
+      if (outflow > 0)
+        entries.push({ category, amount: outflow, entry_type: 'expense', date, source: 'csv' })
+      if (inflow > 0)
+        entries.push({ category, amount: inflow, entry_type: 'income', date, source: 'csv' })
     } else if (format === 'mint') {
       // Columns: Date, Description, Original Description, Amount, Transaction Type, Category, Account Name, Labels, Notes
       const amount = parseMoney(row['Amount'] ?? row['amount'] ?? '0')
       const txType = (row['Transaction Type'] ?? row['transaction type'] ?? '').toLowerCase()
       const entry_type: EntryType = txType === 'credit' ? 'income' : 'expense'
-      const category = (row['Category'] ?? row['category'] ?? row['Description'] ?? 'Other').trim() || 'Other'
+      const category =
+        (row['Category'] ?? row['category'] ?? row['Description'] ?? 'Other').trim() || 'Other'
       const date = parseDate(row['Date'] ?? row['date'] ?? '')
       if (amount > 0) entries.push({ category, amount, entry_type, date, source: 'csv' })
     } else {
       // Generic: Date, Description, Amount (negative = expense, positive = income)
-      const dateKey = Object.keys(row).find(k => k.toLowerCase().includes('date')) ?? ''
-      const amtKey = Object.keys(row).find(k => k.toLowerCase().includes('amount')) ?? ''
-      const descKey = Object.keys(row).find(k => k.toLowerCase().includes('desc') || k.toLowerCase().includes('payee') || k.toLowerCase().includes('memo')) ?? ''
+      const dateKey = Object.keys(row).find((k) => k.toLowerCase().includes('date')) ?? ''
+      const amtKey = Object.keys(row).find((k) => k.toLowerCase().includes('amount')) ?? ''
+      const descKey =
+        Object.keys(row).find(
+          (k) =>
+            k.toLowerCase().includes('desc') ||
+            k.toLowerCase().includes('payee') ||
+            k.toLowerCase().includes('memo')
+        ) ?? ''
       const rawAmount = parseFloat((row[amtKey] ?? '0').replace(/[$,\s]/g, ''))
       if (isNaN(rawAmount) || rawAmount === 0) continue
       const amount = Math.abs(rawAmount)

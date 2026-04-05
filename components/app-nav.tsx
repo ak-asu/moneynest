@@ -34,13 +34,8 @@ const NAV_COLLAPSED_KEY = 'vela_app_nav_collapsed'
 export function AppNav() {
   const pathname = usePathname()
   const router = useRouter()
-  const [collapsed, setCollapsed] = useState(() => {
-    try {
-      return window.localStorage.getItem(NAV_COLLAPSED_KEY) === '1'
-    } catch {
-      return false
-    }
-  })
+  const [collapsed, setCollapsed] = useState(false)
+  const [isPreferenceLoaded, setIsPreferenceLoaded] = useState(false)
 
   async function handleLogout() {
     const supabase = createClient()
@@ -50,11 +45,23 @@ export function AppNav() {
 
   useEffect(() => {
     try {
+      const stored = window.localStorage.getItem(NAV_COLLAPSED_KEY)
+      if (stored === '1') setCollapsed(true)
+    } catch {
+      // Ignore storage errors; nav still works with default state.
+    } finally {
+      setIsPreferenceLoaded(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isPreferenceLoaded) return
+    try {
       window.localStorage.setItem(NAV_COLLAPSED_KEY, collapsed ? '1' : '0')
     } catch {
       // Ignore storage errors; this only affects preference persistence.
     }
-  }, [collapsed])
+  }, [collapsed, isPreferenceLoaded])
 
   return (
     <aside
@@ -66,11 +73,13 @@ export function AppNav() {
       <div className="p-3 border-b border-divider">
         <div
           className={cn(
-            'flex items-start',
-            collapsed ? 'flex-col items-center gap-2' : 'justify-between gap-2'
+            'flex gap-2',
+            collapsed
+              ? 'w-full flex-col items-center justify-center'
+              : 'items-start justify-between'
           )}
         >
-          <div className={cn('min-w-0', collapsed && 'text-center')}>
+          <div className={cn('min-w-0', collapsed && 'w-full text-center')}>
             <p className="font-extrabold text-lg tracking-tight text-primary">
               {collapsed ? 'V' : 'Vela'}
             </p>

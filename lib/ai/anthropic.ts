@@ -21,7 +21,7 @@ function getAnthropicApiKey(): string {
     const normalizedTypo = normalizeApiKey(typoKey)
     if (normalizedCanonical !== normalizedTypo) {
       throw new Error(
-        'Both ANTHROPIC_API_KEY and ANTHOPIC_API_KEY are set with different values. Remove the typo variable and keep only ANTHROPIC_API_KEY.',
+        'Both ANTHROPIC_API_KEY and ANTHOPIC_API_KEY are set with different values. Remove the typo variable and keep only ANTHROPIC_API_KEY.'
       )
     }
   }
@@ -29,7 +29,7 @@ function getAnthropicApiKey(): string {
   const rawKey = canonicalKey ?? typoKey
   if (!rawKey) {
     throw new Error(
-      'Missing ANTHROPIC_API_KEY environment variable. If you recently changed .env, restart the dev server.',
+      'Missing ANTHROPIC_API_KEY environment variable. If you recently changed .env, restart the dev server.'
     )
   }
 

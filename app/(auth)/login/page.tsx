@@ -21,7 +21,9 @@ function normalizeAuthMessage(message: string) {
 export default function LoginPage() {
   return (
     <Suspense
-      fallback={<main className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-50" />}
+      fallback={
+        <main className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-50" />
+      }
     >
       <LoginPageContent />
     </Suspense>
@@ -38,7 +40,9 @@ function LoginPageContent() {
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState<AuthMode>('sign-in')
   const [errorMessage, setErrorMessage] = useState<string | null>(
-    queryError ? QUERY_ERROR_MESSAGES[queryError] ?? 'Authentication error. Please try again.' : null
+    queryError
+      ? (QUERY_ERROR_MESSAGES[queryError] ?? 'Authentication error. Please try again.')
+      : null
   )
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -86,7 +90,8 @@ function LoginPageContent() {
 
       setSuccessMessage('Account created. Check your email to verify your address, then sign in.')
     } catch (error) {
-      const message = error instanceof Error ? normalizeAuthMessage(error.message) : 'Authentication failed.'
+      const message =
+        error instanceof Error ? normalizeAuthMessage(error.message) : 'Authentication failed.'
       setErrorMessage(message)
     } finally {
       setIsSubmitting(false)
@@ -126,7 +131,8 @@ function LoginPageContent() {
             Manage life with calm, clear money decisions.
           </h1>
           <p className="max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
-            Track your financial pulse, spot risks early, and build confidence with guidance made for real everyday choices.
+            Track your financial pulse, spot risks early, and build confidence with guidance made
+            for real everyday choices.
           </p>
         </section>
 
@@ -140,7 +146,9 @@ function LoginPageContent() {
                 setSuccessMessage(null)
               }}
               className={`w-full rounded-xl px-3 py-2 text-sm font-medium transition ${
-                mode === 'sign-in' ? 'bg-cyan-300 text-slate-950' : 'text-slate-300 hover:text-white'
+                mode === 'sign-in'
+                  ? 'bg-cyan-300 text-slate-950'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
               Sign in
@@ -153,7 +161,9 @@ function LoginPageContent() {
                 setSuccessMessage(null)
               }}
               className={`w-full rounded-xl px-3 py-2 text-sm font-medium transition ${
-                mode === 'sign-up' ? 'bg-cyan-300 text-slate-950' : 'text-slate-300 hover:text-white'
+                mode === 'sign-up'
+                  ? 'bg-cyan-300 text-slate-950'
+                  : 'text-slate-300 hover:text-white'
               }`}
             >
               Create account
@@ -211,7 +221,11 @@ function LoginPageContent() {
               disabled={isSubmitting || isGoogleLoading}
               className="w-full rounded-xl bg-cyan-300 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isSubmitting ? 'Please wait...' : mode === 'sign-in' ? 'Sign in with password' : 'Create account'}
+              {isSubmitting
+                ? 'Please wait...'
+                : mode === 'sign-in'
+                  ? 'Sign in with password'
+                  : 'Create account'}
             </button>
           </form>
 

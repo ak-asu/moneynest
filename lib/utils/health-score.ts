@@ -11,7 +11,10 @@ import type { DbProfile } from '@/types/database'
  */
 export function computeHealthScore(profile: DbProfile, savingsBalance: number): number {
   const income = profile.income_monthly || 1
-  const totalExpenses = Object.values(profile.expenses as Record<string, number>).reduce((a, b) => a + b, 0)
+  const totalExpenses = Object.values(profile.expenses as Record<string, number>).reduce(
+    (a, b) => a + b,
+    0
+  )
   const totalDebt = (profile.debts as Array<{ amount: number }>).reduce((a, d) => a + d.amount, 0)
   const goals = profile.goals as Array<{ target_date: string }>
 
@@ -31,13 +34,8 @@ export function computeHealthScore(profile: DbProfile, savingsBalance: number): 
 
   // Goal progress component (10%)
   const now = new Date()
-  const activeGoals = goals.filter(g => new Date(g.target_date) > now)
+  const activeGoals = goals.filter((g) => new Date(g.target_date) > now)
   const goalScore = goals.length > 0 ? (activeGoals.length / goals.length) * 100 : 50
 
-  return Math.round(
-    savingsScore * 0.4 +
-    debtScore * 0.3 +
-    emergencyScore * 0.2 +
-    goalScore * 0.1
-  )
+  return Math.round(savingsScore * 0.4 + debtScore * 0.3 + emergencyScore * 0.2 + goalScore * 0.1)
 }

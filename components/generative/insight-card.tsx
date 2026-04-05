@@ -9,7 +9,9 @@ const SEVERITY_STYLE: Record<string, string> = {
   high: 'clay-card-danger',
 }
 const SEVERITY_COLOR: Record<string, 'success' | 'warning' | 'danger'> = {
-  low: 'success', medium: 'warning', high: 'danger',
+  low: 'success',
+  medium: 'warning',
+  high: 'danger',
 }
 
 export function InsightCard({ title, body, severity, actions }: InsightCardProps) {
@@ -17,7 +19,9 @@ export function InsightCard({ title, body, severity, actions }: InsightCardProps
     <div className={cn('clay-card p-5 flex flex-col gap-3', SEVERITY_STYLE[severity])}>
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-base">{title}</h3>
-        <Chip size="sm" color={SEVERITY_COLOR[severity]}>{severity}</Chip>
+        <Chip size="sm" color={SEVERITY_COLOR[severity]}>
+          {severity}
+        </Chip>
       </div>
       <p className="text-sm text-default-600 leading-relaxed">{body}</p>
       {actions.length > 0 && (

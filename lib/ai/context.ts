@@ -1,5 +1,11 @@
 // lib/ai/context.ts
-import type { DbProfile, DbLearningProgress, DbBudgetEntry, DbActionPlan, DbDocument } from '@/types/database'
+import type {
+  DbProfile,
+  DbLearningProgress,
+  DbBudgetEntry,
+  DbActionPlan,
+  DbDocument,
+} from '@/types/database'
 
 export interface AgentContext {
   profile: DbProfile
@@ -11,15 +17,19 @@ export interface AgentContext {
 }
 
 function formatDate(iso: string) {
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(iso))
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(new Date(iso))
 }
 
 export function buildSystemPrompt(ctx: AgentContext): string {
   const { profile, learning, recentBudget, activePlans, documents, relevantMemories } = ctx
 
   const masteredConcepts = learning
-    .filter(l => l.confidence_level === 'high')
-    .map(l => l.concept)
+    .filter((l) => l.confidence_level === 'high')
+    .map((l) => l.concept)
 
   const totalIncome = profile.income_monthly
   const totalExpenses = Object.values(profile.expenses).reduce((a, b) => a + b, 0)
@@ -31,36 +41,42 @@ export function buildSystemPrompt(ctx: AgentContext): string {
 
   const recentBudgetSummary = recentBudget
     .slice(0, 5)
-    .map(e => `${e.entry_type} ${e.category}: $${e.amount} on ${e.date}`)
+    .map((e) => `${e.entry_type} ${e.category}: $${e.amount} on ${e.date}`)
     .join('; ')
 
-  const debtSummary = profile.debts
-    .map(d => `${d.type} $${d.amount} at ${d.rate}%`)
-    .join(', ') || 'none'
+  const debtSummary =
+    profile.debts.map((d) => `${d.type} $${d.amount} at ${d.rate}%`).join(', ') || 'none'
 
-  const goalSummary = profile.goals
-    .map(g => `${g.label} ($${g.target_amount} by ${g.target_date})`)
-    .join(', ') || 'none stated'
+  const goalSummary =
+    profile.goals.map((g) => `${g.label} ($${g.target_amount} by ${g.target_date})`).join(', ') ||
+    'none stated'
 
   const existingPlanSteps = activePlans
-    .flatMap(p => (p.steps as Array<{ label: string }>).map(s => s.label))
+    .flatMap((p) => (p.steps as Array<{ label: string }>).map((s) => s.label))
     .join(', ')
 
   // Build document context — summarize each doc with key risk info
-  const documentContext = documents.length > 0
-    ? documents.map(d => {
-        const ex = d.ai_explanation
-        const riskFlags = ex?.risk_flags?.length ? ` ⚠ ${ex.risk_flags.slice(0, 2).join('; ')}` : ''
-        const summary = ex?.plain_summaries?.[0] ? ` — ${ex.plain_summaries[0].slice(0, 150)}` : ''
-        const highRisk = ex?.clauses?.filter(c => c.risk === 'high').length ?? 0
-        const riskNote = highRisk > 0 ? ` [${highRisk} HIGH-RISK clause${highRisk > 1 ? 's' : ''}]` : ''
-        return `- [${d.document_type.toUpperCase()}] "${d.filename}" (uploaded ${formatDate(d.created_at)})${riskNote}${summary}${riskFlags}`
-      }).join('\n')
-    : 'None uploaded yet'
+  const documentContext =
+    documents.length > 0
+      ? documents
+          .map((d) => {
+            const ex = d.ai_explanation
+            const riskFlags = ex?.risk_flags?.length
+              ? ` ⚠ ${ex.risk_flags.slice(0, 2).join('; ')}`
+              : ''
+            const summary = ex?.plain_summaries?.[0]
+              ? ` — ${ex.plain_summaries[0].slice(0, 150)}`
+              : ''
+            const highRisk = ex?.clauses?.filter((c) => c.risk === 'high').length ?? 0
+            const riskNote =
+              highRisk > 0 ? ` [${highRisk} HIGH-RISK clause${highRisk > 1 ? 's' : ''}]` : ''
+            return `- [${d.document_type.toUpperCase()}] "${d.filename}" (uploaded ${formatDate(d.created_at)})${riskNote}${summary}${riskFlags}`
+          })
+          .join('\n')
+      : 'None uploaded yet'
 
-  const memoriesContext = relevantMemories.length > 0
-    ? relevantMemories.map(m => `- ${m}`).join('\n')
-    : ''
+  const memoriesContext =
+    relevantMemories.length > 0 ? relevantMemories.map((m) => `- ${m}`).join('\n') : ''
 
   return `You are Vela, a compassionate and knowledgeable financial wellness advisor built for underserved communities.
 
@@ -91,10 +107,24 @@ ${memoriesContext ? `\n## Relevant context from memory:\n${memoriesContext}` : '
 - Use plain language — no jargon without explanation
 - Reference the user's actual numbers in every response (not hypothetical examples)
 - Use tools to render interactive components — prefer components over long text
-- Sequence tools intentionally: acknowledge → simulate/explain → insight → action
+- Sequence tools intentionally: simulate/explain → insight → action. Only use voice_card when the user explicitly asks to hear something out loud — never as a default opener or acknowledgement.
 - Only render a LearningCard for a concept if it is NOT in the mastered list above
 - Never suggest steps already covered in active plans
 - When the user asks about a document they've uploaded, use the document_explainer tool with the exact data from their uploaded documents listed above
 - When you want to direct the user to their Document Vault (e.g., "check your insurance policy"), use the view_document tool
-- Be warm, non-judgmental, and encouraging — financial stress is real`
+- Be warm, non-judgmental, and encouraging — financial stress is real
+- User messages may be prefixed with [Vela-System: ...] blocks — these are automated context events (e.g., game outcomes). Read them as factual context, then respond to the user's actual message.
+
+## StateFarm Resource Links (for learning_card.links only)
+Only populate learning_card.links when the concept is directly related to one of these. Do not invent URLs.
+- Auto insurance → { label: "Auto Insurance", url: "https://www.statefarm.com/insurance/auto" }
+- Renters insurance → { label: "Renters Insurance", url: "https://www.statefarm.com/insurance/home-and-property/renters" }
+- Homeowners insurance → { label: "Homeowners Insurance", url: "https://www.statefarm.com/insurance/home-and-property/homeowners" }
+- Life insurance → { label: "Life Insurance", url: "https://www.statefarm.com/insurance/life" }
+- Health insurance → { label: "Health Insurance", url: "https://www.statefarm.com/insurance/health" }
+- Disability insurance → { label: "Disability Insurance", url: "https://www.statefarm.com/insurance/disability" }
+- Umbrella/liability → { label: "Umbrella Insurance", url: "https://www.statefarm.com/insurance/umbrella" }
+- Banking & savings → { label: "Banking & Finances", url: "https://www.statefarm.com/finances" }
+- General financial education → { label: "Simple Insights", url: "https://www.statefarm.com/simple-insights" }
+Leave links empty for topics StateFarm doesn't serve (e.g., credit score mechanics, tax strategy, stock investing).`
 }

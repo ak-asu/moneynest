@@ -5,7 +5,9 @@ import { CountryCode, Products } from 'plaid'
 
 export async function POST() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return NextResponse.json(null, { status: 401 })
 
   const response = await plaidClient.linkTokenCreate({

@@ -15,13 +15,15 @@ function RiskChart({ explanation }: { explanation: DocumentExplanation }) {
     { name: 'Low', value: counts.low, fill: '#10b981' },
     { name: 'Medium', value: counts.medium, fill: '#f59e0b' },
     { name: 'High', value: counts.high, fill: '#ef4444' },
-  ].filter(d => d.value > 0)
+  ].filter((d) => d.value > 0)
 
   if (data.length === 0) return null
 
   return (
     <div>
-      <p className="text-xs font-semibold text-default-500 uppercase tracking-wide mb-2">Clause Risk Breakdown</p>
+      <p className="text-xs font-semibold text-default-500 uppercase tracking-wide mb-2">
+        Clause Risk Breakdown
+      </p>
       <ResponsiveContainer width="100%" height={data.length * 34 + 8}>
         <BarChart data={data} layout="vertical" margin={{ left: 0, right: 24, top: 4, bottom: 4 }}>
           <XAxis type="number" hide allowDecimals={false} />
@@ -34,16 +36,25 @@ function RiskChart({ explanation }: { explanation: DocumentExplanation }) {
             tickLine={false}
           />
           <Tooltip
-            formatter={(v) => typeof v === 'number' ? [`${v} clause${v !== 1 ? 's' : ''}`, ''] : [v, '']}
+            formatter={(v) =>
+              typeof v === 'number' ? [`${v} clause${v !== 1 ? 's' : ''}`, ''] : [v, '']
+            }
             contentStyle={{ fontSize: 11, borderRadius: 8 }}
           />
-          <Bar dataKey="value" radius={4} barSize={18} label={{ position: 'right', fontSize: 11, fill: 'currentColor' }}>
-            {data.map((d, i) => <Cell key={i} fill={d.fill} />)}
+          <Bar
+            dataKey="value"
+            radius={4}
+            barSize={18}
+            label={{ position: 'right', fontSize: 11, fill: 'currentColor' }}
+          >
+            {data.map((d, i) => (
+              <Cell key={i} fill={d.fill} />
+            ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
       <div className="flex gap-3 mt-2">
-        {data.map(d => (
+        {data.map((d) => (
           <div key={d.name} className="flex items-center gap-1.5 text-xs text-default-500">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.fill }} />
             {d.value} {d.name}
@@ -70,7 +81,9 @@ function PayslipChart({ income_monthly }: { income_monthly: number }) {
 
   return (
     <div>
-      <p className="text-xs font-semibold text-default-500 uppercase tracking-wide mb-2">Income vs Profile</p>
+      <p className="text-xs font-semibold text-default-500 uppercase tracking-wide mb-2">
+        Income vs Profile
+      </p>
       <ResponsiveContainer width="100%" height={data.length * 34 + 8}>
         <BarChart data={data} layout="vertical" margin={{ left: 0, right: 56, top: 4, bottom: 4 }}>
           <XAxis type="number" hide />
@@ -83,21 +96,28 @@ function PayslipChart({ income_monthly }: { income_monthly: number }) {
             tickLine={false}
           />
           <Tooltip
-            formatter={(v) => typeof v === 'number' ? [`$${v.toLocaleString()}`, ''] : [v, '']}
+            formatter={(v) => (typeof v === 'number' ? [`$${v.toLocaleString()}`, ''] : [v, ''])}
             contentStyle={{ fontSize: 11, borderRadius: 8 }}
           />
           <Bar
             dataKey="value"
             radius={4}
             barSize={18}
-            label={{ position: 'right', fontSize: 11, fill: 'currentColor', formatter: (v: any) => typeof v === 'number' ? `$${v.toLocaleString()}` : '' }}
+            label={{
+              position: 'right',
+              fontSize: 11,
+              fill: 'currentColor',
+              formatter: (v: any) => (typeof v === 'number' ? `$${v.toLocaleString()}` : ''),
+            }}
           >
-            {data.map((d, i) => <Cell key={i} fill={d.fill} />)}
+            {data.map((d, i) => (
+              <Cell key={i} fill={d.fill} />
+            ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
       <div className="flex flex-wrap gap-3 mt-2">
-        {data.map(d => (
+        {data.map((d) => (
           <div key={d.name} className="flex items-center gap-1.5 text-xs text-default-500">
             <span className="w-2 h-2 rounded-full shrink-0" style={{ background: d.fill }} />
             {d.name}: ${d.value.toLocaleString()}
@@ -110,13 +130,7 @@ function PayslipChart({ income_monthly }: { income_monthly: number }) {
 
 // ─── Profile Correlation Callout ─────────────────────────────────────────────
 
-function ProfileCorrelation({
-  doc,
-  profile,
-}: {
-  doc: DbDocument
-  profile: DbProfile
-}) {
+function ProfileCorrelation({ doc, profile }: { doc: DbDocument; profile: DbProfile }) {
   const explanation = doc.ai_explanation
   if (!explanation || !profile) return null
 
@@ -130,8 +144,9 @@ function ProfileCorrelation({
 
   if (doc.document_type === 'insurance') {
     // Try to detect deductible from clause labels
-    const deductibleClause = explanation.clauses.find(c =>
-      c.label.toLowerCase().includes('deductible') || c.plain.toLowerCase().includes('deductible'),
+    const deductibleClause = explanation.clauses.find(
+      (c) =>
+        c.label.toLowerCase().includes('deductible') || c.plain.toLowerCase().includes('deductible')
     )
     if (deductibleClause) {
       const match = deductibleClause.plain.match(/\$[\d,]+/)
@@ -184,9 +199,10 @@ function ProfileCorrelation({
       const variant: Callout['variant'] = rentRatio > 0.35 ? 'warn' : 'ok'
       callouts.push({
         icon: rentRatio > 0.35 ? <AlertTriangle size={12} /> : <CheckCircle size={12} />,
-        text: rentRatio > 0.35
-          ? `Rent ($${rentExpense.toLocaleString()}/mo) is ${Math.round(rentRatio * 100)}% of income — above the 30% guideline.`
-          : `Rent ($${rentExpense.toLocaleString()}/mo) is ${Math.round(rentRatio * 100)}% of income — within healthy range.`,
+        text:
+          rentRatio > 0.35
+            ? `Rent ($${rentExpense.toLocaleString()}/mo) is ${Math.round(rentRatio * 100)}% of income — above the 30% guideline.`
+            : `Rent ($${rentExpense.toLocaleString()}/mo) is ${Math.round(rentRatio * 100)}% of income — within healthy range.`,
         variant,
       })
     }
@@ -218,9 +234,14 @@ function ProfileCorrelation({
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs font-semibold text-default-500 uppercase tracking-wide">Your Situation</p>
+      <p className="text-xs font-semibold text-default-500 uppercase tracking-wide">
+        Your Situation
+      </p>
       {callouts.map((c, i) => (
-        <div key={i} className={`flex items-start gap-2 rounded-xl px-3 py-2 border text-xs ${styles[c.variant]}`}>
+        <div
+          key={i}
+          className={`flex items-start gap-2 rounded-xl px-3 py-2 border text-xs ${styles[c.variant]}`}
+        >
           <span className="mt-0.5 shrink-0">{c.icon}</span>
           <span>{c.text}</span>
         </div>
@@ -243,10 +264,13 @@ export function DocumentVisual({ doc, profile }: DocumentVisualProps) {
   const explanation = doc.ai_explanation
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setImgLoading(true)
     fetch(`/api/documents/${doc.id}/visual`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.url) setImgSrc(d.url) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.url) setImgSrc(d.url)
+      })
       .catch(() => {})
       .finally(() => setImgLoading(false))
   }, [doc.id])
@@ -255,12 +279,15 @@ export function DocumentVisual({ doc, profile }: DocumentVisualProps) {
     <div className="flex flex-col gap-4 pt-3 border-t border-default-200 dark:border-white/10">
       {/* Gemini Illustration */}
       <div>
-        <p className="text-xs font-semibold text-default-500 uppercase tracking-wide mb-2">Visual Overview</p>
-        <div className="relative w-full rounded-2xl overflow-hidden bg-default-100 dark:bg-white/5 flex items-center justify-center" style={{ aspectRatio: '16/9' }}>
+        <p className="text-xs font-semibold text-default-500 uppercase tracking-wide mb-2">
+          Visual Overview
+        </p>
+        <div
+          className="relative w-full rounded-2xl overflow-hidden bg-default-100 dark:bg-white/5 flex items-center justify-center"
+          style={{ aspectRatio: '16/9' }}
+        >
           {imgLoading && <Loader2 size={20} className="text-default-300 animate-spin" />}
-          {!imgLoading && !imgSrc && (
-            <p className="text-xs text-default-400">Visual unavailable</p>
-          )}
+          {!imgLoading && !imgSrc && <p className="text-xs text-default-400">Visual unavailable</p>}
           {imgSrc && (
             <Image
               src={imgSrc}
@@ -275,9 +302,7 @@ export function DocumentVisual({ doc, profile }: DocumentVisualProps) {
       </div>
 
       {/* Risk chart */}
-      {explanation && explanation.clauses.length > 0 && (
-        <RiskChart explanation={explanation} />
-      )}
+      {explanation && explanation.clauses.length > 0 && <RiskChart explanation={explanation} />}
 
       {/* Payslip chart when income is in profile */}
       {doc.document_type === 'payslip' && profile && profile.income_monthly > 0 && (

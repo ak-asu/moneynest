@@ -1,8 +1,12 @@
 import type { ProfileSnapshotProps } from '@/types/components'
 
 const PERSONA_LABELS: Record<string, string> = {
-  gig_worker: 'Gig Worker', student: 'Student', immigrant: 'Immigrant',
-  retiree: 'Retiree', single_parent: 'Single Parent', other: 'Individual',
+  gig_worker: 'Gig Worker',
+  student: 'Student',
+  immigrant: 'Immigrant',
+  retiree: 'Retiree',
+  single_parent: 'Single Parent',
+  other: 'Individual',
 }
 
 const HEALTH_TEXT_COLOR: Record<string, string> = {
@@ -11,7 +15,12 @@ const HEALTH_TEXT_COLOR: Record<string, string> = {
   danger: 'text-danger',
 }
 
-export function ProfileSnapshot({ persona, health_score, income_monthly, gaps }: ProfileSnapshotProps) {
+export function ProfileSnapshot({
+  persona,
+  health_score,
+  income_monthly,
+  gaps,
+}: ProfileSnapshotProps) {
   const color = health_score >= 70 ? 'success' : health_score >= 40 ? 'warning' : 'danger'
   return (
     <div className="clay-card p-5 flex flex-col gap-4">
@@ -25,7 +34,9 @@ export function ProfileSnapshot({ persona, health_score, income_monthly, gaps }:
           <p className="text-xs text-default-400">/ 100</p>
         </div>
       </div>
-      <p className="text-sm text-default-600">Income: <strong>${income_monthly.toLocaleString()}/mo</strong></p>
+      <p className="text-sm text-default-600">
+        Income: <strong>${income_monthly.toLocaleString()}/mo</strong>
+      </p>
       {gaps.length > 0 && (
         <div className="flex flex-col gap-2">
           <p className="text-xs font-semibold text-default-500 uppercase">To improve your score</p>
