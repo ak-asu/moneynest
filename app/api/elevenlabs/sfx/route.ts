@@ -7,12 +7,15 @@ export async function POST(req: Request) {
     return new Response('description is required', { status: 400 })
   }
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user) return new Response('Unauthorized', { status: 401 })
 
   try {
     const buffer = await generateSFX(description, duration)
-    return new Response(buffer, { headers: { 'Content-Type': 'audio/mpeg' } })
+    const audioBytes = Uint8Array.from(buffer)
+    return new Response(audioBytes.buffer, { headers: { 'Content-Type': 'audio/mpeg' } })
   } catch (err) {
     console.error('SFX error:', err)
     return new Response('SFX failed', { status: 500 })

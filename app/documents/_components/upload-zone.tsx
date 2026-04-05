@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import { Upload } from 'lucide-react'
+import { Upload, FileCheck, Loader2 } from 'lucide-react'
 
 interface UploadZoneProps {
   onUploaded: () => void
@@ -27,13 +27,42 @@ export function UploadZone({ onUploaded }: UploadZoneProps) {
   return (
     <div
       {...getRootProps()}
-      className={`clay-card p-8 flex flex-col items-center gap-3 cursor-pointer border-2 border-dashed transition-all ${isDragActive ? 'border-primary bg-primary-50 scale-[1.01]' : 'border-default-200'}`}
+      className={`clay-card px-8 py-7 flex flex-col items-center gap-3 cursor-pointer border-2 border-dashed transition-all select-none ${
+        isDragActive
+          ? 'border-primary bg-primary/5 scale-[1.01]'
+          : uploading
+          ? 'border-default-200 opacity-70 pointer-events-none'
+          : 'border-default-200 hover:border-primary/40 hover:bg-white/5 dark:hover:bg-white/[0.02]'
+      }`}
     >
       <input {...getInputProps()} />
-      <Upload size={28} className={isDragActive ? 'text-primary' : 'text-default-400'} />
-      <p className="text-sm text-default-500 text-center">
-        {uploading ? '🔍 Extracting...' : isDragActive ? 'Drop to upload' : 'Upload a bill, insurance policy, lease, or pay stub'}
-      </p>
+      <div className={`p-3 rounded-2xl transition-colors ${
+        isDragActive
+          ? 'bg-primary/15 text-primary'
+          : uploading
+          ? 'bg-default-100 dark:bg-white/5 text-primary'
+          : 'bg-default-100 dark:bg-white/5 text-default-400'
+      }`}>
+        {uploading
+          ? <Loader2 size={22} className="animate-spin" />
+          : isDragActive
+          ? <FileCheck size={22} />
+          : <Upload size={22} />}
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-medium text-default-600 dark:text-default-300">
+          {uploading
+            ? 'Analyzing document...'
+            : isDragActive
+            ? 'Drop to add to vault'
+            : 'Drop a document or click to browse'}
+        </p>
+        {!uploading && !isDragActive && (
+          <p className="text-xs text-default-400 mt-1">
+            Bills · Insurance · Leases · Pay Stubs &nbsp;·&nbsp; PDF or image
+          </p>
+        )}
+      </div>
     </div>
   )
 }
