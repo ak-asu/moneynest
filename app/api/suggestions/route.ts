@@ -97,7 +97,7 @@ export async function POST() {
     .filter((l) => l.confidence_level !== 'high')
     .map((l) => l.concept)
 
-  const prompt = `You are Vela's proactive suggestion engine. Generate 2–3 personalized financial suggestions.
+  const prompt = `You are Cents's proactive suggestion engine. Generate 2–3 personalized financial suggestions.
 
 User:
 - Persona: ${profile.persona.replace(/_/g, ' ')}

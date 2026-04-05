@@ -32,7 +32,7 @@ export function VoiceCard({
   return (
     <div className={cn('clay-card p-4 flex flex-col gap-3', emotionColors[emotion])}>
       <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-default-700">Vela</span>
+        <span className="text-sm font-semibold text-default-700">Cents</span>
         <Button
           size="sm"
           variant="secondary"

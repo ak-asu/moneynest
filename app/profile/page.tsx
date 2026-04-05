@@ -246,7 +246,7 @@ export default function ProfilePage() {
                   <h1 className="text-4xl font-black tracking-tight">{t('profile.title')}</h1>
                   <p className="max-w-2xl text-default-500">
                     Shape your money setup in one place. Your identity, cash flow, debts, and goals
-                    all feed the advice you get across Vela.
+                    all feed the advice you get across MoneyNest.
                   </p>
                 </div>
 
@@ -324,7 +324,7 @@ export default function ProfilePage() {
                 </div>
                 <h2 className="text-2xl font-bold">Identity</h2>
                 <p className="text-sm text-default-500">
-                  Tell Vela who you are so your coaching matches your real situation.
+                  Tell Cents who you are so your coaching matches your real situation.
                 </p>
               </div>
               <Field label="I identify most as" error={errors.persona?.message}>
@@ -591,7 +591,7 @@ export default function ProfilePage() {
                   </div>
                   <h2 className="text-2xl font-bold">Goals</h2>
                   <p className="text-sm text-default-500">
-                    Track what you are saving toward so Vela can keep your plan aligned with it.
+                    Track what you are saving toward so Cents can keep your plan aligned with it.
                   </p>
                 </div>
                 <Button

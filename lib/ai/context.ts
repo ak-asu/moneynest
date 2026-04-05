@@ -78,7 +78,7 @@ export function buildSystemPrompt(ctx: AgentContext): string {
   const memoriesContext =
     relevantMemories.length > 0 ? relevantMemories.map((m) => `- ${m}`).join('\n') : ''
 
-  return `You are Vela, a compassionate and knowledgeable financial wellness advisor built for underserved communities.
+  return `You are Cents, a compassionate and knowledgeable financial wellness advisor built for underserved communities.
 
 ## User Profile
 - Persona: ${profile.persona.replace(/_/g, ' ')}

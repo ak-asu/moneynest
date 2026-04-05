@@ -26,7 +26,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'common.spanish': 'Español',
     'common.unknownDate': 'Unknown date',
 
-    'app.brand': 'Vela',
+    'app.brand': 'MoneyNest',
     'app.tagline': 'Financial Companion',
 
     'nav.dashboard': 'Dashboard',
@@ -53,7 +53,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'login.accountCreated':
       'Account created. Check your email to verify your address, then sign in.',
     'login.authFailed': 'Authentication failed.',
-    'login.heroBadge': 'Vela Financial Companion',
+    'login.heroBadge': 'MoneyNest Financial Companion',
     'login.heroTitle': 'Manage life with calm, clear money decisions.',
     'login.heroSubtitle':
       'Track your financial pulse, spot risks early, and build confidence with guidance made for real everyday choices.',
@@ -72,7 +72,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'onboarding.tab.form': 'Fill it in',
     'onboarding.tab.doc': 'Upload docs',
     'onboarding.tab.plaid': 'Connect bank',
-    'onboarding.welcome': 'Welcome to Vela 🕯️',
+    'onboarding.welcome': 'Welcome to MoneyNest 🕯️',
     'onboarding.subtitle': 'Set up your financial profile to get started.',
     'onboarding.saveFailed': 'Failed to save. Please try again.',
     'onboarding.step.identity': 'Identity',
@@ -106,20 +106,20 @@ export const messages: Record<Locale, Record<string, string>> = {
     'onboarding.persona.other.description': "Something else — we'll adapt to you",
 
     'onboarding.voice.you': 'You',
-    'onboarding.voice.vela': 'Vela',
+    'onboarding.voice.vela': 'Cents',
     'onboarding.voice.firstMessage':
-      "Hi! I'm Vela. I'm going to ask you a few quick questions to understand your financial situation. This will take about 2 minutes. What's your approximate monthly income?",
+      "Hi! I'm Cents, your financial assistant. Before we start — do you prefer to continue in English or Spanish? / ¿Prefieres continuar en inglés o español?",
     'onboarding.voice.setupDoneTitle': 'Profile set up!',
-    'onboarding.voice.setupDoneSubtitle': "Vela has your details. Let's get started.",
+    'onboarding.voice.setupDoneSubtitle': "Cents has your details. Let's get started.",
     'onboarding.voice.goDashboard': 'Go to Dashboard',
     'onboarding.voice.prompt':
-      "Talk to Vela for 2 minutes. She'll ask about your income, expenses, and goals — no typing needed.",
+      "Talk to Cents for 2 minutes. She'll ask about your income, expenses, and goals — no typing needed.",
     'onboarding.voice.start': 'Start voice setup',
     'onboarding.voice.connecting': 'Connecting...',
     'onboarding.voice.done': 'Done',
 
     'onboarding.doc.prompt':
-      'Upload a pay stub, bank statement, or utility bill. Vela will extract your numbers automatically.',
+      'Upload a pay stub, bank statement, or utility bill. Cents will extract your numbers automatically.',
     'onboarding.doc.dropHere': 'Drop it here',
     'onboarding.doc.dragOrClick': 'Drag & drop or click to upload',
     'onboarding.doc.fileTypeHelp': 'PDF or image, max 10MB',
@@ -129,7 +129,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'onboarding.doc.uploadFailed': 'Upload failed. Try again or use the form instead.',
 
     'onboarding.plaid.prompt':
-      'Securely connect your bank. Vela reads transactions read-only — it can never move money.',
+      'Securely connect your bank. Cents reads transactions read-only — it can never move money.',
     'onboarding.plaid.connect': 'Connect my bank',
     'onboarding.plaid.connecting': 'Connecting...',
     'onboarding.plaid.failed': 'Connection failed. Please try again.',
@@ -143,7 +143,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'dashboard.healthProgress': 'Making progress — keep going.',
     'dashboard.healthBuild': "Let's build a stronger foundation together.",
     'dashboard.healthMissing': 'Complete your profile to see your score.',
-    'dashboard.suggests': 'Vela Suggests',
+    'dashboard.suggests': 'Cents Suggests',
     'dashboard.noSuggestions': 'No suggestions right now.',
     'dashboard.generateSuggestions': 'Generate suggestions',
     'dashboard.exploreChat': 'Explore in chat',
@@ -160,11 +160,11 @@ export const messages: Record<Locale, Record<string, string>> = {
     'health.building': 'Building',
     'health.atRisk': 'At Risk',
 
-    'chat.greetingTitle': "Hi, I'm Vela",
+    'chat.greetingTitle': "Hi, I'm Cents",
     'chat.greetingBody':
       'Ask me anything about your finances, upload a document, or try a simulation.',
-    'chat.inputAria': 'Message to Vela',
-    'chat.inputPlaceholder': 'Ask Vela anything...',
+    'chat.inputAria': 'Message to Cents',
+    'chat.inputPlaceholder': 'Ask Cents anything...',
     'chat.sendAria': 'Send message',
     'chat.voiceStartAria': 'Start voice mode',
     'chat.voiceEndAria': 'End voice mode',
@@ -173,7 +173,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     'budget.title': 'Budget & Tracking',
     'budget.subtitle': 'Last 90 days of activity.',
-    'budget.analyze': 'Analyze with Vela',
+    'budget.analyze': 'Analyze with Cents',
     'budget.summary.income': 'Income',
     'budget.summary.expenses': 'Expenses',
     'budget.summary.surplus': 'Surplus',
@@ -240,11 +240,11 @@ export const messages: Record<Locale, Record<string, string>> = {
     'documents.uploadHelp': 'Bills · Insurance · Leases · Pay Stubs · PDF or image',
 
     'plans.title': 'Action Plans',
-    'plans.subtitle': 'Your personalised financial action plans from Vela.',
+    'plans.subtitle': 'Your personalised financial action plans from Cents.',
     'plans.fetchFailed': 'Failed to load plans ({status}). Please try again.',
     'plans.networkFailed': 'Network error — please try again.',
     'plans.noneTitle': 'No action plans yet',
-    'plans.noneSubtitle': 'Ask Vela in chat to create a plan for you.',
+    'plans.noneSubtitle': 'Ask Cents in chat to create a plan for you.',
     'plans.basedOnOlderProfile': 'Based on older profile',
     'plans.complete': 'Complete',
     'plans.stepsDone': '{done} of {total} steps done',
@@ -253,7 +253,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'plans.created': 'Created {date}',
 
     'library.title': 'Library',
-    'library.subtitle': 'Pre-built games and your saved content from Vela.',
+    'library.subtitle': 'Pre-built games and your saved content from Cents.',
     'library.fetchFailed': 'Failed to load library ({status}). Please try again.',
     'library.networkFailed': 'Network error — please try again.',
     'library.noResults': 'No results',
@@ -322,7 +322,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'common.spanish': 'Español',
     'common.unknownDate': 'Fecha desconocida',
 
-    'app.brand': 'Vela',
+    'app.brand': 'MoneyNest',
     'app.tagline': 'Compañera Financiera',
 
     'nav.dashboard': 'Panel',
@@ -350,7 +350,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'login.accountCreated':
       'Cuenta creada. Revisa tu correo para verificar tu dirección y luego inicia sesión.',
     'login.authFailed': 'La autenticación falló.',
-    'login.heroBadge': 'Vela Compañera Financiera',
+    'login.heroBadge': 'MoneyNest Compañera Financiera',
     'login.heroTitle': 'Gestiona tu vida con decisiones de dinero claras y tranquilas.',
     'login.heroSubtitle':
       'Sigue tu pulso financiero, detecta riesgos a tiempo y gana confianza con guía para decisiones reales del día a día.',
@@ -369,7 +369,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'onboarding.tab.form': 'Completar formulario',
     'onboarding.tab.doc': 'Subir documentos',
     'onboarding.tab.plaid': 'Conectar banco',
-    'onboarding.welcome': 'Bienvenido a Vela 🕯️',
+    'onboarding.welcome': 'Bienvenido a MoneyNest 🕯️',
     'onboarding.subtitle': 'Configura tu perfil financiero para comenzar.',
     'onboarding.saveFailed': 'No se pudo guardar. Inténtalo de nuevo.',
     'onboarding.step.identity': 'Identidad',
@@ -403,20 +403,20 @@ export const messages: Record<Locale, Record<string, string>> = {
     'onboarding.persona.other.description': 'Algo diferente — nos adaptamos a ti',
 
     'onboarding.voice.you': 'Tú',
-    'onboarding.voice.vela': 'Vela',
+    'onboarding.voice.vela': 'Cents',
     'onboarding.voice.firstMessage':
-      '¡Hola! Soy Vela. Te haré unas preguntas rápidas para entender tu situación financiera. Toma unos 2 minutos. ¿Cuál es tu ingreso mensual aproximado?',
+      "Hi! I'm Cents, your financial assistant. Before we start — do you prefer to continue in English or Spanish? / ¿Prefieres continuar en inglés o español?",
     'onboarding.voice.setupDoneTitle': '¡Perfil configurado!',
-    'onboarding.voice.setupDoneSubtitle': 'Vela ya tiene tus datos. Empecemos.',
+    'onboarding.voice.setupDoneSubtitle': 'Cents ya tiene tus datos. Empecemos.',
     'onboarding.voice.goDashboard': 'Ir al panel',
     'onboarding.voice.prompt':
-      'Habla con Vela por 2 minutos. Te preguntará sobre ingresos, gastos y metas — sin escribir.',
+      'Habla con Cents por 2 minutos. Te preguntará sobre ingresos, gastos y metas — sin escribir.',
     'onboarding.voice.start': 'Iniciar configuración por voz',
     'onboarding.voice.connecting': 'Conectando…',
     'onboarding.voice.done': 'Listo',
 
     'onboarding.doc.prompt':
-      'Sube un recibo de pago, estado de cuenta o factura. Vela extraerá tus números automáticamente.',
+      'Sube un recibo de pago, estado de cuenta o factura. Cents extraerá tus números automáticamente.',
     'onboarding.doc.dropHere': 'Suelta aquí',
     'onboarding.doc.dragOrClick': 'Arrastra y suelta o haz clic para subir',
     'onboarding.doc.fileTypeHelp': 'PDF o imagen, máx. 10MB',
@@ -426,7 +426,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'onboarding.doc.uploadFailed': 'La subida falló. Inténtalo de nuevo o usa el formulario.',
 
     'onboarding.plaid.prompt':
-      'Conecta tu banco de forma segura. Vela solo lee transacciones: nunca puede mover dinero.',
+      'Conecta tu banco de forma segura. Cents solo lee transacciones: nunca puede mover dinero.',
     'onboarding.plaid.connect': 'Conectar mi banco',
     'onboarding.plaid.connecting': 'Conectando…',
     'onboarding.plaid.failed': 'La conexión falló. Inténtalo de nuevo.',
@@ -440,7 +440,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'dashboard.healthProgress': 'Vas avanzando — sigue así.',
     'dashboard.healthBuild': 'Construyamos juntos una base más sólida.',
     'dashboard.healthMissing': 'Completa tu perfil para ver tu puntaje.',
-    'dashboard.suggests': 'Vela sugiere',
+    'dashboard.suggests': 'Cents sugiere',
     'dashboard.noSuggestions': 'No hay sugerencias por ahora.',
     'dashboard.generateSuggestions': 'Generar sugerencias',
     'dashboard.exploreChat': 'Explorar en chat',
@@ -457,11 +457,11 @@ export const messages: Record<Locale, Record<string, string>> = {
     'health.building': 'En progreso',
     'health.atRisk': 'En riesgo',
 
-    'chat.greetingTitle': 'Hola, soy Vela',
+    'chat.greetingTitle': 'Hola, soy Cents',
     'chat.greetingBody':
       'Pregúntame lo que sea sobre tus finanzas, sube un documento o prueba una simulación.',
-    'chat.inputAria': 'Mensaje para Vela',
-    'chat.inputPlaceholder': 'Pregúntale a Vela lo que sea...',
+    'chat.inputAria': 'Mensaje para Cents',
+    'chat.inputPlaceholder': 'Pregúntale a Cents lo que sea...',
     'chat.sendAria': 'Enviar mensaje',
     'chat.voiceStartAria': 'Iniciar modo voz',
     'chat.voiceEndAria': 'Finalizar modo voz',
@@ -470,7 +470,7 @@ export const messages: Record<Locale, Record<string, string>> = {
 
     'budget.title': 'Presupuesto y seguimiento',
     'budget.subtitle': 'Últimos 90 días de actividad.',
-    'budget.analyze': 'Analizar con Vela',
+    'budget.analyze': 'Analizar con Cents',
     'budget.summary.income': 'Ingresos',
     'budget.summary.expenses': 'Gastos',
     'budget.summary.surplus': 'Superávit',
@@ -538,11 +538,11 @@ export const messages: Record<Locale, Record<string, string>> = {
     'documents.uploadHelp': 'Facturas · Seguros · Contratos · Nómina · PDF o imagen',
 
     'plans.title': 'Planes de acción',
-    'plans.subtitle': 'Tus planes de acción financiera personalizados de Vela.',
+    'plans.subtitle': 'Tus planes de acción financiera personalizados de Cents.',
     'plans.fetchFailed': 'No se pudieron cargar los planes ({status}). Inténtalo de nuevo.',
     'plans.networkFailed': 'Error de red — inténtalo de nuevo.',
     'plans.noneTitle': 'Aún no hay planes de acción',
-    'plans.noneSubtitle': 'Pídele a Vela en el chat que te cree un plan.',
+    'plans.noneSubtitle': 'Pídele a Cents en el chat que te cree un plan.',
     'plans.basedOnOlderProfile': 'Basado en un perfil anterior',
     'plans.complete': 'Completado',
     'plans.stepsDone': '{done} de {total} pasos completados',
@@ -551,7 +551,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'plans.created': 'Creado {date}',
 
     'library.title': 'Biblioteca',
-    'library.subtitle': 'Juegos preconstruidos y contenido guardado de Vela.',
+    'library.subtitle': 'Juegos preconstruidos y contenido guardado de Cents.',
     'library.fetchFailed': 'No se pudo cargar la biblioteca ({status}). Inténtalo de nuevo.',
     'library.networkFailed': 'Error de red — inténtalo de nuevo.',
     'library.noResults': 'Sin resultados',
