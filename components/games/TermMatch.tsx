@@ -78,7 +78,7 @@ export function TermMatch() {
   const selectedTermRef  = useRef<string | null>(null)
   const selectedDefRef   = useRef<string | null>(null)
   const matchedCountRef  = useRef(0)
-  const failedCountRef   = useRef(0)
+  const failedTermsRef   = useRef<Set<string>>(new Set())
   const matchStreakRef   = useRef(0)
   const bestStreakRef    = useRef(0)
   const xpRef            = useRef(0)
@@ -102,7 +102,7 @@ export function TermMatch() {
     const pairs = shuffle([...r.pairs])
     roundPairsRef.current   = pairs
     matchedCountRef.current = 0
-    failedCountRef.current  = 0
+    failedTermsRef.current  = new Set()
     matchStreakRef.current  = 0
     selectedTermRef.current = null
     selectedDefRef.current  = null
@@ -164,10 +164,10 @@ export function TermMatch() {
       setShowWrong(true)
       setTimeout(() => setShowWrong(false), 1800)
       setTimeout(() => {
-        failedCountRef.current++
+        failedTermsRef.current.add(term)
         setCardStates(prev => ({ ...prev, [term]: 'failed', [def]: 'normal' }))
         const total = roundPairsRef.current.length
-        if (matchedCountRef.current + failedCountRef.current >= total) {
+        if (matchedCountRef.current + failedTermsRef.current.size >= total) {
           setTimeout(() => endRound(true), 400)
         }
       }, 650)
@@ -389,18 +389,18 @@ export function TermMatch() {
 
       {/* RESULTS */}
       {phase === 'results' && (
-        <div className="max-w-6xl mx-auto px-8 py-16">
-          <div className="grid grid-cols-[1fr_480px] gap-12 items-start">
+        <div className="max-w-6xl mx-auto px-8 py-10 h-[calc(100vh-52px)] flex flex-col">
+          <div className="grid grid-cols-[1fr_440px] gap-10 flex-1 min-h-0">
             {/* Left: score */}
-            <div>
-              <div className="text-8xl mb-4">{gradeEmoji[grade]}</div>
-              <div className="text-5xl font-black text-foreground mb-2">Grade {grade}</div>
-              <div className="text-default-400 text-lg mb-8">{totalMatched} of {totalPairs} pairs matched</div>
-              <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="flex flex-col justify-center">
+              <div className="text-7xl mb-3">{gradeEmoji[grade]}</div>
+              <div className="text-5xl font-black text-foreground mb-1">Grade {grade}</div>
+              <div className="text-default-400 text-base mb-8">{totalMatched} of {totalPairs} pairs matched</div>
+              <div className="grid grid-cols-3 gap-3 mb-8">
                 {[
-                  { val: xp,           lbl: 'Total XP',    color: 'text-red-500' },
-                  { val: totalMatched, lbl: 'Matched',      color: 'text-emerald-500' },
-                  { val: bestStreakRef.current, lbl: 'Best streak', color: 'text-amber-500' },
+                  { val: xp,                    lbl: 'Total XP',    color: 'text-red-500' },
+                  { val: totalMatched,           lbl: 'Matched',     color: 'text-emerald-500' },
+                  { val: bestStreakRef.current,  lbl: 'Best streak', color: 'text-amber-500' },
                 ].map(s => (
                   <div key={s.lbl} className="clay-card p-5 text-center">
                     <div className={cn('text-3xl font-black', s.color)}>{s.val}</div>
@@ -408,22 +408,32 @@ export function TermMatch() {
                   </div>
                 ))}
               </div>
-              <button
-                onClick={startGame}
-                className="clay-btn bg-red-600 hover:bg-red-700 text-white px-10 py-4 text-lg font-black rounded-2xl transition-all hover:-translate-y-0.5"
-              >
-                Play again →
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={startGame}
+                  className="clay-btn bg-red-600 hover:bg-red-700 text-white px-10 py-4 text-lg font-black rounded-2xl transition-all hover:-translate-y-0.5"
+                >
+                  Play again →
+                </button>
+                <button
+                  onClick={() => setPhase('instructions')}
+                  className="clay-card px-8 py-4 text-lg font-black rounded-2xl transition-all hover:-translate-y-0.5 text-default-400 hover:text-foreground"
+                >
+                  Back
+                </button>
+              </div>
             </div>
 
-            {/* Right: term glossary */}
-            <div className="clay-card p-6">
-              <h3 className="text-xs font-black text-default-400 uppercase tracking-widest mb-4">📖 Terms you learned today</h3>
-              <div className="flex flex-col divide-y divide-white/10">
+            {/* Right: term glossary — fixed height, internal scroll */}
+            <div className="clay-card p-5 flex flex-col min-h-0">
+              <h3 className="text-xs font-black text-default-400 uppercase tracking-widest mb-3 shrink-0">
+                📖 Terms you learned today
+              </h3>
+              <div className="flex-1 overflow-y-auto divide-y divide-white/10 pr-1">
                 {allPairs.map(p => (
-                  <div key={p.term} className="py-3 flex gap-4">
-                    <span className="font-black text-red-500 shrink-0 text-sm w-36">{p.term}</span>
-                    <span className="text-default-400 text-sm leading-relaxed">{p.def}</span>
+                  <div key={p.term} className="py-2.5 flex gap-4">
+                    <span className="font-black text-red-500 shrink-0 text-xs w-32 pt-0.5">{p.term}</span>
+                    <span className="text-default-400 text-xs leading-relaxed">{p.def}</span>
                   </div>
                 ))}
               </div>
