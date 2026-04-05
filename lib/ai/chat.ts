@@ -1,30 +1,15 @@
-// lib/ai/chat.ts
-export async function callClaude(message: string, sessionId?: string): Promise<string> {
+export async function callClaude(prompt: string): Promise<string> {
   try {
-    const response = await fetch('/api/chat', {
+    const response = await fetch('/api/ai-insight', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: message }],
-        sessionId: sessionId || 'mini-game-session'
-      }),
-    });
-    if (!response.ok) {
-      throw new Error('Claude call failed');
-    }
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error('Response body not available');
-    }
-    let result = '';
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      result += new TextDecoder().decode(value);
-    }
-    return result;
+      body: JSON.stringify({ prompt }),
+    })
+    if (!response.ok) throw new Error('Claude call failed')
+    const { text } = await response.json()
+    return text ?? ''
   } catch (error) {
-    console.error('Error calling Claude:', error);
-    return 'Sorry, I couldn\'t get advice right now.';
+    console.error('Error calling Claude:', error)
+    return ''
   }
 }
