@@ -8,6 +8,7 @@ import { ScenarioTimeline } from './scenario-timeline'
 import { LearningCard } from './learning-card'
 import { ActionPlan } from './action-plan'
 import { ProfileSnapshot } from './profile-snapshot'
+import { ViewDocument } from './view-document'
 import type { ComponentType } from 'react'
 
 export const COMPONENT_REGISTRY: Record<string, ComponentType<any>> = {
@@ -21,4 +22,5 @@ export const COMPONENT_REGISTRY: Record<string, ComponentType<any>> = {
   learning_card: LearningCard,
   action_plan: ActionPlan,
   profile_snapshot: ProfileSnapshot,
+  view_document: ViewDocument,
 }

@@ -1,4 +1,10 @@
-export type PersonaType = 'gig_worker' | 'student' | 'immigrant' | 'retiree' | 'single_parent' | 'other'
+export type PersonaType =
+  | 'gig_worker'
+  | 'student'
+  | 'immigrant'
+  | 'retiree'
+  | 'single_parent'
+  | 'other'
 export type LanguageType = 'en' | 'es'
 export type IncomeStreamType = 'steady' | 'irregular'
 export type MessageRole = 'user' | 'assistant'
@@ -9,7 +15,16 @@ export type EntrySource = 'manual' | 'plaid' | 'csv'
 export type ConfidenceLevel = 'low' | 'medium' | 'high'
 export type SuggestionType = 'insight' | 'simulation' | 'learning' | 'plan'
 export type SeverityLevel = 'low' | 'medium' | 'high'
-export type MiniGameType = 'drag_drop' | 'time_pressure' | 'allocation_puzzle' | 'tradeoff_slider' | 'insurance_card_game' | 'term_match' | 'fin_word' | 'wealth_farm' | 'credit_quest_game'
+export type MiniGameType =
+  | 'drag_drop'
+  | 'time_pressure'
+  | 'allocation_puzzle'
+  | 'tradeoff_slider'
+  | 'insurance_card_game'
+  | 'term_match'
+  | 'fin_word'
+  | 'wealth_farm'
+  | 'credit_quest_game'
 
 export interface DbUser {
   id: string
@@ -146,21 +161,104 @@ export interface DbSuggestion {
   created_at: string
 }
 
+export interface DbGameXp {
+  id: string
+  user_id: string
+  game_type: string
+  xp_earned: number
+  reason: string | null
+  created_at: string
+}
+
+export interface DbLeaderboardEntry {
+  display_name: string
+  total_xp: number
+  rank: number
+}
+
 // Supabase Database generic type (used by createClient<Database>)
 export interface Database {
   public: {
     Tables: {
-      users: { Row: DbUser; Insert: Omit<DbUser, 'id' | 'created_at'>; Update: Partial<DbUser>; Relationships: never[] }
-      profiles: { Row: DbProfile; Insert: Omit<DbProfile, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbProfile>; Relationships: never[] }
-      chat_sessions: { Row: DbChatSession; Insert: Omit<DbChatSession, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbChatSession>; Relationships: never[] }
-      messages: { Row: DbMessage; Insert: Omit<DbMessage, 'id' | 'created_at'>; Update: Partial<DbMessage>; Relationships: never[] }
-      saved_items: { Row: DbSavedItem; Insert: Omit<DbSavedItem, 'id' | 'created_at'>; Update: Partial<DbSavedItem>; Relationships: never[] }
-      documents: { Row: DbDocument; Insert: Omit<DbDocument, 'id' | 'created_at'>; Update: Partial<DbDocument>; Relationships: never[] }
-      action_plans: { Row: DbActionPlan; Insert: Omit<DbActionPlan, 'id' | 'created_at' | 'updated_at'>; Update: Partial<DbActionPlan>; Relationships: never[] }
-      budget_entries: { Row: DbBudgetEntry; Insert: Omit<DbBudgetEntry, 'id' | 'created_at'>; Update: Partial<DbBudgetEntry>; Relationships: never[] }
-      plaid_connections: { Row: { id: string; user_id: string; access_token: string; item_id: string; institution_name: string | null; last_synced: string | null }; Insert: any; Update: any; Relationships: never[] }
-      learning_progress: { Row: DbLearningProgress; Insert: Omit<DbLearningProgress, 'id' | 'updated_at'>; Update: Partial<DbLearningProgress>; Relationships: never[] }
-      suggestions: { Row: DbSuggestion; Insert: Omit<DbSuggestion, 'id' | 'created_at'>; Update: Partial<DbSuggestion>; Relationships: never[] }
+      users: {
+        Row: DbUser
+        Insert: Omit<DbUser, 'id' | 'created_at'>
+        Update: Partial<DbUser>
+        Relationships: never[]
+      }
+      profiles: {
+        Row: DbProfile
+        Insert: Omit<DbProfile, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<DbProfile>
+        Relationships: never[]
+      }
+      chat_sessions: {
+        Row: DbChatSession
+        Insert: Omit<DbChatSession, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<DbChatSession>
+        Relationships: never[]
+      }
+      messages: {
+        Row: DbMessage
+        Insert: Omit<DbMessage, 'id' | 'created_at'>
+        Update: Partial<DbMessage>
+        Relationships: never[]
+      }
+      saved_items: {
+        Row: DbSavedItem
+        Insert: Omit<DbSavedItem, 'id' | 'created_at'>
+        Update: Partial<DbSavedItem>
+        Relationships: never[]
+      }
+      documents: {
+        Row: DbDocument
+        Insert: Omit<DbDocument, 'id' | 'created_at'>
+        Update: Partial<DbDocument>
+        Relationships: never[]
+      }
+      action_plans: {
+        Row: DbActionPlan
+        Insert: Omit<DbActionPlan, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<DbActionPlan>
+        Relationships: never[]
+      }
+      budget_entries: {
+        Row: DbBudgetEntry
+        Insert: Omit<DbBudgetEntry, 'id' | 'created_at'>
+        Update: Partial<DbBudgetEntry>
+        Relationships: never[]
+      }
+      plaid_connections: {
+        Row: {
+          id: string
+          user_id: string
+          access_token: string
+          item_id: string
+          institution_name: string | null
+          last_synced: string | null
+        }
+        Insert: any
+        Update: any
+        Relationships: never[]
+      }
+      learning_progress: {
+        Row: DbLearningProgress
+        Insert: Omit<DbLearningProgress, 'id' | 'updated_at'>
+        Update: Partial<DbLearningProgress>
+        Relationships: never[]
+      }
+      suggestions: {
+        Row: DbSuggestion
+        Insert: Omit<DbSuggestion, 'id' | 'created_at'>
+        Update: Partial<DbSuggestion>
+        Relationships: never[]
+      }
+      game_xp: {
+        Row: DbGameXp
+        Insert: Omit<DbGameXp, 'id' | 'created_at'>
+        Update: Partial<DbGameXp>
+        Relationships: never[]
+      }
     }
     Views: {}
     Functions: {}

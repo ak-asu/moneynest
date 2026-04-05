@@ -1,13 +1,78 @@
 'use client'
 import { useState } from 'react'
-import { Button, Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalHeader, ModalHeading, ModalBody, ModalCloseTrigger } from '@heroui/react'
+import {
+  Button,
+  Chip,
+  Modal,
+  ModalBackdrop,
+  ModalContainer,
+  ModalDialog,
+  ModalHeader,
+  ModalHeading,
+  ModalBody,
+  ModalCloseTrigger,
+} from '@heroui/react'
 import { isToolUIPart, getToolName } from 'ai'
-import { Maximize2 } from 'lucide-react'
+import { Gamepad2, Maximize2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { COMPONENT_REGISTRY } from './component-registry'
 import { ReplayProvider } from './replay-context'
 import type { UIMessage } from 'ai'
+
+const GAME_TYPE_LABELS: Record<string, string> = {
+  allocation_puzzle: 'Allocation',
+  time_pressure: 'Time Challenge',
+  tradeoff_slider: 'Tradeoff',
+  drag_drop: 'Drag & Drop',
+  insurance_card_game: 'Insurance Card',
+  credit_quest_game: 'Credit Quest',
+  term_match: 'Term Match',
+  fin_word: 'FinWord',
+  wealth_farm: 'Wealth Farm',
+}
+
+interface GameCardProps {
+  output: Record<string, unknown>
+  onPlay: () => void
+  onSave: () => void
+  alreadySaved: boolean
+}
+
+function GameCard({ output, onPlay, onSave, alreadySaved }: GameCardProps) {
+  const title = typeof output.title === 'string' ? output.title : 'Mini Game'
+  const gameType = typeof output.game_type === 'string' ? output.game_type : ''
+  const instructions = typeof output.instructions === 'string' ? output.instructions : ''
+
+  return (
+    <div className="clay-card p-5 flex flex-col gap-3 rounded-2xl bg-default-50">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-bold text-sm leading-snug flex-1 min-w-0 truncate">{title}</h3>
+        {gameType && (
+          <Chip size="sm" color="default" variant="soft" className="shrink-0 text-xs">
+            {GAME_TYPE_LABELS[gameType] ?? gameType}
+          </Chip>
+        )}
+      </div>
+      {instructions && <p className="text-xs text-default-400">{instructions}</p>}
+      <div className="flex gap-2">
+        <Button size="sm" variant="primary" onPress={onPlay} className="clay-btn flex-1 gap-1">
+          <Gamepad2 size={13} aria-hidden="true" />
+          Play Game
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onPress={onSave}
+          isDisabled={alreadySaved}
+          className="clay-btn"
+        >
+          {alreadySaved ? 'Saved' : 'Save'}
+        </Button>
+      </div>
+    </div>
+  )
+}
 
 interface GenerativeMessageProps {
   message: UIMessage
@@ -28,7 +93,11 @@ function MarkdownText({ text }: { text: string }) {
   )
 }
 
-export function GenerativeMessage({ message, sessionId, isReplay = false }: GenerativeMessageProps) {
+export function GenerativeMessage({
+  message,
+  sessionId,
+  isReplay = false,
+}: GenerativeMessageProps) {
   const [savedTools, setSavedTools] = useState<Set<string>>(new Set())
   const [expanded, setExpanded] = useState<ExpandedWidget | null>(null)
 
@@ -41,7 +110,7 @@ export function GenerativeMessage({ message, sessionId, isReplay = false }: Gene
         body: JSON.stringify({ sessionId, componentName: toolName, componentProps: output, title }),
       })
       if (!res.ok) throw new Error(`Save failed: ${res.status}`)
-      setSavedTools(prev => new Set(prev).add(toolCallId))
+      setSavedTools((prev) => new Set(prev).add(toolCallId))
     } catch (err) {
       console.error('Failed to save component', err)
     }
@@ -113,6 +182,22 @@ export function GenerativeMessage({ message, sessionId, isReplay = false }: Gene
               'document_explainer',
             ].includes(toolName)
 
+            if (toolName === 'mini_game') {
+              return (
+                <GameCard
+                  key={part.toolCallId}
+                  output={output as Record<string, unknown>}
+                  onPlay={() =>
+                    setExpanded({ name: toolName, output: output as Record<string, unknown> })
+                  }
+                  onSave={() =>
+                    !alreadySaved && saveComponent(part.toolCallId, toolName, part.output)
+                  }
+                  alreadySaved={alreadySaved}
+                />
+              )
+            }
+
             return (
               <div key={part.toolCallId} className="relative group">
                 <ReplayProvider isReplay={isReplay}>
@@ -124,7 +209,9 @@ export function GenerativeMessage({ message, sessionId, isReplay = false }: Gene
                     variant="outline"
                     isIconOnly
                     aria-label="Expand"
-                    onPress={() => setExpanded({ name: toolName, output: output as Record<string, unknown> })}
+                    onPress={() =>
+                      setExpanded({ name: toolName, output: output as Record<string, unknown> })
+                    }
                     className="clay-btn h-7 w-7"
                   >
                     <Maximize2 size={13} aria-hidden="true" />
@@ -134,8 +221,7 @@ export function GenerativeMessage({ message, sessionId, isReplay = false }: Gene
                       size="sm"
                       variant="outline"
                       onPress={() =>
-                        !alreadySaved &&
-                        saveComponent(part.toolCallId, toolName, part.output)
+                        !alreadySaved && saveComponent(part.toolCallId, toolName, part.output)
                       }
                       className="clay-btn"
                       isDisabled={alreadySaved}
@@ -154,7 +240,9 @@ export function GenerativeMessage({ message, sessionId, isReplay = false }: Gene
 
       <Modal
         isOpen={expanded !== null}
-        onOpenChange={(open: boolean) => { if (!open) setExpanded(null) }}
+        onOpenChange={(open: boolean) => {
+          if (!open) setExpanded(null)
+        }}
       >
         <ModalBackdrop>
           <ModalContainer size="cover" scroll="inside">
@@ -163,7 +251,7 @@ export function GenerativeMessage({ message, sessionId, isReplay = false }: Gene
                 <ModalHeading>
                   {expanded?.output && 'title' in expanded.output
                     ? String(expanded.output.title)
-                    : expanded?.name.replace(/_/g, ' ') ?? ''}
+                    : (expanded?.name.replace(/_/g, ' ') ?? '')}
                 </ModalHeading>
                 <ModalCloseTrigger />
               </ModalHeader>

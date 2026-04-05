@@ -700,6 +700,21 @@ ${recentMessages || 'No history available.'}`
   }, [])
 
   useEffect(() => {
+    if (!gameOver) return
+    const xp = Math.max(10, Math.round((gameState.creditScore - 300) / 55) + 10)
+    fetch('/api/xp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        gameType: 'credit_quest_game',
+        xpEarned: xp,
+        reason: 'Completed Credit Quest',
+      }),
+    }).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameOver])
+
+  useEffect(() => {
     const el = chatLogRef.current
     if (!el) return
     el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })

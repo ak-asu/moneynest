@@ -109,6 +109,13 @@ export interface ProfileSnapshotProps {
   gaps: Array<{ label: string; prompt: string }>
 }
 
+export interface ViewDocumentProps {
+  document_id?: string
+  filename?: string
+  document_type?: 'insurance' | 'lease' | 'bill' | 'payslip' | 'other' | 'general'
+  message?: string
+}
+
 export type GenerativeComponentName =
   | 'DocumentExplainer'
   | 'CrisisSimulator'
@@ -120,3 +127,4 @@ export type GenerativeComponentName =
   | 'ActionPlan'
   | 'VoiceCard'
   | 'ProfileSnapshot'
+  | 'ViewDocument'

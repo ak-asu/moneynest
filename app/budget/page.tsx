@@ -26,15 +26,31 @@ function formatDate(iso: string) {
   )
 }
 
+function normalizeCategory(category: string) {
+  return category.trim().toLowerCase()
+}
+
 /** Returns per-category expense totals from the last 30 days of entries. */
 function computeMonthlyExpenses(entries: DbBudgetEntry[]): Record<string, number> {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const totals: Record<string, number> = {}
   for (const e of entries) {
     if (e.entry_type !== 'expense' || e.date < since) continue
-    totals[e.category] = (totals[e.category] ?? 0) + e.amount
+    const normalized = normalizeCategory(e.category)
+    if (!normalized) continue
+    totals[normalized] = (totals[normalized] ?? 0) + e.amount
   }
   return totals
+}
+
+function normalizeExpenseMap(expenses: Record<string, number>) {
+  const normalized: Record<string, number> = {}
+  for (const [key, value] of Object.entries(expenses)) {
+    const category = normalizeCategory(key)
+    if (!category) continue
+    normalized[category] = (normalized[category] ?? 0) + value
+  }
+  return normalized
 }
 
 /**
@@ -51,7 +67,7 @@ function hasMeaningfulDiff(
     const budget = budgetExpenses[cat] ?? 0
     const profile = profileExpenses[cat] ?? 0
     if (profile === 0 && budget > 50) return true
-    if (profile > 0 && Math.abs(budget - profile) / profile > 0.1) return true
+    if (profile > 0 && budget > profile && (budget - profile) / profile > 0.1) return true
   }
   return false
 }
@@ -127,7 +143,7 @@ export default function BudgetPage() {
 
       if (prof) {
         const budgetExpenses = computeMonthlyExpenses(data)
-        const profileExpenses = prof.expenses as Record<string, number>
+        const profileExpenses = normalizeExpenseMap(prof.expenses as Record<string, number>)
         if (hasMeaningfulDiff(budgetExpenses, profileExpenses)) {
           setSyncBanner(budgetExpenses)
         }
@@ -150,12 +166,41 @@ export default function BudgetPage() {
       const next = [entry, ...prev]
       if (profile) {
         const budgetExpenses = computeMonthlyExpenses(next)
-        const profileExpenses = profile.expenses as Record<string, number>
+        const profileExpenses = normalizeExpenseMap(profile.expenses as Record<string, number>)
         if (hasMeaningfulDiff(budgetExpenses, profileExpenses)) {
           setSyncBanner(budgetExpenses)
+        } else {
+          setSyncBanner(null)
         }
       }
       return next
+    })
+
+    if (entry.entry_type !== 'expense' || !profile) return
+
+    const profileExpenses = normalizeExpenseMap((profile.expenses as Record<string, number>) ?? {})
+    const normalizedCategory = normalizeCategory(entry.category)
+    if (!normalizedCategory) return
+    const mergedExpenses = {
+      ...profileExpenses,
+      [normalizedCategory]: (profileExpenses[normalizedCategory] ?? 0) + entry.amount,
+    }
+    const nextProfile = { ...profile, expenses: mergedExpenses }
+    setProfile(nextProfile)
+
+    void fetch('/api/profile/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        persona: profile.persona,
+        language: profile.language,
+        income_monthly: profile.income_monthly,
+        income_type: profile.income_type,
+        debts: profile.debts,
+        goals: profile.goals,
+        savings_balance: profile.savings_balance,
+        expenses: mergedExpenses,
+      }),
     })
   }, [profile])
 
