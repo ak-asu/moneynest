@@ -1,13 +1,11 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@heroui/react'
-import { Mic, ClipboardList, FileUp, Building2, LogOut } from 'lucide-react'
+import { Mic, ClipboardList, FileUp, Building2 } from 'lucide-react'
 import { FormPath } from './_components/form-path'
 import { VoicePath } from './_components/voice-path'
 import { DocPath } from './_components/doc-path'
 import { PlaidPath } from './_components/plaid-path'
-import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils/cn'
 
 const TABS = [
@@ -27,12 +25,6 @@ export default function OnboardingPage() {
     router.push('/dashboard')
   }
 
-  async function handleLogout() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-clay-bg">
       <div className="clay-card w-full max-w-xl">
@@ -44,15 +36,6 @@ export default function OnboardingPage() {
               Set up your financial profile to get started.
             </p>
           </div>
-          <Button
-            variant="danger"
-            size="sm"
-            className="flex items-center gap-1.5 text-xs shrink-0 mt-1"
-            onPress={handleLogout}
-          >
-            <LogOut size={13} />
-            Sign out
-          </Button>
         </div>
 
         {/* Tab bar */}
