@@ -9,7 +9,9 @@ interface DocPathProps {
 }
 
 export function DocPath({ onComplete }: DocPathProps) {
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'extracting' | 'done' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'extracting' | 'done' | 'error'>(
+    'idle'
+  )
   const [fileName, setFileName] = useState('')
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -37,15 +39,16 @@ export function DocPath({ onComplete }: DocPathProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-default-600">
-        Upload a pay stub, bank statement, or utility bill. Vela will extract your numbers automatically.
+      <p className="text-sm text-default-600 leading-relaxed">
+        Upload a pay stub, bank statement, or utility bill. Vela will extract your numbers
+        automatically.
       </p>
       <div
         {...getRootProps()}
-        className={`clay-card p-10 flex flex-col items-center gap-3 cursor-pointer border-2 border-dashed transition-colors ${isDragActive ? 'border-primary bg-primary-50' : 'border-default-200'}`}
+        className={`clay-card p-12 flex flex-col items-center gap-4 cursor-pointer border-2 border-dashed transition-colors ${isDragActive ? 'border-primary bg-primary-50' : 'border-default-200 hover:border-primary-300 hover:bg-default-50'}`}
       >
         <input {...getInputProps()} />
-        <Upload size={32} className="text-default-400" />
+        <Upload size={36} className="text-default-400" />
         <p className="text-sm text-default-500 text-center">
           {isDragActive ? 'Drop it here' : 'Drag & drop or click to upload'}
         </p>
@@ -63,7 +66,9 @@ export function DocPath({ onComplete }: DocPathProps) {
             <p className="text-sm font-semibold">{fileName}</p>
             <p className="text-xs text-default-500">Profile updated from document</p>
           </div>
-          <Button size="sm" variant="primary" className="clay-btn ml-auto" onPress={onComplete}>Continue</Button>
+          <Button size="sm" variant="primary" className="clay-btn ml-auto" onPress={onComplete}>
+            Continue
+          </Button>
         </div>
       )}
       {status === 'error' && (

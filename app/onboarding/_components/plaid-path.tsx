@@ -4,7 +4,9 @@ import { Button } from '@heroui/react'
 import { Building2 } from 'lucide-react'
 
 declare global {
-  interface Window { Plaid: { create: (config: object) => { open: () => void } } }
+  interface Window {
+    Plaid: { create: (config: object) => { open: () => void } }
+  }
 }
 
 interface PlaidPathProps {
@@ -19,21 +21,25 @@ export function PlaidPath({ onComplete }: PlaidPathProps) {
     const script = document.createElement('script')
     script.src = 'https://cdn.plaid.com/link/v2/stable/link-initialize.js'
     document.head.appendChild(script)
-    return () => { document.head.removeChild(script) }
+    return () => {
+      document.head.removeChild(script)
+    }
   }, [])
 
   async function openPlaid() {
     setStatus('loading')
     try {
-      const { linkToken } = await fetch('/api/plaid/link', { method: 'POST' }).then(r => r.json()) as { linkToken: string }
+      const { linkToken } = (await fetch('/api/plaid/link', { method: 'POST' }).then((r) =>
+        r.json()
+      )) as { linkToken: string }
       const handler = window.Plaid.create({
         token: linkToken,
         onSuccess: async (publicToken: string) => {
-          const result = await fetch('/api/plaid/sync', {
+          const result = (await fetch('/api/plaid/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ publicToken }),
-          }).then(r => r.json()) as { institutionName: string }
+          }).then((r) => r.json())) as { institutionName: string }
           setInstitutionName(result.institutionName)
           setStatus('done')
         },
@@ -57,12 +63,16 @@ export function PlaidPath({ onComplete }: PlaidPathProps) {
         </Button>
       )}
       {status === 'loading' && <p className="text-sm text-primary animate-pulse">Connecting...</p>}
-      {status === 'error' && <p className="text-danger text-sm">Connection failed. Please try again.</p>}
+      {status === 'error' && (
+        <p className="text-danger text-sm">Connection failed. Please try again.</p>
+      )}
       {status === 'done' && (
         <div className="clay-card p-4 text-center flex flex-col gap-3">
           <p className="font-semibold">✅ {institutionName} connected</p>
           <p className="text-xs text-default-500">Your last 30 days of transactions imported</p>
-          <Button variant="primary" className="clay-btn" onPress={onComplete}>Go to Dashboard</Button>
+          <Button variant="primary" className="clay-btn" onPress={onComplete}>
+            Go to Dashboard
+          </Button>
         </div>
       )}
     </div>
