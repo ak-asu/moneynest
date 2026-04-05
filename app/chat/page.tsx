@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { SessionSidebar } from '@/components/chat/session-sidebar'
@@ -63,7 +63,16 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function selectSession(id: string) {
+  // Pre-fill input from suggestion card chat_seed
+  useEffect(() => {
+    const seed = sessionStorage.getItem('vela_chat_seed')
+    if (seed) {
+      sessionStorage.removeItem('vela_chat_seed')
+      setInput(seed)
+    }
+  }, [])
+
+  const selectSession = useCallback(async (id: string) => {
     // Cancel any in-flight fetch
     selectAbortRef.current?.abort()
     selectAbortRef.current = new AbortController()
@@ -81,20 +90,25 @@ export default function ChatPage() {
       if (e instanceof Error && e.name === 'AbortError') return // cancelled — ignore
       console.error('Failed to load session messages', e)
     }
-  }
+  }, [setMessages])
 
-  function newSession() {
+  const newSession = useCallback(() => {
     setSessionId(null)
     setMessages([])
-  }
+  }, [setMessages])
 
-  function handleSubmit(e?: React.FormEvent) {
+  const handleSubmit = useCallback((e?: React.FormEvent) => {
     e?.preventDefault()
     const text = input.trim()
     if (!text || isLoading) return
     sendMessage({ text })
     setInput('')
-  }
+  }, [input, isLoading, sendMessage])
+
+  const handleVoiceTranscript = useCallback((text: string) => {
+    if (!text.trim() || isLoading) return
+    sendMessage({ text })
+  }, [isLoading, sendMessage])
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -104,7 +118,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="flex h-[calc(100vh)]">
+    <div className="flex h-screen">
       <SessionSidebar
         activeSessionId={sessionId}
         onSelectSession={selectSession}
@@ -112,7 +126,7 @@ export default function ChatPage() {
       />
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.length === 0 && (
+          {messages.length === 0 && !isLoading && (
             <div className="flex items-center justify-center h-full">
               <div className="text-center max-w-sm">
                 <p className="text-2xl font-bold text-primary mb-2">Hi, I&apos;m Vela</p>
@@ -120,7 +134,7 @@ export default function ChatPage() {
               </div>
             </div>
           )}
-          {messages.map((m: UIMessage) => (
+          {messages.map((m) => (
             <GenerativeMessage key={m.id} message={m} sessionId={sessionId || ''} />
           ))}
           <div ref={bottomRef} />
@@ -131,22 +145,21 @@ export default function ChatPage() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={onKeyDown}
+              aria-label="Message to Vela"
               placeholder="Ask Vela anything..."
               rows={2}
               className="flex-1 clay-input resize-none rounded-xl border border-divider p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <VoiceModeButton onTranscript={(text) => {
-              if (!text.trim() || isLoading) return
-              sendMessage({ text })
-            }} />
+            <VoiceModeButton onTranscript={handleVoiceTranscript} />
             <Button
               type="submit"
               variant="primary"
               isDisabled={isLoading}
               isIconOnly
+              aria-label="Send message"
               className="clay-btn h-10 w-10"
             >
-              <Send size={16} />
+              <Send size={16} aria-hidden="true" />
             </Button>
           </form>
         </div>

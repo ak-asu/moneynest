@@ -30,6 +30,7 @@
     expenses jsonb default '{}',
     debts jsonb default '[]',
     goals jsonb default '[]',
+    savings_balance numeric not null default 0,
     financial_health_score int default 0,
     onboarding_completed boolean default false,
     created_at timestamptz default now(),

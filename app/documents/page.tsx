@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { UploadZone } from './_components/upload-zone'
 import { DocumentCard } from './_components/document-card'
 import type { DbDocument } from '@/types/database'
@@ -7,12 +7,31 @@ import type { DbDocument } from '@/types/database'
 export default function DocumentsPage() {
   const [docs, setDocs] = useState<DbDocument[]>([])
 
-  async function loadDocs() {
-    const res = await fetch('/api/documents')
-    if (res.ok) setDocs(await res.json())
-  }
+  const fetchDocs = useCallback(async (): Promise<DbDocument[]> => {
+    try {
+      const res = await fetch('/api/documents')
+      if (!res.ok) return []
+      return await res.json() as DbDocument[]
+    } catch {
+      return []
+    }
+  }, [])
 
-  useEffect(() => { loadDocs() }, [])
+  const loadDocs = useCallback(async () => {
+    setDocs(await fetchDocs())
+  }, [fetchDocs])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchDocs().then((initialDocs) => {
+      if (!cancelled) {
+        setDocs(initialDocs)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [fetchDocs])
 
   return (
     <div className="p-6 max-w-2xl mx-auto flex flex-col gap-6">

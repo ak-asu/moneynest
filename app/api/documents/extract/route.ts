@@ -1,9 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { anthropicSdk } from '@/lib/ai/anthropic'
 import type { DocumentKind, DocumentExplanation } from '@/types/database'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! })
 
 export async function POST(req: Request) {
   let formData: FormData
@@ -49,7 +47,7 @@ export async function POST(req: Request) {
 }
 Keep plain language simple. Return only valid JSON.`
 
-  const response = await anthropic.messages.create({
+  const response = await anthropicSdk.messages.create({
     model: 'claude-sonnet-4-6',
     max_tokens: 2000,
     messages: [{

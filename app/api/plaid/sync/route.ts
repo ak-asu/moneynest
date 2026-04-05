@@ -35,7 +35,6 @@ export async function POST(req: Request) {
   const institutionName = instData.institution.name
 
   // Store connection
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase as any).from('plaid_connections').upsert({
     user_id: (dbUser as { id: string }).id,
     access_token,
@@ -55,7 +54,6 @@ export async function POST(req: Request) {
   }
 
   // Mark onboarding complete
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase as any).from('profiles').upsert(
     { user_id: (dbUser as { id: string }).id, onboarding_completed: true },
     { onConflict: 'user_id' }

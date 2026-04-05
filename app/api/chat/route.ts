@@ -7,8 +7,8 @@ import {
   type ModelMessage,
   type UIMessage,
 } from 'ai'
-import { anthropic } from '@ai-sdk/anthropic'
 import { createClient } from '@/lib/supabase/server'
+import { anthropicProvider } from '@/lib/ai/anthropic'
 import { buildSystemPrompt } from '@/lib/ai/context'
 import { agentTools } from '@/lib/ai/tools'
 import type { AgentContext } from '@/lib/ai/context'
@@ -34,7 +34,10 @@ export async function POST(request: Request) {
     }
     uiMessages = await validateUIMessages({ messages: body.messages })
     messages = await convertToModelMessages(
-      uiMessages.map(({ id: _id, ...message }) => message),
+      uiMessages.map(({ id, ...message }) => {
+        void id
+        return message
+      }),
       { tools: agentTools, ignoreIncompleteToolCalls: true },
     )
     sessionId = body.sessionId
@@ -119,7 +122,7 @@ export async function POST(request: Request) {
   }
 
   const result = streamText({
-    model: anthropic('claude-sonnet-4-6'),
+    model: anthropicProvider('claude-sonnet-4-6'),
     system: systemPrompt,
     messages,
     tools: agentTools,

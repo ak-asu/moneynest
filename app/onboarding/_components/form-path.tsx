@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@heroui/react'
@@ -71,11 +71,14 @@ export function FormPath({ onComplete }: FormPathProps) {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
-    watch,
+    control,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { language: 'en', income_type: 'steady' },
   })
+
+  const language = useWatch({ control, name: 'language' })
+  const incomeType = useWatch({ control, name: 'income_type' })
 
   async function onSubmit(data: FormData) {
     const { rent, food, transport, other_expenses, savings_balance, ...profile } = data
@@ -118,7 +121,7 @@ export function FormPath({ onComplete }: FormPathProps) {
               type="button"
               variant="outline"
               onPress={() => setValue('language', 'en')}
-              className={cn('clay-btn', watch('language') === 'en' ? 'border-primary' : '')}
+              className={cn('clay-btn', language === 'en' ? 'border-primary' : '')}
             >
               English
             </Button>
@@ -126,7 +129,7 @@ export function FormPath({ onComplete }: FormPathProps) {
               type="button"
               variant="outline"
               onPress={() => setValue('language', 'es')}
-              className={cn('clay-btn', watch('language') === 'es' ? 'border-primary' : '')}
+              className={cn('clay-btn', language === 'es' ? 'border-primary' : '')}
             >
               Español
             </Button>
@@ -159,7 +162,7 @@ export function FormPath({ onComplete }: FormPathProps) {
               onPress={() => setValue('income_type', 'steady')}
               className={cn(
                 'clay-btn flex-1',
-                watch('income_type') === 'steady' ? 'bg-primary-100' : '',
+                incomeType === 'steady' ? 'bg-primary-100' : '',
               )}
             >
               Same every month
@@ -170,7 +173,7 @@ export function FormPath({ onComplete }: FormPathProps) {
               onPress={() => setValue('income_type', 'irregular')}
               className={cn(
                 'clay-btn flex-1',
-                watch('income_type') === 'irregular' ? 'bg-primary-100' : '',
+                incomeType === 'irregular' ? 'bg-primary-100' : '',
               )}
             >
               It varies

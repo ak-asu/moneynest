@@ -29,6 +29,7 @@ export interface DbProfile {
   expenses: Record<string, number>
   debts: Array<{ type: string; amount: number; rate: number }>
   goals: Array<{ label: string; target_amount: number; target_date: string }>
+  savings_balance: number
   financial_health_score: number
   onboarding_completed: boolean
   created_at: string

@@ -22,11 +22,12 @@ export function AppNav() {
         <p className="font-extrabold text-lg tracking-tight text-primary">Vela</p>
         <p className="text-xs text-default-400">Financial Companion</p>
       </div>
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+      <nav aria-label="Main" className="flex-1 p-2 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
+            aria-current={pathname === href ? 'page' : undefined}
             className={cn(
               'flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors',
               pathname === href

@@ -40,8 +40,8 @@ export async function POST(req: Request) {
     profileData.onboarding_completed = Boolean(body.onboarding_completed)
   }
 
-  // Compute health score (requires savings balance — use 0 if not provided)
   const savingsBalance = typeof body.savings_balance === 'number' ? body.savings_balance : Number(body.savings_balance) || 0
+  profileData.savings_balance = savingsBalance
   if (
     profileData.income_monthly != null &&
     profileData.expenses != null &&
@@ -53,7 +53,6 @@ export async function POST(req: Request) {
 
   const { data, error } = await (supabase
     .from('profiles')
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .upsert(profileData as any, { onConflict: 'user_id' })
     .select()
     .single() as unknown as Promise<{ data: DbProfile | null; error: { message: string } | null }>)
