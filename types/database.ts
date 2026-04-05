@@ -9,7 +9,7 @@ export type EntrySource = 'manual' | 'plaid' | 'csv'
 export type ConfidenceLevel = 'low' | 'medium' | 'high'
 export type SuggestionType = 'insight' | 'simulation' | 'learning' | 'plan'
 export type SeverityLevel = 'low' | 'medium' | 'high'
-export type MiniGameType = 'drag_drop' | 'time_pressure' | 'allocation_puzzle' | 'tradeoff_slider'
+export type MiniGameType = 'drag_drop' | 'time_pressure' | 'allocation_puzzle' | 'tradeoff_slider' | 'term_match' | 'fin_word' | 'wealth_farm'
 
 export interface DbUser {
   id: string

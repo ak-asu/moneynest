@@ -3,22 +3,30 @@ import { useState, useEffect } from 'react'
 import { Button, ProgressBar } from '@heroui/react'
 import type { MiniGameProps } from '@/types/components'
 import { useSFX } from '@/components/audio/use-sfx'
+import { TermMatch } from '@/components/games/TermMatch'
+import { FinWord } from '@/components/games/FinWord'
+import { WealthFarm } from '@/components/games/WealthFarm'
 
 // Renders the appropriate game engine based on game_type
 export function MiniGame({ game_type, title, instructions, income, categories, win_condition, time_limit_seconds }: MiniGameProps) {
+  if (game_type === 'term_match') return <TermMatch />
+  if (game_type === 'fin_word') return <FinWord />
+  if (game_type === 'wealth_farm') return <WealthFarm />
   if (game_type === 'allocation_puzzle') return (
-    <AllocationPuzzle title={title} instructions={instructions} income={income} categories={categories} win_condition={win_condition} />
+    <AllocationPuzzle title={title} instructions={instructions!} income={income!} categories={categories!} win_condition={win_condition!} />
   )
   if (game_type === 'time_pressure') return (
-    <TimePressureGame title={title} instructions={instructions} income={income} categories={categories} win_condition={win_condition} time_limit_seconds={time_limit_seconds || 60} />
+    <TimePressureGame title={title} instructions={instructions!} income={income!} categories={categories!} win_condition={win_condition!} time_limit_seconds={time_limit_seconds || 60} />
   )
   // Default: drag_drop / tradeoff_slider fallback to allocation_puzzle layout
   return (
-    <AllocationPuzzle title={title} instructions={instructions} income={income} categories={categories} win_condition={win_condition} />
+    <AllocationPuzzle title={title} instructions={instructions!} income={income!} categories={categories!} win_condition={win_condition!} />
   )
 }
 
-function AllocationPuzzle({ title, instructions, income, categories, win_condition }: Omit<MiniGameProps, 'game_type' | 'time_limit_seconds'>) {
+type BudgetGameProps = { title: string; instructions: string; income: number; categories: NonNullable<MiniGameProps['categories']>; win_condition: string }
+
+function AllocationPuzzle({ title, instructions, income, categories, win_condition }: BudgetGameProps) {
   const { play, SFX } = useSFX()
   const [allocations, setAllocations] = useState<Record<string, number>>(
     Object.fromEntries(categories.map(c => [c.name, c.suggested]))
@@ -73,7 +81,7 @@ function AllocationPuzzle({ title, instructions, income, categories, win_conditi
   )
 }
 
-function TimePressureGame({ title, instructions, income, categories, win_condition, time_limit_seconds }: Omit<MiniGameProps, 'game_type'> & { time_limit_seconds: number }) {
+function TimePressureGame({ title, instructions, income, categories, win_condition, time_limit_seconds }: BudgetGameProps & { time_limit_seconds: number }) {
   const { play, SFX } = useSFX()
   const [timeLeft, setTimeLeft] = useState(time_limit_seconds)
   const [started, setStarted] = useState(false)

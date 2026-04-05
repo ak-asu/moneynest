@@ -38,10 +38,10 @@ export interface CrisisSimulatorProps {
 export interface MiniGameProps {
   game_type: MiniGameType
   title: string
-  instructions: string
-  income: number
-  categories: Array<{ name: string; suggested: number; min: number; max: number }>
-  win_condition: string
+  instructions?: string
+  income?: number
+  categories?: Array<{ name: string; suggested: number; min: number; max: number }>
+  win_condition?: string
   time_limit_seconds?: number
 }
 
