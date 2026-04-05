@@ -1,3 +1,4 @@
+'use client'
 // components/health-score-ring.tsx
 import { useI18n } from '@/components/i18n-provider'
 
