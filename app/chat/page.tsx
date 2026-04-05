@@ -5,6 +5,7 @@ import { DefaultChatTransport } from 'ai'
 import { SessionSidebar } from '@/components/chat/session-sidebar'
 import { GenerativeMessage } from '@/components/generative/generative-message'
 import { VoiceModeButton } from '@/components/chat/voice-mode-button'
+import { AppNav } from '@/components/app-nav'
 import { Button } from '@heroui/react'
 import { Send } from 'lucide-react'
 import type { UIMessage } from 'ai'
@@ -119,6 +120,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen">
+      <AppNav />
       <SessionSidebar
         activeSessionId={sessionId}
         onSelectSession={selectSession}

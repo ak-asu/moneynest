@@ -1,7 +1,8 @@
 'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, MessageCircle, BarChart2, User, FileText, CheckSquare, BookOpen } from 'lucide-react'
+import { LayoutDashboard, MessageCircle, BarChart2, User, FileText, CheckSquare, BookOpen, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 const NAV_ITEMS = [
@@ -14,13 +15,51 @@ const NAV_ITEMS = [
   { href: '/library', label: 'Library', icon: BookOpen },
 ] as const
 
+const NAV_COLLAPSED_KEY = 'vela_app_nav_collapsed'
+
 export function AppNav() {
   const pathname = usePathname()
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(NAV_COLLAPSED_KEY)
+      if (stored === '1') setCollapsed(true)
+    } catch {
+      // Ignore storage errors; nav still works with default state.
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(NAV_COLLAPSED_KEY, collapsed ? '1' : '0')
+    } catch {
+      // Ignore storage errors; this only affects preference persistence.
+    }
+  }, [collapsed])
+
   return (
-    <aside className="w-56 border-r border-divider flex flex-col h-full bg-background/80 backdrop-blur-sm shrink-0">
-      <div className="p-4 border-b border-divider">
-        <p className="font-extrabold text-lg tracking-tight text-primary">Vela</p>
-        <p className="text-xs text-default-400">Financial Companion</p>
+    <aside
+      className={cn(
+        'border-r border-divider flex flex-col h-full bg-background/80 backdrop-blur-sm shrink-0 transition-[width] duration-200 ease-out',
+        collapsed ? 'w-16' : 'w-56',
+      )}
+    >
+      <div className="p-3 border-b border-divider">
+        <div className={cn('flex items-start', collapsed ? 'flex-col items-center gap-2' : 'justify-between gap-2')}>
+          <div className={cn('min-w-0', collapsed && 'text-center')}>
+            <p className="font-extrabold text-lg tracking-tight text-primary">{collapsed ? 'V' : 'Vela'}</p>
+            {!collapsed && <p className="text-xs text-default-400">Financial Companion</p>}
+          </div>
+          <button
+            type="button"
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            onClick={() => setCollapsed(prev => !prev)}
+            className="h-8 w-8 rounded-lg border border-divider text-default-600 hover:bg-default-100 transition-colors grid place-items-center"
+          >
+            {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+          </button>
+        </div>
       </div>
       <nav aria-label="Main" className="flex-1 p-2 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
@@ -28,15 +67,17 @@ export function AppNav() {
             key={href}
             href={href}
             aria-current={pathname === href ? 'page' : undefined}
+            title={collapsed ? label : undefined}
             className={cn(
-              'flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors',
+              'flex items-center rounded-xl text-sm transition-colors',
+              collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2',
               pathname === href
                 ? 'bg-primary-100 text-primary font-medium'
                 : 'text-default-600 hover:bg-default-100',
             )}
           >
             <Icon size={16} className="shrink-0" />
-            {label}
+            {!collapsed && label}
           </Link>
         ))}
       </nav>

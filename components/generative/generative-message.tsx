@@ -2,12 +2,22 @@
 import { useState } from 'react'
 import { Button } from '@heroui/react'
 import { isToolUIPart, getToolName } from 'ai'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import { COMPONENT_REGISTRY } from './component-registry'
 import type { UIMessage } from 'ai'
 
 interface GenerativeMessageProps {
   message: UIMessage
   sessionId: string
+}
+
+function MarkdownText({ text }: { text: string }) {
+  return (
+    <div className="text-sm leading-relaxed break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:my-2 [&_h1]:text-xl [&_h1]:font-semibold [&_h1]:mt-3 [&_h1]:mb-2 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:mt-3 [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:my-2 [&_li]:my-1 [&_a]:text-primary [&_a]:underline [&_blockquote]:border-l-4 [&_blockquote]:border-default-300 [&_blockquote]:pl-3 [&_blockquote]:italic [&_hr]:my-3 [&_hr]:border-divider [&_code]:rounded [&_code]:bg-default-100/80 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-default-100/90 [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+    </div>
+  )
 }
 
 export function GenerativeMessage({ message, sessionId }: GenerativeMessageProps) {
@@ -35,8 +45,8 @@ export function GenerativeMessage({ message, sessionId }: GenerativeMessageProps
       .join('')
     return (
       <div className="flex justify-end">
-        <div className="clay-card bg-primary-50 border-primary-100 px-4 py-3 max-w-xs">
-          <p className="text-sm">{userText}</p>
+        <div className="clay-card bg-primary-50 border-primary-100 px-4 py-3 max-w-lg">
+          <MarkdownText text={userText} />
         </div>
       </div>
     )
@@ -49,7 +59,7 @@ export function GenerativeMessage({ message, sessionId }: GenerativeMessageProps
         if (part.type === 'text') {
           return (
             <div key={idx} className="clay-card px-4 py-3">
-              <p className="text-sm leading-relaxed">{part.text}</p>
+              <MarkdownText text={part.text} />
             </div>
           )
         }
