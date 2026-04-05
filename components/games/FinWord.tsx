@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { Space_Grotesk, Space_Mono } from 'next/font/google'
 import { cn } from '@/lib/utils/cn'
-import { useVoice } from '@/lib/hooks/useVoice'
+import { useTTS } from '@/components/audio/use-tts'
 import styles from './finword.module.css'
 
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
@@ -67,7 +67,7 @@ function scoreGuess(guess: string, word: string): TileResult[] {
 }
 
 export function FinWord() {
-  const { speak } = useVoice()
+  const { speak } = useTTS()
 
   const [wordOrder] = useState<number[]>(() => {
     const arr = [...Array(WORDS.length).keys()]

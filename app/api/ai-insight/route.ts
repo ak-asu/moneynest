@@ -1,15 +1,13 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { generateText } from 'ai'
+import { anthropicProvider } from '@/lib/ai/anthropic'
 
 export async function POST(req: Request) {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) return Response.json({ error: 'GEMINI_API_KEY not set' }, { status: 500 })
-
   try {
     const { prompt } = await req.json()
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
+    const { text } = await generateText({
+      model: anthropicProvider('claude-haiku-4-5-20251001'),
+      prompt,
+    })
     return Response.json({ text })
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error'

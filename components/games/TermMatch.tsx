@@ -2,7 +2,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Nunito } from 'next/font/google'
 import { cn } from '@/lib/utils/cn'
-import { useVoice } from '@/lib/hooks/useVoice'
+import { useTTS } from '@/components/audio/use-tts'
 import styles from './termmatch.module.css'
 
 const nunito = Nunito({ subsets: ['latin'], weight: ['400', '600', '700', '800', '900'] })
@@ -56,7 +56,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function TermMatch() {
-  const { speak } = useVoice()
+  const { speak } = useTTS()
 
   const [phase, setPhase]             = useState<Phase>('instructions')
   const [round, setRound]             = useState(0)
