@@ -5,6 +5,7 @@ import { DefaultChatTransport } from 'ai'
 import { SessionSidebar } from '@/components/chat/session-sidebar'
 import { GenerativeMessage } from '@/components/generative/generative-message'
 import { VoiceModeButton } from '@/components/chat/voice-mode-button'
+import { AiLoadingIndicator } from '@/components/chat/ai-loading-indicator'
 import { AppNav } from '@/components/app-nav'
 import { Button } from '@heroui/react'
 import { Send } from 'lucide-react'
@@ -58,10 +59,11 @@ export default function ChatPage() {
 
   function handleInteractionEvent(event: InteractionEvent) {
     const formatted = formatSystemEvent(event)
+    const payload = event.prompt ? `${formatted}\n${event.prompt}` : formatted
     if (event.autoSend) {
-      sendMessage({ text: formatted })
+      sendMessage({ text: payload })
     } else {
-      setPendingSystemEvents((prev) => [...prev, formatted])
+      setPendingSystemEvents((prev) => [...prev, payload])
     }
   }
 
@@ -189,6 +191,7 @@ export default function ChatPage() {
                 isReplay={replayIds.has(m.id)}
               />
             ))}
+            {isLoading && <AiLoadingIndicator className="max-w-lg" />}
             <div ref={bottomRef} />
           </div>
           <div className="border-t border-divider p-4">

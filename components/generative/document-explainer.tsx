@@ -2,6 +2,7 @@
 import { Button, Chip } from '@heroui/react'
 import { Volume2 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { useInteractionEvent } from '@/lib/ai/interaction-events'
 import type { DocumentExplainerProps } from '@/types/components'
 
 const RISK_STYLE: Record<string, string> = {
@@ -23,6 +24,18 @@ export function DocumentExplainer({
   voice_enabled,
   document_type,
 }: DocumentExplainerProps) {
+  const dispatchEvent = useInteractionEvent()
+
+  function handleWhatIfClick(whatIf: { label: string; simulation_id: string }) {
+    dispatchEvent({
+      componentName: 'document_explainer',
+      status: 'completed',
+      summary: `selected what-if: "${whatIf.label}"`,
+      prompt: `Let's explore this scenario from my ${document_type} document: ${whatIf.label}. Use simulation id ${whatIf.simulation_id} if relevant and walk me through likely impact and next steps.`,
+      autoSend: true,
+    })
+  }
+
   return (
     <div className="clay-card p-5 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-2">
@@ -63,7 +76,13 @@ export function DocumentExplainer({
           <p className="text-xs font-semibold text-default-500 uppercase">What If...</p>
           <div className="flex flex-wrap gap-2">
             {what_ifs.map((w, i) => (
-              <Button key={i} size="sm" variant="outline" className="clay-btn text-xs">
+              <Button
+                key={i}
+                size="sm"
+                variant="outline"
+                className="clay-btn text-xs"
+                onPress={() => handleWhatIfClick(w)}
+              >
                 {w.label}
               </Button>
             ))}

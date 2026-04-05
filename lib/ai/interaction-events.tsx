@@ -6,6 +6,7 @@ export type InteractionEvent = {
   status: 'completed' | 'skipped' | 'abandoned'
   summary: string
   autoSend?: boolean
+  prompt?: string
 }
 
 type Dispatch = (event: InteractionEvent) => void

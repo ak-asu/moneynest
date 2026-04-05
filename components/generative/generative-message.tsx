@@ -16,6 +16,7 @@ import { isToolUIPart, getToolName } from 'ai'
 import { Gamepad2, Maximize2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { AiLoadingIndicator } from '@/components/chat/ai-loading-indicator'
 import { COMPONENT_REGISTRY } from './component-registry'
 import { ReplayProvider } from './replay-context'
 import type { UIMessage } from 'ai'
@@ -163,10 +164,10 @@ export function GenerativeMessage({
             // Not yet complete — show skeleton
             if (part.state !== 'output-available') {
               return (
-                <div key={part.toolCallId} className="clay-card p-4 animate-pulse">
-                  <div className="h-4 bg-default-200 rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-default-200 rounded w-1/2" />
-                </div>
+                <AiLoadingIndicator
+                  key={part.toolCallId}
+                  label="Preparing interactive component..."
+                />
               )
             }
 
@@ -184,7 +185,14 @@ export function GenerativeMessage({
               'action_plan',
               'document_explainer',
             ].includes(toolName)
-            const expandable = !['voice_card', 'profile_snapshot', 'action_plan'].includes(toolName)
+            const expandable = ![
+              'voice_card',
+              'profile_snapshot',
+              'action_plan',
+              'crisis_simulator',
+              'budget_snapshot',
+              'insight_card',
+            ].includes(toolName)
 
             if (toolName === 'mini_game') {
               return (
