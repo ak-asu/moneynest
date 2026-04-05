@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { anthropicSdk } from '@/lib/ai/anthropic'
+import { addDocumentMemory } from '@/lib/supermemory/client'
 import type { DocumentKind, DocumentExplanation } from '@/types/database'
 
 export const maxDuration = 120
@@ -91,6 +92,23 @@ Keep plain language simple. Return only valid JSON.`
     document_type: explanation.document_type,
     ai_explanation: explanation,
   }).select().single()
+
+  // Store document insights in Supermemory for persistent cross-session recall
+  if (doc && explanation) {
+    const memoryContent = [
+      `Document: "${file.name}" (${explanation.document_type})`,
+      explanation.plain_summaries[0] ? `Summary: ${explanation.plain_summaries[0]}` : '',
+      explanation.risk_flags.length > 0 ? `Risk flags: ${explanation.risk_flags.join('; ')}` : '',
+      explanation.clauses.filter(c => c.risk === 'high').length > 0
+        ? `High-risk clauses: ${explanation.clauses.filter(c => c.risk === 'high').map(c => c.label).join(', ')}`
+        : '',
+    ].filter(Boolean).join('. ')
+
+    addDocumentMemory(user.id, doc.id, memoryContent, {
+      documentType: explanation.document_type,
+      filename: file.name,
+    }).catch(() => {}) // fire-and-forget — don't block response
+  }
 
   // If onboarding: update profile with extracted numbers
   if (isOnboarding && extractedNumbers) {

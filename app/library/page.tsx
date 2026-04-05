@@ -207,7 +207,7 @@ export default function LibraryPage() {
     <div className="flex h-screen overflow-hidden">
       <AppNav />
       <main aria-label="Saved library" className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6 max-w-5xl">
+        <div className="p-6 space-y-6 max-w-6xl">
           {/* Header + search */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-1">
