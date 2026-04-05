@@ -4,8 +4,10 @@ import Image from 'next/image'
 import { Button } from '@heroui/react'
 import type { LearningCardProps } from '@/types/components'
 import { useMusic } from '@/components/audio/use-music'
+import { useIsReplay } from '@/components/generative/replay-context'
 
 export function LearningCard({ title, explanation, key_takeaway, image_prompt, image_url, concept, language }: LearningCardProps) {
+  const isReplay = useIsReplay()
   useMusic('curious')
   const [imgSrc, setImgSrc] = useState(image_url)
   const [songPlaying, setSongPlaying] = useState(false)
@@ -14,17 +16,16 @@ export function LearningCard({ title, explanation, key_takeaway, image_prompt, i
   const songAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
-    if (!image_url && image_prompt) {
-      fetch('/api/gemini/image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: image_prompt, concept }),
-      })
-        .then(r => { if (r.ok) return r.json() })
-        .then(d => { if (d?.url) setImgSrc(d.url) })
-        .catch(() => {})
-    }
-  }, [image_prompt, image_url, concept])
+    if (isReplay || image_url || !image_prompt) return
+    fetch('/api/gemini/image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: image_prompt, concept }),
+    })
+      .then(r => { if (r.ok) return r.json() })
+      .then(d => { if (d?.url) setImgSrc(d.url) })
+      .catch(() => {})
+  }, [image_prompt, image_url, concept, isReplay])
 
   useEffect(() => {
     return () => {

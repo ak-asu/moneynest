@@ -53,7 +53,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ mood }),
         signal,
       })
-      if (!res.ok || signal.aborted) return
+      if (!res.ok || res.status === 204 || signal.aborted) return
       const blob = await res.blob()
       if (signal.aborted) return
       const url = URL.createObjectURL(blob)

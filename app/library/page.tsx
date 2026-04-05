@@ -121,27 +121,28 @@ export default function LibraryPage() {
         isOpen={dialogItem !== null}
         onOpenChange={(open: boolean) => { if (!open) setDialogItem(null) }}
       >
-        <ModalBackdrop />
-        <ModalContainer size="cover" scroll="inside">
-          <ModalDialog>
-            <ModalHeader>
-              <ModalHeading>{dialogItem?.title ?? ''}</ModalHeading>
-              {dialogItem && (
-                <p className="text-xs text-default-400 mt-0.5">
-                  {TYPE_LABELS[dialogItem.type]} · Saved {formatDate(dialogItem.created_at)}
-                </p>
-              )}
-              <ModalCloseTrigger />
-            </ModalHeader>
-            <ModalBody>
-              {DialogComponent && dialogItem ? (
-                <DialogComponent {...(dialogItem.component_props as Record<string, unknown>)} />
-              ) : (
-                <p className="text-sm text-default-400">This component cannot be previewed.</p>
-              )}
-            </ModalBody>
-          </ModalDialog>
-        </ModalContainer>
+        <ModalBackdrop>
+          <ModalContainer size="cover" scroll="inside">
+            <ModalDialog>
+              <ModalHeader>
+                <ModalHeading>{dialogItem?.title ?? ''}</ModalHeading>
+                {dialogItem && (
+                  <p className="text-xs text-default-400 mt-0.5">
+                    {TYPE_LABELS[dialogItem.type]} · Saved {formatDate(dialogItem.created_at)}
+                  </p>
+                )}
+                <ModalCloseTrigger />
+              </ModalHeader>
+              <ModalBody>
+                {DialogComponent && dialogItem ? (
+                  <DialogComponent {...(dialogItem.component_props as Record<string, unknown>)} />
+                ) : (
+                  <p className="text-sm text-default-400">This component cannot be previewed.</p>
+                )}
+              </ModalBody>
+            </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
     </div>
   )

@@ -5,10 +5,12 @@ import { AlertTriangle } from 'lucide-react'
 import type { CrisisSimulatorProps } from '@/types/components'
 import { useSFX } from '@/components/audio/use-sfx'
 import { useMusic } from '@/components/audio/use-music'
+import { useIsReplay } from '@/components/generative/replay-context'
 
 export function CrisisSimulator({
   scenario_label, duration_days, income_monthly, fixed_expenses, savings, decision_points
 }: CrisisSimulatorProps) {
+  const isReplay = useIsReplay()
   useMusic('tense')
   const { play, SFX } = useSFX()
   const [stepIndex, setStepIndex] = useState(0)
@@ -17,7 +19,7 @@ export function CrisisSimulator({
   const [log, setLog] = useState<string[]>([])
   const [complete, setComplete] = useState(false)
 
-  useEffect(() => { play(SFX.CRISIS_START) }, [play, SFX.CRISIS_START])
+  useEffect(() => { if (!isReplay) play(SFX.CRISIS_START) }, [play, SFX.CRISIS_START, isReplay])
 
   const dailyExpenses = Object.values(fixed_expenses).reduce((a, b) => a + b, 0) / 30
   const currentDecision = decision_points[stepIndex]

@@ -103,7 +103,8 @@ export interface DbActionPlan {
     label: string
     amount?: number
     deadline?: string
-    completed: boolean
+    detail?: string
+    completed?: boolean
   }>
   completed_steps: number
   profile_snapshot_hash: string | null

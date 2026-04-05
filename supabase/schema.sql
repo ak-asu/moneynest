@@ -176,3 +176,6 @@
   create policy "files_own" on storage.objects for all using (
     bucket_id = 'vela-files' and auth.uid()::text = (storage.foldername(name))[1]
   );
+
+
+   ALTER TABLE profiles ADD COLUMN IF NOT EXISTS savings_balance numeric NOT NULL DEFAULT 0;
