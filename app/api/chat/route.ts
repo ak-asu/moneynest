@@ -33,8 +33,16 @@ export async function POST(request: Request) {
       return new Response('messages must be an array', { status: 400 })
     }
     uiMessages = await validateUIMessages({ messages: body.messages })
+    // Strip tool parts from history before converting to model messages.
+    // Historical messages loaded from the DB have tool result parts with random IDs
+    // (no matching tool_use block), which Anthropic rejects. Text content is enough
+    // for the LLM to understand the conversation context.
+    const strippedMessages = uiMessages.map(msg => ({
+      ...msg,
+      parts: msg.parts.filter((p: { type: string }) => p.type === 'text' || p.type === 'file'),
+    }))
     messages = await convertToModelMessages(
-      uiMessages.map(({ id, ...message }) => {
+      strippedMessages.map(({ id, ...message }) => {
         void id
         return message
       }),

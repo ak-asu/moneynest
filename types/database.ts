@@ -9,7 +9,7 @@ export type EntrySource = 'manual' | 'plaid' | 'csv'
 export type ConfidenceLevel = 'low' | 'medium' | 'high'
 export type SuggestionType = 'insight' | 'simulation' | 'learning' | 'plan'
 export type SeverityLevel = 'low' | 'medium' | 'high'
-export type MiniGameType = 'drag_drop' | 'time_pressure' | 'allocation_puzzle' | 'tradeoff_slider' | 'term_match' | 'fin_word' | 'wealth_farm'
+export type MiniGameType = 'drag_drop' | 'time_pressure' | 'allocation_puzzle' | 'tradeoff_slider' | 'insurance_card_game' | 'term_match' | 'fin_word' | 'wealth_farm'
 
 export interface DbUser {
   id: string
@@ -103,7 +103,8 @@ export interface DbActionPlan {
     label: string
     amount?: number
     deadline?: string
-    completed: boolean
+    detail?: string
+    completed?: boolean
   }>
   completed_steps: number
   profile_snapshot_hash: string | null

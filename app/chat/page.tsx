@@ -12,6 +12,7 @@ import { Send } from 'lucide-react'
 export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [sessionListKey, setSessionListKey] = useState(0)
+  const [replayIds, setReplayIds] = useState<Set<string>>(new Set())
   const [input, setInput] = useState('')
   const sessionIdRef = useRef<string | null>(null)
   const sessionCreatingRef = useRef(false)
@@ -60,6 +61,7 @@ export default function ChatPage() {
       })
       if (!res.ok) return
       const msgs = await res.json()
+      setReplayIds(new Set(msgs.map((m: { id: string }) => m.id)))
       setMessages(msgs)
     } catch (e) {
       if (e instanceof Error && e.name === 'AbortError') return // cancelled — ignore
@@ -72,6 +74,7 @@ export default function ChatPage() {
     setSessionId(null)
     sessionIdRef.current = null
     setMessages([])
+    setReplayIds(new Set())
   }, [setMessages])
 
   const deleteSession = useCallback(async (id: string) => {
@@ -151,7 +154,7 @@ export default function ChatPage() {
             </div>
           )}
           {messages.map((m) => (
-            <GenerativeMessage key={m.id} message={m} sessionId={sessionId || ''} />
+            <GenerativeMessage key={m.id} message={m} sessionId={sessionId || ''} isReplay={replayIds.has(m.id)} />
           ))}
           <div ref={bottomRef} />
         </div>

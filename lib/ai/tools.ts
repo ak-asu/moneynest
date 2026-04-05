@@ -78,7 +78,7 @@ export const agentTools = {
     description:
       "Generate an interactive financial mini-game using the user's actual income and expense numbers.",
     inputSchema: z.object({
-      game_type: z.enum(['drag_drop', 'time_pressure', 'allocation_puzzle', 'tradeoff_slider', 'term_match', 'fin_word', 'wealth_farm']),
+      game_type: z.enum(['drag_drop', 'time_pressure', 'allocation_puzzle', 'tradeoff_slider', 'insurance_card_game', 'term_match', 'fin_word', 'wealth_farm']),
       title: z.string(),
       instructions: z.string().optional(),
       income: z.number().optional(),

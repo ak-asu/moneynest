@@ -6,11 +6,13 @@ import { Maximize2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { COMPONENT_REGISTRY } from './component-registry'
+import { ReplayProvider } from './replay-context'
 import type { UIMessage } from 'ai'
 
 interface GenerativeMessageProps {
   message: UIMessage
   sessionId: string
+  isReplay?: boolean
 }
 
 interface ExpandedWidget {
@@ -26,7 +28,7 @@ function MarkdownText({ text }: { text: string }) {
   )
 }
 
-export function GenerativeMessage({ message, sessionId }: GenerativeMessageProps) {
+export function GenerativeMessage({ message, sessionId, isReplay = false }: GenerativeMessageProps) {
   const [savedTools, setSavedTools] = useState<Set<string>>(new Set())
   const [expanded, setExpanded] = useState<ExpandedWidget | null>(null)
 
@@ -113,7 +115,9 @@ export function GenerativeMessage({ message, sessionId }: GenerativeMessageProps
 
             return (
               <div key={part.toolCallId} className="relative group">
-                <Component {...(output as Record<string, unknown>)} />
+                <ReplayProvider isReplay={isReplay}>
+                  <Component {...(output as Record<string, unknown>)} />
+                </ReplayProvider>
                 <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Button
                     size="sm"
@@ -152,24 +156,27 @@ export function GenerativeMessage({ message, sessionId }: GenerativeMessageProps
         isOpen={expanded !== null}
         onOpenChange={(open: boolean) => { if (!open) setExpanded(null) }}
       >
-        <ModalBackdrop />
-        <ModalContainer size="cover" scroll="inside">
-          <ModalDialog>
-            <ModalHeader>
-              <ModalHeading>
-                {expanded?.output && 'title' in expanded.output
-                  ? String(expanded.output.title)
-                  : expanded?.name.replace(/_/g, ' ') ?? ''}
-              </ModalHeading>
-              <ModalCloseTrigger />
-            </ModalHeader>
-            <ModalBody>
-              {ExpandedComponent && expanded ? (
-                <ExpandedComponent {...expanded.output} />
-              ) : null}
-            </ModalBody>
-          </ModalDialog>
-        </ModalContainer>
+        <ModalBackdrop>
+          <ModalContainer size="cover" scroll="inside">
+            <ModalDialog>
+              <ModalHeader>
+                <ModalHeading>
+                  {expanded?.output && 'title' in expanded.output
+                    ? String(expanded.output.title)
+                    : expanded?.name.replace(/_/g, ' ') ?? ''}
+                </ModalHeading>
+                <ModalCloseTrigger />
+              </ModalHeader>
+              <ModalBody>
+                {ExpandedComponent && expanded ? (
+                  <ReplayProvider isReplay={false}>
+                    <ExpandedComponent {...expanded.output} />
+                  </ReplayProvider>
+                ) : null}
+              </ModalBody>
+            </ModalDialog>
+          </ModalContainer>
+        </ModalBackdrop>
       </Modal>
     </>
   )

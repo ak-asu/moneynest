@@ -6,6 +6,7 @@ import { useSFX } from '@/components/audio/use-sfx'
 import { TermMatch } from '@/components/games/TermMatch'
 import { FinWord } from '@/components/games/FinWord'
 import { WealthFarm } from '@/components/games/WealthFarm'
+import InsuranceCardGame from './insurance-card-game'
 
 // Renders the appropriate game engine based on game_type
 export function MiniGame({ game_type, title, instructions, income, categories, win_condition, time_limit_seconds }: MiniGameProps) {
@@ -17,6 +18,9 @@ export function MiniGame({ game_type, title, instructions, income, categories, w
   )
   if (game_type === 'time_pressure') return (
     <TimePressureGame title={title} instructions={instructions!} income={income!} categories={categories!} win_condition={win_condition!} time_limit_seconds={time_limit_seconds || 60} />
+  )
+  if (game_type === 'insurance_card_game') return (
+    <InsuranceCardGame />
   )
   // Default: drag_drop / tradeoff_slider fallback to allocation_puzzle layout
   return (
