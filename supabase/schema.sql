@@ -179,3 +179,16 @@
 
 
    ALTER TABLE profiles ADD COLUMN IF NOT EXISTS savings_balance numeric NOT NULL DEFAULT 0;
+
+-- Game XP table
+create table if not exists public.game_xp (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.users(id) on delete cascade not null,
+  game_type text not null,
+  xp_earned integer not null default 0,
+  reason text,
+  created_at timestamptz default now()
+);
+create index if not exists idx_game_xp_user_id on public.game_xp(user_id);
+alter table public.game_xp enable row level security;
+create policy "game_xp_own" on public.game_xp for all using (user_id = get_user_id());
