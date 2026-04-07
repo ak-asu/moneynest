@@ -35,6 +35,10 @@ The catalog is defined in [lib/games/catalog.ts](/c:/Users/sahil/OneDrive/Deskto
 - FinWord Challenge
 - Wealth Farm
 
+### Credit Quest
+
+Credit Quest is an AI-driven credit card mini-game where players manage cash, debt, and fan growth through story choices. It uses generated scenarios, live profile context, and feedback screens to teach how everyday financial decisions can affect credit health over time.
+
 ## Tech Stack
 
 - Next.js 15 App Router
