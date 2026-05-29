@@ -16,6 +16,7 @@ Demo videos:
 
 - [MoneyNest demo video 1](https://www.youtube.com/watch?v=xmmNFegN9XU)
 - [MoneyNest demo video 2](https://www.youtube.com/watch?v=SFcgz3gaT4c)
+- [Devpost submission](https://devpost.com/software/vela-0wnvbu)
 
 In-repo visual assets:
 
