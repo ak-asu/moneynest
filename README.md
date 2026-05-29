@@ -1,131 +1,138 @@
 # MoneyNest
 
-MoneyNest is a Next.js financial wellness app that combines onboarding, budgeting, AI chat, document analysis, saved plans, and mini-games into one experience. It is designed to help users learn money skills in a more interactive way, with support for profile-based guidance, voice features, and library-style replay of generated content.
+Personalized financial wellness app for learning, planning, budgeting, document review, and interactive money simulations.
 
-## What The App Does
+<p align="center">
+  <img src="public/logo.png" alt="MoneyNest logo" width="150" />
+</p>
 
-- Guides a user through onboarding and profile setup.
-- Connects financial context like income, expenses, and linked account data.
-- Provides dashboard suggestions and AI-assisted coaching flows.
-- Supports budgeting, planning, and document upload/extraction.
-- Includes a library of saved content and mini-games.
-- Tracks progress with sessions, leaderboard data, and reusable generated artifacts.
+MoneyNest is a Next.js application that helps users turn messy financial context into practical guidance. Users can onboard through voice, forms, document upload, or Plaid; then Cents, the in-app financial assistant, uses their profile, budget activity, documents, learning history, and saved plans to generate contextual coaching and interactive components.
 
-## Main Product Areas
+The strongest engineering idea is the "AI output as product UI" layer: the assistant does not only return text. It streams validated tool outputs through the Vercel AI SDK and maps model-emitted descriptors to reusable React components, such as simulations, budget snapshots, learning cards, document explainers, mini-games, and action plans.
 
-- `app/dashboard`: landing area for authenticated users after onboarding.
-- `app/onboarding`: multi-step onboarding flow for identity, income, expenses, documents, and voice path selection.
-- `app/budget`: budget management, CSV import, charting, and manual entries.
-- `app/chat`: conversational AI interface.
-- `app/documents`: upload and review documents with extraction/visual helpers.
-- `app/library`: opens saved items and embedded interactive components such as mini-games.
-- `app/plans`: saved plans and plan detail APIs.
-- `app/profile`: profile management.
-- `app/leaderboard`: leaderboard and XP-related views.
-- `app/games`: standalone game routes for selected mini-games.
+## Preview
 
-## Mini-Games Included
+Demo videos:
 
-The catalog is defined in [lib/games/catalog.ts](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/lib/games/catalog.ts).
+- [MoneyNest demo video 1](https://www.youtube.com/watch?v=xmmNFegN9XU)
+- [MoneyNest demo video 2](https://www.youtube.com/watch?v=SFcgz3gaT4c)
 
-- Savings vs. Spending Tradeoff
-- Insurance Card Game
-- Credit Quest
-- Financial Term Match
-- FinWord Challenge
-- Wealth Farm
+In-repo visual assets:
 
-### Credit Quest
+<p>
+  <img src="public/assets/game-covers/saving-vs-spending-clear.svg" alt="Savings vs. Spending game cover" width="190" />
+  <img src="public/GameCover/credit_quest.png" alt="Credit Quest game cover" width="190" />
+  <img src="public/assets/game-covers/finword-clear.svg" alt="FinWord game cover" width="190" />
+</p>
 
-Credit Quest is an AI-driven credit card mini-game where players manage cash, debt, and fan growth through story choices. It uses generated scenarios, live profile context, and feedback screens to teach how everyday financial decisions can affect credit health over time.
+## Highlights
+
+- Multiple onboarding paths: voice setup, manual form entry, document extraction, and Plaid bank connection.
+- Multi-model routing: Claude Sonnet handles chat and document extraction, Claude Haiku handles lightweight suggestions/profile extraction, and Gemini 2.5 Flash Image generates concept visuals.
+- Context-aware AI coaching built from Supabase profile data, recent budget entries, uploaded documents, active plans, learning progress, and Supermemory recall.
+- Tool-driven generative UI: `streamText()` can run up to five tool steps, then render outputs through a live component registry instead of plain chat text.
+- Document vault with Supabase Storage upload, Anthropic document extraction, plain-language summaries, risk flags, and what-if prompts.
+- Budget system with manual entries, CSV import for YNAB/Mint/generic exports, Plaid transaction sync, charts, >20% category spend-spike suggestions, and profile sync prompts.
+- Learning loop with saved artifacts, mini-games, XP tracking, leaderboard views, and English/Spanish localization.
+
+## Use Cases
+
+| Use Case | User | Outcome |
+| --- | --- | --- |
+| Build a financial profile quickly | New user | Onboard through conversation, forms, documents, or bank connection |
+| Understand a bill, lease, pay stub, or insurance document | Consumer reviewing paperwork | Get summaries, risk flags, clauses, and follow-up prompts |
+| Analyze spending | Budget-conscious user | Import transactions, see charts, detect spikes, and ask Cents for next steps |
+| Learn financial concepts through play | Student or first-time learner | Practice with simulations, term matching, credit scenarios, and XP feedback |
+| Revisit generated guidance | Returning user | Save plans, games, learning cards, and document explainers to the library |
+
+## Features
+
+**Personalized Coaching**
+
+- Cents chat assistant with persisted sessions and message history.
+- Dynamic system prompt built from the user's current financial state.
+- Proactive dashboard suggestions generated from profile, budget, plans, and learning state.
+- Learning confidence advances from exposure counters into low/medium/high states, and mastered concepts are suppressed from future explanations.
+- Action plans with profile snapshot hashes so stale plans can be flagged when financial data changes.
+
+**Budgeting And Accounts**
+
+- Manual income and expense entries.
+- CSV import with YNAB, Mint, and generic bank export support.
+- Plaid link token creation and transaction import.
+- Recharts visualizations for income, expenses, and top categories.
+
+**Documents**
+
+- Upload financial documents to private Supabase Storage.
+- Extract document type, clauses, numbers, summaries, risk flags, and what-if scenarios.
+- Search and filter documents by filename, type, and extracted content.
+- Store document memory for later assistant recall.
+
+**Interactive Learning**
+
+- Component registry for AI-rendered UI: `budget_snapshot`, `document_explainer`, `crisis_simulator`, `learning_card`, `mini_game`, `action_plan`, and more.
+- Mini-game catalog with Savings vs. Spending, Insurance Card Game, Credit Quest, Financial Term Match, FinWord, Wealth Farm, and RiskRaid.
+- Credit Quest and RiskRaid fetch the live profile to personalize LLM-generated practice scenarios around income, debts, savings, goals, and risk context.
+- XP tracking and leaderboard routes for game activity.
+- Text-to-speech, sound effects, music, dubbing, and voice agent endpoints through ElevenLabs.
 
 ## Tech Stack
 
-- Next.js 15 App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- HeroUI
-- Supabase for auth and database access
-- Plaid for financial account linking/sync
-- Anthropic, Gemini, ElevenLabs, and Supermemory integrations for AI and media features
+| Layer | Technology | Purpose |
+| --- | --- | --- |
+| App framework | Next.js 15 App Router, React 19 | Full-stack routing, server components, route handlers, client UI |
+| Language | TypeScript | Typed domain models, route payloads, and component contracts |
+| UI | Tailwind CSS 4, HeroUI, lucide-react, Framer Motion | Responsive interface, controls, icons, and motion |
+| Auth/data/storage | Supabase Auth, Postgres, Storage, RLS | User accounts, relational app data, private documents, row-level access control |
+| AI orchestration | Vercel AI SDK, Anthropic Claude Sonnet/Haiku | Streaming chat, tool calls, document extraction, suggestions, profile extraction |
+| Media AI | Gemini 2.5 Flash Image, ElevenLabs | Concept image generation, multilingual voice/audio features |
+| Financial data | Plaid | Read-only bank linking and transaction sync |
+| Memory | Supermemory | Cross-session document/context recall |
+| Forms/data viz/parsing | React Hook Form, Zod, Recharts, PapaParse | Onboarding forms, validation, charts, and CSV import |
+| Localization | Custom i18n helpers | English and Spanish UI copy with locale cookie middleware |
+| Quality | ESLint, Prettier, TypeScript strict mode | Static checks and formatting rules |
 
-## Project Structure
+## Architecture
 
-```text
-app/
-  (auth)/login          Auth UI
-  api/                  Route handlers for app data, AI, documents, budget, plans, profile, etc.
-  budget/               Budget page and related UI
-  chat/                 AI chat experience
-  dashboard/            Main dashboard
-  documents/            Document upload and review
-  games/                Standalone game routes
-  leaderboard/          Leaderboard screen
-  library/              Saved items and game previews in modals
-  onboarding/           Multi-step onboarding flow
-  plans/                Saved plan views
-  profile/              Profile page
-components/
-  audio/                TTS, sound effects, and music helpers
-  chat/                 Chat-specific UI
-  documents/            Document visuals
-  generative/           Expandable generated components and mini-game experiences
-  games/                Game implementations
-config/                 Fonts and site config
-lib/
-  ai/                   AI orchestration helpers and tools
-  elevenlabs/           ElevenLabs integrations
-  gemini/               Gemini integrations
-  i18n/                 Localization helpers and messages
-  plaid/                Plaid client/sync
-  supabase/             Supabase clients
-  utils/                Shared utilities
-supabase/
-  schema.sql            Database schema
-types/
-  database.ts           Database-facing types
+```mermaid
+flowchart LR
+  User["User"] --> UI["Next.js App Router UI"]
+  UI --> Routes["Route handlers in app/api"]
+  Routes --> Auth["Supabase Auth"]
+  Routes --> DB[("Supabase Postgres")]
+  Routes --> Storage[("Supabase Storage")]
+  Routes --> Claude["Anthropic Claude via AI SDK"]
+  Routes --> Plaid["Plaid Transactions"]
+  Routes --> Eleven["ElevenLabs Audio"]
+  Routes --> Gemini["Gemini"]
+  Routes --> Memory["Supermemory"]
+
+  Claude --> Tools["Validated AI tool outputs"]
+  Tools --> Registry["React component registry"]
+  Registry --> UI
+
+  DB --> Dashboard["Dashboard suggestions, plans, library, XP"]
+  Storage --> Documents["Document Vault"]
 ```
 
-## Requirements
+## How It Works
 
-- Node.js 20+ recommended
-- npm, pnpm, yarn, or bun
-- A Supabase project
-- Optional provider credentials depending on which features you want enabled
+1. A user authenticates with Supabase through email/password or Google OAuth.
+2. Root routing checks whether the user has a linked app user row and completed profile, then redirects to onboarding or dashboard.
+3. Onboarding captures financial context through voice, form fields, document extraction, or Plaid transaction sync.
+4. The chat route fetches profile, learning progress, recent budget entries, active plans, uploaded documents, and relevant memories in parallel.
+5. Anthropic streams a response with tool calls; each tool result is rendered by `components/generative/component-registry.tsx` and persisted to Supabase.
+6. Users can save generated plans, simulations, learning cards, games, and document explainers into the library for replay.
 
-## Environment Variables
+## Setup
 
-Copy `.env.example` to `.env` and fill in the values you need.
+Prerequisites:
 
-### Core
-
-```bash
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-```
-
-### AI And Voice
-
-```bash
-ANTHROPIC_API_KEY=
-GEMINI_API_KEY=
-ELEVENLABS_API_KEY=
-NEXT_PUBLIC_ELEVENLABS_AGENT_ID=
-SUPERMEMORY_API_KEY=
-```
-
-### Plaid
-
-```bash
-PLAID_CLIENT_ID=
-PLAID_SECRET=
-PLAID_ENV=sandbox
-```
-
-## Local Development
+- Node.js 20+
+- npm
+- Supabase project
+- Provider credentials for features you want to run: Anthropic, Plaid, ElevenLabs, Gemini, and Supermemory
 
 Install dependencies:
 
@@ -133,7 +140,37 @@ Install dependencies:
 npm install
 ```
 
-Start the dev server:
+Create local environment variables:
+
+```bash
+cp .env.example .env
+```
+
+Required variables are listed in [.env.example](.env.example):
+
+```bash
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ANTHROPIC_API_KEY=
+GEMINI_API_KEY=
+ELEVENLABS_API_KEY=
+NEXT_PUBLIC_ELEVENLABS_AGENT_ID=
+SUPERMEMORY_API_KEY=
+PLAID_CLIENT_ID=
+PLAID_SECRET=
+PLAID_ENV=sandbox
+```
+
+Set up the database:
+
+1. Create a Supabase project.
+2. Apply [supabase/schema.sql](supabase/schema.sql).
+3. Configure Supabase Auth providers for the login methods you want to support.
+4. Confirm the private `vela-files` storage bucket and storage policy from the schema are applied.
+
+Run locally:
 
 ```bash
 npm run dev
@@ -145,100 +182,84 @@ Build for production:
 npm run build
 ```
 
-Start the production server locally:
+Run the production server locally:
 
 ```bash
 npm run start
 ```
 
-Run lint autofix:
+Lint and autofix:
 
 ```bash
 npm run lint
 ```
 
-## Database Setup
+There is no test script in `package.json` yet.
 
-The schema lives in [supabase/schema.sql](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/supabase/schema.sql).
+## Usage
 
-At a high level:
+Typical app flow:
 
-1. Create a Supabase project.
-2. Apply the SQL schema from `supabase/schema.sql`.
-3. Set the Supabase environment variables in `.env`.
-4. Confirm auth is configured for the login flow you want to support.
+1. Sign in or create an account at `/login`.
+2. Complete onboarding with one of the available paths: voice, form, document upload, or Plaid.
+3. Review your dashboard health score and Cents suggestions.
+4. Add or import budget entries, then use "Analyze with Cents" to send a budget summary into chat.
+5. Upload documents in the Document Vault to generate summaries, clauses, risk flags, and follow-up scenarios.
+6. Ask Cents for help in chat, save useful generated components, and replay them from the Library.
+7. Play mini-games from the Library or standalone `/games/*` routes and track XP on the leaderboard.
 
-## Authentication And Routing
+Important routes:
 
-The root route checks authentication and onboarding status before redirecting users:
+| Route | Purpose |
+| --- | --- |
+| `/dashboard` | Health score and proactive suggestions |
+| `/onboarding` | Profile setup through voice, form, document, or Plaid |
+| `/chat` | Cents assistant with generative UI |
+| `/budget` | Manual entries, CSV import, charts, and budget analysis |
+| `/documents` | Document upload, search, filtering, and review |
+| `/library` | Prebuilt games plus saved generated artifacts |
+| `/plans` | Saved action plans and stale-plan indicators |
+| `/leaderboard` | XP rankings from game activity |
 
-- unauthenticated users go to `/login`
-- users without a linked app user/profile go to `/onboarding`
-- fully onboarded users go to `/dashboard`
+## Key Decisions
 
-See [app/page.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/app/page.tsx).
+| Decision | Rationale | Tradeoff |
+| --- | --- | --- |
+| Use AI tools as UI contracts | Keeps model output renderable, saveable, and replayable as product components | Requires careful schema design and registry maintenance |
+| Build agent context server-side | Lets Cents answer from current profile, documents, plans, budget, and learning state | Chat route depends on several data sources and provider availability |
+| Store generated artifacts separately from messages | Supports a library of reusable plans, games, simulations, and explainers | Adds another persistence model to keep in sync |
+| Replay JSONB component snapshots | Avoids regenerating saved simulations, document explainers, learning cards, and mini-games across sessions | Saved components need backward-compatible props as UI evolves |
+| Hash profile snapshots for plans | Detects when a saved plan may be based on outdated financial data | Only flags staleness; it does not automatically migrate plan content |
+| Use Supabase RLS across user-owned tables | Enforces per-user access at the database layer | Policies and app queries must stay aligned |
+| Support several onboarding paths | Reduces friction for users with different comfort levels and data availability | More integration paths to test and maintain |
 
-## AI And Media Features
+## Notable Work
 
-This repo includes several feature families powered by external providers:
+- The assistant strips historical tool parts before sending messages back to Anthropic, avoiding invalid tool history while preserving a note about previously rendered components.
+- Document extraction writes both structured document records and memory entries, allowing later chat responses to reference uploaded documents.
+- Budget import detects category spikes above a 20% prior-period baseline after CSV ingestion and creates dismissible suggestions without blocking the import response.
+- Crisis simulations make tradeoffs concrete with day-specific decisions, dollar impacts, balance changes, and follow-up chat events.
+- Localization is wired through middleware, cookie-based locale detection, and shared message catalogs for English and Spanish.
+- The database schema separates identity, profiles, messages, saved artifacts, documents, plans, budget entries, learning progress, suggestions, Plaid connections, and game XP.
 
-- Anthropic-based chat and coaching flows
-- Gemini-powered image/document features
-- ElevenLabs text-to-speech, sound effects, music, and voice agent endpoints
-- Supermemory support for memory/search-style tooling
+## Potential Metrics To Track
 
-If you do not configure a provider, any routes depending on that provider may fail until guarded or disabled.
+| Metric | Why It Matters |
+| --- | --- |
+| Onboarding completion by path | Shows whether voice, form, document, or Plaid is the lowest-friction setup flow |
+| Suggestion click-through and dismissal rate | Measures whether proactive recommendations are relevant |
+| Document extraction success rate | Tracks reliability of document upload and AI parsing |
+| Saved artifact replay rate | Indicates whether generated plans, games, and explainers remain useful after chat |
+| Game completion and XP activity | Measures engagement with learning-by-doing features |
 
-## Library And Generative Components
+## Roadmap Ideas
 
-The library opens saved items inside modal previews and can render interactive generated components from the component registry.
-
-Relevant files:
-
-- [app/library/page.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/app/library/page.tsx)
-- [components/generative/component-registry.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/components/generative/component-registry.tsx)
-- [components/generative/generative-message.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/components/generative/generative-message.tsx)
-
-## API Surface
-
-The app uses App Router route handlers under `app/api`. Major groups include:
-
-- `budget`
-- `chat`
-- `documents`
-- `elevenlabs`
-- `leaderboard`
-- `plans`
-- `plaid`
-- `profile`
-- `sessions`
-- `suggestions`
-- `xp`
-
-If you are onboarding to the codebase, `app/api` is the best place to trace backend behavior for each product area.
-
-## Styling
-
-- Global styling lives in [styles/globals.css](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/styles/globals.css).
-- The app uses Tailwind plus shared theme variables.
-- Some interactive experiences, such as the Insurance Card Game, include component-scoped styling for highly custom layouts.
-
-## Notes For Contributors
-
-- Prefer `rg`/ripgrep for codebase search.
-- The repo uses the App Router, so server/client boundaries matter.
-- Some UI flows depend on Supabase auth context and existing DB rows.
-- Several features are provider-backed, so verify env configuration before debugging app logic.
-
-## Suggested First Read For New Contributors
-
-- [app/layout.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/app/layout.tsx)
-- [app/page.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/app/page.tsx)
-- [app/library/page.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/app/library/page.tsx)
-- [app/dashboard/page.tsx](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/app/dashboard/page.tsx)
-- [lib/supabase/server.ts](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/lib/supabase/server.ts)
-- [supabase/schema.sql](/c:/Users/sahil/OneDrive/Desktop/innovation_hackathon/ihack/supabase/schema.sql)
+- Add focused tests for CSV parsing, profile health scoring, profile snapshot hashes, and route validation.
+- Add screenshots or a short GIF walkthrough to make the README visually representative without leaving GitHub.
+- Add graceful feature flags for missing provider credentials so local development can run with partial integrations.
+- Add Supabase migration files or CLI instructions so schema setup is repeatable.
+- Add analytics for onboarding paths, saved artifact usage, document extraction outcomes, and game engagement.
 
 ## License
 
-This repository currently includes the upstream MIT `LICENSE` file. If this project is being distributed as a separate product, review whether the root package name, README, and licensing text should also be updated to match the final product identity.
+See [LICENSE](LICENSE). The current file is an MIT license inherited from the upstream template and should be reviewed before external distribution under the MoneyNest project name.
