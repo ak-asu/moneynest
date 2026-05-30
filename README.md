@@ -14,9 +14,9 @@ The strongest engineering idea is the "AI output as product UI" layer: the assis
 
 Demo videos:
 
-- [MoneyNest demo video 1](https://www.youtube.com/watch?v=t1MBPpjHlUk)
-- [MoneyNest demo video 2](https://www.youtube.com/watch?v=xmmNFegN9XU)
-- [MoneyNest demo video 3](https://www.youtube.com/watch?v=SFcgz3gaT4c)
+- [MoneyNest demo video 1](https://www.youtube.com/watch?v=SFcgz3gaT4c)
+- [MoneyNest demo video 2](https://www.youtube.com/watch?v=t1MBPpjHlUk)
+- [MoneyNest demo video 3](https://www.youtube.com/watch?v=xmmNFegN9XU)
 - [Devpost submission](https://devpost.com/software/vela-0wnvbu)
 
 In-repo visual assets:
